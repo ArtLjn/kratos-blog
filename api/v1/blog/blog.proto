@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package api.v1;
+import "google/api/annotations.proto";
+option go_package = "blog/api/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.v1";
+service Blog {
+	rpc CreateBlog (CreateBlogRequest) returns (CreateBlogReply) {
+		option (google.api.http) = {
+			post: "/api/addBlog",
+			body:"*",
+		};
+	};
+	rpc UpdateBlog (UpdateBlogRequest) returns (UpdateBlogReply) {
+		option (google.api.http) = {
+			put: "/api/updateBlog/{id}",
+			body:"*",
+		};
+	};
+	rpc UpdateAllCommentStatus (UpdateAllCommentStatusRequest) returns (UpdateAllCommentStatusReply) {
+		option (google.api.http) = {
+			put: "/api/updateAllBlogStatus/{status}",
+			body:"*",
+		};
+	};
+	rpc DeleteBlog (DeleteBlogRequest) returns (DeleteBlogReply) {
+		option(google.api.http) = {
+			delete:"/api/deleteBlog/{id}/{key}",
+		};
+	};
+	rpc GetBlogByTag (GetBlogRequest) returns (GetBlogReply) {
+		option(google.api.http) = {
+			get:"/api/getTagName/{tag}",
+		};
+	};
+	rpc ListBlog (ListBlogRequest) returns (ListBlogReply) {
+		option(google.api.http) = {
+			get:"/api/getAllBlog",
+		};
+	};
+	rpc GetBlogByID (GetBlogIDRequest) returns (GetBlogIDReply) {
+		option(google.api.http) = {
+			get:"/api/getId/{id}",
+		};
+	};
+	rpc GetBlogByTitle (GetBlogByTitleRequest) returns (GetBlogByTitleReply) {
+		option(google.api.http) = {
+			get:"/api/searchBlog/{title}",
+		};
+	};
+	rpc UpdateAllowComment (UpdateAllowRequest) returns (UpdateAllowReply) {
+		option (google.api.http) = {
+			put:"/api/updateAllow",
+			body:"*",
+		};
+	}
+	rpc UpdateAppear (UpdateAllowRequest) returns (UpdateAllowReply) {
+		option (google.api.http) = {
+			put:"/api/updateAppear",
+			body:"*",
+		};
+	}
+}
+
+message CreateBlogRequest {
+	string content = 1;
+	string title = 2;
+	string preface = 3;
+	string photo = 4;
+	string tag = 5;
+	string comment = 6;
+}
+message CreateBlogReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message UpdateBlogRequest {
+	int64 id = 1;
+	string title = 2;
+	string preface = 3;
+	string photo = 4;
+	string tag = 5;
+	string comment = 6;
+	string content = 7;
+}
+message UpdateBlogReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+
+message UpdateAllCommentStatusRequest {
+	bool status = 1;
+}
+message UpdateAllCommentStatusReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message DeleteBlogRequest {
+	int64 id = 1;
+	string key = 2;
+}
+message DeleteBlogReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message GetBlogRequest {
+	string tag = 1;
+}
+message GetBlogReply {
+	int64 code = 1;
+	string result = 2;
+	repeated string List = 3;
+}
+
+message ListBlogRequest {}
+message ListBlogReply {
+	int64 code = 1;
+	string result = 2;
+	repeated string List = 3;
+}
+
+message GetBlogByTitleRequest {
+	string title = 1;
+}
+message GetBlogByTitleReply {
+	int64 code = 1;
+	string result = 2;
+	string data = 3;
+}
+
+message UpdateAllowRequest {}
+message UpdateAllowReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message GetBlogIDRequest {
+	int64 id = 1;
+}
+message GetBlogIDReply {}

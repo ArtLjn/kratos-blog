@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package api.user;
+import "google/api/annotations.proto";
+
+option go_package = "comment/api/comment;comment";
+option java_multiple_files = true;
+option java_package = "api.comment";
+
+service User {
+	rpc CreateUser (CreateUserRequest) returns (CreateUserReply) {
+		option (google.api.http) = {
+			post:"/api/register/{code}",
+			body:"*",
+		};
+	};
+	rpc LoginUser (LoginRequest) returns (LoginReply) {
+		option (google.api.http) = {
+			post:"/api/login",
+			body:"*",
+		};
+	};
+	rpc SendEmail (SendEmailRequest) returns (SendEmailReply) {
+		option (google.api.http) = {
+			get:"/api/sendEmail/{email}"
+		};
+	};
+	rpc UpdatePassword (UpdatePasswordRequest) returns (UpdatePasswordReply) {
+		option (google.api.http) = {
+			post:"/api/updatePassword/{code}",
+			body:"*",
+		};
+	};
+	rpc SetBlack (SetBlackRequest) returns (SetBlackReply) {
+		option (google.api.http) = {
+			get:"/api/setBlack/{name}"
+		};
+	};
+	rpc GetUser (GetUserRequest) returns (GetUserReply) {
+		option (google.api.http) = {
+			get:"/api/getUserMessage/{name}"
+		};
+	};
+	rpc AdminLogin (AdminLoginRequest) returns (AdminLoginReply) {
+		option (google.api.http) = {
+			post:"/api/admin",
+			body:"*",
+		};
+	};
+}
+
+message CreateUserRequest {
+	string name = 1;
+	string email = 2;
+	string password = 3;
+	string code = 4;
+}
+message CreateUserReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message LoginRequest {
+	string name = 1;
+	string pass = 2;
+}
+message LoginReply {
+	int64 code = 1;
+	string result = 2;
+	repeated string Data = 3;
+}
+
+message SendEmailRequest {
+	string email = 1;
+}
+message SendEmailReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message UpdatePasswordRequest {
+	string code = 1;
+	string email = 2;
+	string name = 3;
+	string password = 4;
+}
+message UpdatePasswordReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message SetBlackRequest {
+	string name = 1;
+}
+message SetBlackReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message GetUserRequest {
+	string name = 1;
+}
+message GetUserReply {
+	int64 code = 1;
+	string result = 2;
+	repeated string data = 3;
+}
+
+message AdminLoginRequest {
+	string name = 1;
+	string password = 2;
+}
+message AdminLoginReply {
+	int64 code = 1;
+	string result = 2;
+	repeated string data = 3;
+}

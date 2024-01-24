@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package api.comment;
+import "google/api/annotations.proto";
+
+option go_package = "comment/api/comment;comment";
+option java_multiple_files = true;
+option java_package = "api.comment";
+
+service Comment {
+	rpc AddComment (CreateCommentRequest) returns (CreateCommentReply) {
+		option (google.api.http) = {
+			post:"/api/addComment",
+			body:"*"
+		};
+	};
+	rpc AddReward (CreateRewardRequest) returns (CreateRewardReply) {
+		option (google.api.http) = {
+			post:"/api/addReward/{reward_id}",
+			body:"*"
+		};
+	};
+	rpc ExtractParentComments (ExtractParentCommentsRequest) returns (ExtractParentCommentsReply) {
+		option (google.api.http) = {
+			get:"/api/getComment/{id}"
+		};
+	};
+}
+
+message CreateCommentRequest {
+	string article_id = 1;
+	string comment = 2;
+	string comment_addr = 3;
+}
+message CreateCommentReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message CreateRewardRequest {
+	string reward_id = 1;
+	string reward_content = 2;
+	string article_id = 3;
+	string reward_addr = 4;
+}
+message CreateRewardReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message ExtractParentCommentsRequest {
+	string id = 1;
+}
+message ExtractParentCommentsReply {
+	int64 code = 1;
+	string result = 2;
+	string data = 3;
+}
+
