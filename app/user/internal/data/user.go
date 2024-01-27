@@ -218,28 +218,33 @@ func (u *userRepo) QueryMessage(cond, value string, data User) *User {
 
 func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 	var data User
-	data = *u.QueryMessage("name", request.Name, data)
 	var list []string
+	if request.Name == u.data.c.Admin.Username {
+		f := make([]string, 3)
+		f = append(f, u.data.c.Admin.Username, AdminRole)
+		list = append([]string{}, f...)
+		return list
+	}
+	data = *u.QueryMessage("name", request.Name, data)
 	list = append(list, data.Name, data.Email, strconv.Itoa(data.ID), data.UUID, data.Role, strconv.FormatBool(data.Black))
 	return list
 }
 
 // AdminLogin :dev Super admin users are unique
 func (u *userRepo) AdminLogin(request *user.AdminLoginRequest) *user.AdminLoginReply {
+	status := func(comm *user.CommonReply, list []string) *user.AdminLoginReply {
+		return &user.AdminLoginReply{
+			Common: comm,
+			Data:   list,
+		}
+	}
 	if request.Name == u.data.c.Admin.Username &&
 		request.Password == u.data.c.Admin.Password {
 		// generate token
 		token := fmt.Sprintf("admin-token:%s", util.GenerateToken())
 		// set up cache
 		u.data.rdb.Set(context.Background(), token, request.Name, 7*24*time.Hour)
-		return &user.AdminLoginReply{
-			Code:   200,
-			Result: vo.LOGIN_SUCCESS,
-			Data:   []string{token},
-		}
+		return status(&user.CommonReply{Code: 200, Result: vo.LOGIN_SUCCESS}, []string{token})
 	}
-	return &user.AdminLoginReply{
-		Code:   400,
-		Result: vo.LOGIN_FAIL,
-	}
+	return status(&user.CommonReply{Code: 400, Result: vo.LOGIN_FAIL}, nil)
 }

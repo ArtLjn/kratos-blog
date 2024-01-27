@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.7.1
 // - protoc             v4.25.1
-// source: api/v1/blog/blog.proto
+// source: blog.proto
 
 package blog
 

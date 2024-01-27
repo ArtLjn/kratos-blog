@@ -1,16 +1,24 @@
 package data
 
 import (
+	"context"
 	consul "github.com/go-kratos/kratos/contrib/registry/consul/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v2/selector"
+	"github.com/go-kratos/kratos/v2/selector/wrr"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/wire"
 	consulAPI "github.com/hashicorp/consul/api"
 	"github.com/redis/go-redis/v9"
+	grpcx "google.golang.org/grpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"kratos-blog/api/v1/blog"
+	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/conf"
+	"time"
 )
 
 // ProviderSet is data providers.
@@ -19,15 +27,15 @@ var ProviderSet = wire.NewSet(NewData, NewRegistrar, NewDiscovery)
 // Data .
 type Data struct {
 	log *log.Helper
-	uc  blog.BlogClient
+	uc  user.UserClient
 	db  *gorm.DB
 	rdb *redis.Client
 }
 
 // NewData .
-func NewData(c *conf.Data, logger log.Logger, db *gorm.DB, rdb *redis.Client) (*Data, error) {
+func NewData(c *conf.Data, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
-	return &Data{log: l, db: db, rdb: rdb}, nil
+	return &Data{log: l, uc: uc, db: db, rdb: rdb}, nil
 }
 
 // NewRegistrar add consul
@@ -83,4 +91,25 @@ func NewRDB(conf *conf.Data) *redis.Client {
 			Password: conf.Redis.Password,
 		},
 	)
+}
+func NewGrpcServiceClient(sr *conf.Service, rr registry.Discovery) user.UserClient {
+	selector.SetGlobalSelector(wrr.NewBuilder())
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithEndpoint(sr.User.Endpoint),
+		grpc.WithDiscovery(rr),
+		grpc.WithMiddleware(
+			tracing.Client(),
+			recovery.Recovery(),
+		),
+		grpc.WithTimeout(2*time.Second),
+		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
+		grpc.WithHealthCheck(true),
+		grpc.WithTimeout(5*time.Second),
+	)
+	if err != nil {
+		panic(err)
+	}
+	c := user.NewUserClient(conn)
+	return c
 }

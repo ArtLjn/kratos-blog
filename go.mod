@@ -5,13 +5,15 @@ go 1.18
 require (
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20240119085030-a556a2b53120
 	github.com/go-kratos/kratos/v2 v2.7.2
-	github.com/google/uuid v1.3.0
+	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/google/uuid v1.3.1
 	github.com/google/wire v0.5.0
 	github.com/hashicorp/consul/api v1.27.0
 	github.com/redis/go-redis/v9 v9.4.0
+	github.com/tx7do/kratos-authn v1.0.0
 	go.uber.org/automaxprocs v1.5.3
-	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529
-	google.golang.org/grpc v1.56.3
+	google.golang.org/genproto/googleapis/api v0.0.0-20231002182017-d307bd883b97
+	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/driver/mysql v1.5.2
@@ -28,7 +30,7 @@ require (
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/go-playground/form/v4 v4.2.0 // indirect
+	github.com/go-playground/form/v4 v4.2.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
@@ -62,8 +64,8 @@ require (
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
-	google.golang.org/genproto v0.0.0-20230629202037-9506855d4529 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230629202037-9506855d4529 // indirect
+	google.golang.org/genproto v0.0.0-20231012201019-e917dd12ba7a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

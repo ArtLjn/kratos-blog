@@ -22,16 +22,16 @@ func (s *BlogService) UpdateBlog(ctx context.Context, req *pb.UpdateBlogRequest)
 	return s.uc.UpdateBlog(ctx, req), nil
 }
 func (s *BlogService) UpdateAllCommentStatus(ctx context.Context, req *pb.UpdateAllCommentStatusRequest) (*pb.UpdateAllCommentStatusReply, error) {
-	return &pb.UpdateAllCommentStatusReply{}, nil
+	return s.uc.UpdateAllCommentStatus(ctx, req), nil
 }
 func (s *BlogService) DeleteBlog(ctx context.Context, req *pb.DeleteBlogRequest) (*pb.DeleteBlogReply, error) {
 	return s.uc.DeleteBlog(ctx, req), nil
 }
 func (s *BlogService) GetBlogByTag(ctx context.Context, req *pb.GetBlogRequest) (*pb.GetBlogReply, error) {
-	return &pb.GetBlogReply{}, nil
+	return s.uc.GetByTagName(ctx, req), nil
 }
 func (s *BlogService) ListBlog(ctx context.Context, req *pb.ListBlogRequest) (*pb.ListBlogReply, error) {
-	return &pb.ListBlogReply{}, nil
+	return s.uc.ListBlog(ctx, req), nil
 }
 func (s *BlogService) GetBlogByID(ctx context.Context, req *pb.GetBlogIDRequest) (*pb.GetBlogIDReply, error) {
 	return &pb.GetBlogIDReply{}, nil

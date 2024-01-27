@@ -15,3 +15,6 @@ data:
     write_timeout: 0.2s
     db: 0
     password:
+service:
+  user:
+    endpoint: discovery:///user.service

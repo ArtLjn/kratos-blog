@@ -35,31 +35,18 @@ func (u *UserUseCase) Login(ctx context.Context, request *user.LoginRequest) *us
 	res, token, err := u.repo.Login(ctx, request)
 	if err != nil {
 		u.log.Log(log.LevelError, err)
-		return &user.LoginReply{
-			Code:   400,
-			Result: res,
-		}
+		return &user.LoginReply{Common: &user.CommonReply{Code: 400, Result: res}}
 	}
-	return &user.LoginReply{
-		Code:   200,
-		Result: res,
-		Data:   []string{token},
-	}
+	return &user.LoginReply{Common: &user.CommonReply{Code: 200, Result: res}, Data: []string{token}}
 }
 
 func (u *UserUseCase) Register(ctx context.Context, request *user.CreateUserRequest) *user.CreateUserReply {
 	res, err := u.repo.AddUser(ctx, request)
 	if err != nil {
 		u.log.Log(log.LevelError, err)
-		return &user.CreateUserReply{
-			Code:   400,
-			Result: res,
-		}
+		return &user.CreateUserReply{Common: &user.CommonReply{Code: 400, Result: res}}
 	}
-	return &user.CreateUserReply{
-		Code:   200,
-		Result: res,
-	}
+	return &user.CreateUserReply{Common: &user.CommonReply{Code: 200, Result: res}}
 }
 
 func (u *UserUseCase) SendEmail(ctx context.Context, request *user.SendEmailRequest) *user.SendEmailReply {
@@ -68,50 +55,35 @@ func (u *UserUseCase) SendEmail(ctx context.Context, request *user.SendEmailRequ
 	u.log.Log(log.LevelInfo, code)
 	res := u.repo.SendEmail(body, request.Email, "注册邮件")
 	if res && u.repo.CacheCode(request.Email, code) {
-		return &user.SendEmailReply{
-			Code:   200,
-			Result: vo.EMAIL_SUCCESS,
-		}
+		return &user.SendEmailReply{Common: &user.CommonReply{Code: 200, Result: vo.EMAIL_SUCCESS}}
 	}
-	return &user.SendEmailReply{
-		Code:   400,
-		Result: vo.EMAIL_FAIL,
-	}
+	return &user.SendEmailReply{Common: &user.CommonReply{Code: 400, Result: vo.EMAIL_FAIL}}
 }
 
 func (u *UserUseCase) UpdateUserPassword(ctx context.Context, request *user.UpdatePasswordRequest) *user.UpdatePasswordReply {
 	res, err := u.repo.UpdatePassword(ctx, request)
 	if err != nil {
-		return &user.UpdatePasswordReply{
-			Code:   400,
-			Result: res,
-		}
+		return &user.UpdatePasswordReply{Common: &user.CommonReply{Code: 400, Result: res}}
 	}
-	return &user.UpdatePasswordReply{
-		Code:   200,
-		Result: res,
-	}
+	return &user.UpdatePasswordReply{Common: &user.CommonReply{Code: 200, Result: res}}
 }
 
 func (u *UserUseCase) SetUserBlack(ctx context.Context, request *user.SetBlackRequest) *user.SetBlackReply {
 	res, err := u.repo.SetBlack(ctx, request)
 	if err != nil {
-		return &user.SetBlackReply{
-			Code:   400,
-			Result: res,
-		}
+		return &user.SetBlackReply{Common: &user.CommonReply{Code: 400, Result: res}}
 	}
-	return &user.SetBlackReply{
-		Code:   200,
-		Result: res,
-	}
+	return &user.SetBlackReply{Common: &user.CommonReply{Code: 200, Result: res}}
 }
 
 func (u *UserUseCase) GetUserMsg(ctx context.Context, request *user.GetUserRequest) *user.GetUserReply {
+	data := u.repo.GetUserMsg(request)
+	if len(data) == 0 {
+		return &user.GetUserReply{Common: &user.CommonReply{Code: 300, Result: vo.QUERY_EMPTY}}
+	}
 	return &user.GetUserReply{
-		Code:   200,
-		Result: vo.QUERY_SUCCESS,
-		Data:   u.repo.GetUserMsg(request),
+		Common: &user.CommonReply{Code: 200, Result: vo.QUERY_SUCCESS},
+		Data:   data,
 	}
 }
 

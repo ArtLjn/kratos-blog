@@ -44,6 +44,7 @@ var (
 	UPDATE_SUCCESS      = "更新成功"
 	QUERY_SUCCESS       = "查询成功"
 	QUERY_FAIL          = "查询失败"
+	QUERY_EMPTY         = "查询为空"
 	FORBIDDEN_ACCESS    = "禁止访问"
 	REQUEST_FAIL        = "请求失败"
 	TALK_ERROR          = "请文明发言"

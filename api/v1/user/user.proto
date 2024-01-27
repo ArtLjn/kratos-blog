@@ -49,6 +49,11 @@ service User {
 	};
 }
 
+message CommonReply {
+	int64 code = 1;
+	string result = 2;
+}
+
 message CreateUserRequest {
 	string name = 1;
 	string email = 2;
@@ -56,8 +61,7 @@ message CreateUserRequest {
 	string code = 4;
 }
 message CreateUserReply {
-	int64 code = 1;
-	string result = 2;
+	CommonReply common = 1;
 }
 
 message LoginRequest {
@@ -65,17 +69,15 @@ message LoginRequest {
 	string pass = 2;
 }
 message LoginReply {
-	int64 code = 1;
-	string result = 2;
-	repeated string Data = 3;
+	CommonReply common = 1;
+	repeated string Data = 2;
 }
 
 message SendEmailRequest {
 	string email = 1;
 }
 message SendEmailReply {
-	int64 code = 1;
-	string result = 2;
+	CommonReply common = 1;
 }
 
 message UpdatePasswordRequest {
@@ -85,25 +87,22 @@ message UpdatePasswordRequest {
 	string password = 4;
 }
 message UpdatePasswordReply {
-	int64 code = 1;
-	string result = 2;
+	CommonReply common = 1;
 }
 
 message SetBlackRequest {
 	string name = 1;
 }
 message SetBlackReply {
-	int64 code = 1;
-	string result = 2;
+	CommonReply common = 1;
 }
 
 message GetUserRequest {
 	string name = 1;
 }
 message GetUserReply {
-	int64 code = 1;
-	string result = 2;
-	repeated string data = 3;
+	CommonReply common = 1;
+	repeated string data = 2;
 }
 
 message AdminLoginRequest {
@@ -111,7 +110,6 @@ message AdminLoginRequest {
 	string password = 2;
 }
 message AdminLoginReply {
-	int64 code = 1;
-	string result = 2;
-	repeated string data = 3;
+	CommonReply common = 1;
+	repeated string data = 2;
 }

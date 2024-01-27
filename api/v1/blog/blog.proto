@@ -63,40 +63,45 @@ service Blog {
 	}
 }
 
-message CreateBlogRequest {
-	string content = 1;
-	string title = 2;
-	string preface = 3;
-	string photo = 4;
-	string tag = 5;
-	string comment = 6;
+message BlogData {
+	optional uint32 id = 1;
+	optional string title = 2;
+	optional string preface = 3;
+	optional string photo = 4;
+	optional string tag = 5;
+	optional string createTime = 6;
+	optional string updateTime = 7;
+	optional string visits = 8;
+	optional string content = 9;
+	optional bool appear = 10;
+	optional bool comment = 11;
 }
-message CreateBlogReply {
+
+message CommonReply {
 	int64 code = 1;
 	string result = 2;
+}
+
+message CreateBlogRequest {
+	BlogData data = 1;
+}
+message CreateBlogReply {
+	CommonReply common = 1;
 }
 
 message UpdateBlogRequest {
-	int64 id = 1;
-	string title = 2;
-	string preface = 3;
-	string photo = 4;
-	string tag = 5;
-	string comment = 6;
-	string content = 7;
+	uint32 id = 1;
+	BlogData data = 2;
 }
 message UpdateBlogReply {
-	int64 code = 1;
-	string result = 2;
+	CommonReply common = 1;
 }
-
 
 message UpdateAllCommentStatusRequest {
 	bool status = 1;
 }
 message UpdateAllCommentStatusReply {
-	int64 code = 1;
-	string result = 2;
+	CommonReply common = 1;
 }
 
 message DeleteBlogRequest {
@@ -104,42 +109,40 @@ message DeleteBlogRequest {
 	string key = 2;
 }
 message DeleteBlogReply {
-	int64 code = 1;
-	string result = 2;
+	CommonReply common = 1;
 }
 
 message GetBlogRequest {
 	string tag = 1;
 }
 message GetBlogReply {
-	int64 code = 1;
-	string result = 2;
-	repeated string List = 3;
+	CommonReply common = 1;
+	repeated BlogData List = 2;
 }
 
 message ListBlogRequest {}
 message ListBlogReply {
-	int64 code = 1;
-	string result = 2;
-	repeated string List = 3;
+	CommonReply common = 1;
+	repeated BlogData List = 2;
 }
 
 message GetBlogByTitleRequest {
 	string title = 1;
 }
 message GetBlogByTitleReply {
-	int64 code = 1;
-	string result = 2;
-	string data = 3;
+	CommonReply common = 1;
+	BlogData data = 2;
 }
 
 message UpdateAllowRequest {}
 message UpdateAllowReply {
-	int64 code = 1;
-	string result = 2;
+	CommonReply common = 1;
 }
 
 message GetBlogIDRequest {
 	int64 id = 1;
 }
-message GetBlogIDReply {}
+message GetBlogIDReply {
+	CommonReply common = 1;
+	BlogData data = 2;
+}
