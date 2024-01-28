@@ -2,17 +2,16 @@ package main
 
 import (
 	"flag"
-	"github.com/go-kratos/kratos/v2/registry"
-	"kratos-blog/app/blog/internal/conf"
-	"os"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"kratos-blog/app/blog/internal/conf"
+	"os"
 
 	_ "go.uber.org/automaxprocs"
 )

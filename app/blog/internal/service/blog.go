@@ -34,7 +34,7 @@ func (s *BlogService) ListBlog(ctx context.Context, req *pb.ListBlogRequest) (*p
 	return s.uc.ListBlog(ctx, req), nil
 }
 func (s *BlogService) GetBlogByID(ctx context.Context, req *pb.GetBlogIDRequest) (*pb.GetBlogIDReply, error) {
-	return &pb.GetBlogIDReply{}, nil
+	return s.uc.QueryBlogByID(ctx, req), nil
 }
 func (s *BlogService) GetBlogByTitle(ctx context.Context, req *pb.GetBlogByTitleRequest) (*pb.GetBlogByTitleReply, error) {
 	return &pb.GetBlogByTitleReply{}, nil

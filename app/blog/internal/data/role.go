@@ -1,6 +1,6 @@
 package data
 
-var (
+const (
 	Admin   = "admin"
 	User    = "user"
 	Visitor = "visitor"

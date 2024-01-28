@@ -18,6 +18,7 @@ import (
 	"gorm.io/gorm"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/conf"
+	"sync"
 	"time"
 )
 
@@ -31,6 +32,8 @@ type Data struct {
 	db  *gorm.DB
 	rdb *redis.Client
 }
+
+var mu sync.Mutex
 
 // NewData .
 func NewData(c *conf.Data, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {

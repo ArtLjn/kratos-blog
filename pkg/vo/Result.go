@@ -59,6 +59,7 @@ var (
 	EMAIL_SUCCESS       = "邮件发送成功"
 	EMAIL_FAIL          = "邮件发送失败"
 	EMAIL_NOT_MATCH     = "邮箱与注册邮箱不符"
+	EMAIL_COOLDOWN      = "请稍后再试！"
 )
 
 func (r *Response) SetCode(code int) CodeBuilder {

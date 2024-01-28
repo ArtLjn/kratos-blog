@@ -11,6 +11,7 @@ import (
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/biz"
 	"kratos-blog/pkg/vo"
+	"strconv"
 	"time"
 )
 
@@ -18,9 +19,12 @@ const (
 	Token      string = "token"
 	AdminNotes string = "adminNotes"
 	Notes      string = "notes"
+	TableName  string = "BlogVisits"
 )
 
-var CTX = context.Background()
+var (
+	CTX = context.Background()
+)
 
 type blogRepo struct {
 	data *Data
@@ -42,7 +46,7 @@ type Blog struct {
 	Tag        string `json:"tag"`
 	CreateTime string `json:"createTime"`
 	UpdateTime string `json:"updateTime"`
-	Visits     string `json:"visits"`
+	Visits     uint64 `json:"visits"`
 	Content    string `json:"content"`
 	Appear     bool   `json:"appear"`
 	Comment    bool   `json:"comment"`
@@ -107,7 +111,7 @@ func (r *blogRepo) createBlogFromRequest(request *blog.CreateBlogRequest) func()
 		blog.CreateTime = time.Now().Format("2006-01-02")
 		blog.UpdateTime = time.Now().Format("2006-01-02")
 		blog.Comment = true
-		blog.Visits = "0"
+		blog.Visits = 0
 		blog.Appear = true
 		return blog
 	}
@@ -194,6 +198,7 @@ func (r *blogRepo) queryUserMsg(ctx context.Context) *user.GetUserReply {
 		}
 	}
 	username, _ := r.data.rdb.Get(context.Background(), token).Result()
+	r.log.Info("username:", username)
 	// call grpc to query the user
 	res, err := r.data.uc.GetUser(context.Background(), &user.GetUserRequest{
 		Name: username,
@@ -228,6 +233,55 @@ func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) 
 	}
 
 	return vo.QUERY_SUCCESS, data, nil
+}
+
+// QueryBlogById :dev more blog post ID query blog posts
+func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDRequest) (msg string, da blog.BlogData, e error) {
+	role := r.queryUserMsg(ctx).Data[4]
+	r.log.Log(log.LevelInfo, role)
+	var b Blog
+	if err := r.data.db.Where("id = ?", request.Id).First(&b).Error; err != nil {
+		return vo.QUERY_FAIL, blog.BlogData{}, err
+	}
+	f, _ := json.Marshal(&b)
+	if err := json.Unmarshal(f, &da); err != nil {
+		return vo.JSON_ERROR, blog.BlogData{}, err
+	}
+	if b.Appear == false {
+		if role == User || role == Visitor {
+			return vo.FORBIDDEN_ACCESS, blog.BlogData{}, nil
+		}
+	}
+	strID := strconv.Itoa(int(request.Id))
+	if r.hasHashField(TableName, strID) {
+		currentCount := r.getHashField(TableName, strID)
+		r.setHashField(TableName, strID, currentCount+1)
+	} else {
+		r.setHashField(TableName, strID, 1)
+	}
+	return vo.QUERY_SUCCESS, da, nil
+}
+
+// ***************** Redis Util *********************** //
+
+func (r *blogRepo) setHashField(hashKey, field string, val interface{}) {
+	err := r.data.rdb.HSet(CTX, hashKey, field, val).Err()
+	if err != nil {
+		r.log.Log(log.LevelError, err)
+	}
+}
+
+func (r *blogRepo) hasHashField(hashKey, field string) bool {
+	val, _ := r.data.rdb.HExists(CTX, hashKey, field).Result()
+	return val
+}
+
+func (r *blogRepo) getHashField(hashKey, field string) uint64 {
+	val, err := r.data.rdb.HGet(CTX, hashKey, field).Uint64()
+	if err != nil {
+		r.log.Log(log.LevelError, err)
+	}
+	return val
 }
 
 func (r *blogRepo) parseList(o []*blog.BlogData) []interface{} {

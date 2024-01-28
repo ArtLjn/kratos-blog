@@ -8,6 +8,7 @@ import (
 	"kratos-blog/app/user/internal/conf"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
+	"time"
 )
 
 type UserRepo interface {
@@ -26,6 +27,8 @@ type UserUseCase struct {
 	log  *log.Helper
 	conf *conf.Bootstrap
 }
+
+var emailList = make(map[string]int64)
 
 func NewUserUseCase(repo UserRepo, conf *conf.Bootstrap, logger log.Logger) *UserUseCase {
 	return &UserUseCase{repo: repo, conf: conf, log: log.NewHelper(logger)}
@@ -50,11 +53,21 @@ func (u *UserUseCase) Register(ctx context.Context, request *user.CreateUserRequ
 }
 
 func (u *UserUseCase) SendEmail(ctx context.Context, request *user.SendEmailRequest) *user.SendEmailReply {
+	currentTime := time.Now().Unix()
+	if _, ok := emailList[request.Email]; ok {
+		coolDown := emailList[request.Email]
+		if currentTime < coolDown {
+			return &user.SendEmailReply{Common: &user.CommonReply{Code: 301, Result: vo.EMAIL_COOLDOWN}}
+		} else {
+			delete(emailList, request.Email)
+		}
+	}
 	code := util.RandomInt()
 	body := fmt.Sprintf("您好，您的验证码为\n%d\n请妥善保管，本次验证码5分钟内有效", code)
 	u.log.Log(log.LevelInfo, code)
 	res := u.repo.SendEmail(body, request.Email, "注册邮件")
 	if res && u.repo.CacheCode(request.Email, code) {
+		emailList[request.Email] = currentTime + 60
 		return &user.SendEmailReply{Common: &user.CommonReply{Code: 200, Result: vo.EMAIL_SUCCESS}}
 	}
 	return &user.SendEmailReply{Common: &user.CommonReply{Code: 400, Result: vo.EMAIL_FAIL}}

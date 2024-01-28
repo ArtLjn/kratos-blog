@@ -71,7 +71,7 @@ message BlogData {
 	optional string tag = 5;
 	optional string createTime = 6;
 	optional string updateTime = 7;
-	optional string visits = 8;
+	optional uint64 visits = 8;
 	optional string content = 9;
 	optional bool appear = 10;
 	optional bool comment = 11;
