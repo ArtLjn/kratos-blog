@@ -20,7 +20,7 @@ service Blog {
 	};
 	rpc UpdateAllCommentStatus (UpdateAllCommentStatusRequest) returns (UpdateAllCommentStatusReply) {
 		option (google.api.http) = {
-			put: "/api/updateAllBlogStatus/{status}",
+			put: "/api/updateAllBlogStatus",
 			body:"*",
 		};
 	};

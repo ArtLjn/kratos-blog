@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"gorm.io/gorm"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/biz"
@@ -70,6 +71,10 @@ func (r *blogRepo) CreateBlog(ctx context.Context, request *blog.CreateBlogReque
 
 func (r *blogRepo) UpdateBlog(ctx context.Context, request *blog.UpdateBlogRequest) (string, error) {
 	var blog Blog
+	f, _ := json.Marshal(&request.Data)
+	if err := json.Unmarshal(f, &blog); err != nil {
+		panic(err)
+	}
 	blog.UpdateTime = time.Now().Format("2006-01-02")
 	if err := r.data.db.Model(&blog).Where("id = ?", request.Id).Updates(blog).Error; err != nil {
 		r.log.Log(log.LevelError, "Error updating blog:", err)
@@ -93,7 +98,8 @@ func (r *blogRepo) DeleteBlog(ctx context.Context, request *blog.DeleteBlogReque
 
 // UpdateAllCommentStatus :dev Whether comments are allowed on the blog
 func (r *blogRepo) UpdateAllCommentStatus(ctx context.Context, request *blog.UpdateAllCommentStatusRequest) (string, error) {
-	if err := r.data.db.Model(&Blog{}).Update("comment", request.Status).Error; err != nil {
+	if !r.updateFunc(nil, nil, map[string]interface{}{"comment": request.Status}, true) {
+		err := errors.New(vo.UPDATE_FAIL)
 		r.log.Log(log.LevelError, err)
 		return vo.UPDATE_FAIL, err
 	}
@@ -260,6 +266,62 @@ func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDReq
 		r.setHashField(TableName, strID, 1)
 	}
 	return vo.QUERY_SUCCESS, da, nil
+}
+
+// UpdateBlogVisitsCount :dev update the number of blog post visits
+func (r *blogRepo) UpdateBlogVisitsCount() {
+	var blogs []Blog
+	if err := r.data.db.Table(Blog{}.TableName()).Find(&blogs).Error; err != nil {
+		panic(err)
+	}
+
+	// traverse the list
+	for _, blog := range blogs {
+		visitCount := blog.Visits
+		res := true
+		cacheCount := r.getHashField(TableName, strconv.Itoa(blog.ID))
+		if !r.hasHashField(TableName, strconv.Itoa(blog.ID)) {
+			res = r.updateFunc([]string{"id"}, []interface{}{blog.ID}, map[string]interface{}{"visits": 0}, false)
+		} else if cacheCount < visitCount {
+			r.setHashField(TableName, strconv.Itoa(blog.ID), visitCount)
+		} else {
+			res = r.updateFunc([]string{"id"}, []interface{}{blog.ID}, map[string]interface{}{"visits": cacheCount}, false)
+		}
+		if !res {
+			r.log.Info(blog.ID, "update failed!")
+		}
+	}
+}
+
+// updateFunc :dev update the blog post methodology
+func (r *blogRepo) updateFunc(cond []string, val []interface{}, values map[string]interface{}, globalUpdate bool) bool {
+	if len(values) == 0 {
+		return false
+	}
+
+	updateQuery := r.data.db.Model(Blog{})
+
+	// Allow global updates
+	if globalUpdate {
+		updateQuery = updateQuery.Session(&gorm.Session{AllowGlobalUpdate: true})
+	}
+
+	if len(cond) != 0 && len(val) != 0 && len(cond) == len(val) {
+		for i := 0; i < len(cond); i++ {
+			cd := fmt.Sprintf("%s = ?", cond[i])
+			updateQuery = updateQuery.Where(cd, val[i])
+		}
+	}
+
+	for key, value := range values {
+		updateQuery = updateQuery.Update(key, value)
+	}
+
+	if err := updateQuery.Error; err != nil {
+		panic(err)
+	}
+
+	return true
 }
 
 // ***************** Redis Util *********************** //

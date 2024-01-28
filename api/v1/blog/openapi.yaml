@@ -149,17 +149,11 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /api/updateAllBlogStatus/{status}:
+    /api/updateAllBlogStatus:
         put:
             tags:
                 - Blog
             operationId: Blog_UpdateAllCommentStatus
-            parameters:
-                - name: status
-                  in: path
-                  required: true
-                  schema:
-                    type: boolean
             requestBody:
                 content:
                     application/json:

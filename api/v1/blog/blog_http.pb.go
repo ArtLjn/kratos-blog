@@ -47,7 +47,7 @@ func RegisterBlogHTTPServer(s *http.Server, srv BlogHTTPServer) {
 	r := s.Route("/")
 	r.POST("/api/addBlog", _Blog_CreateBlog0_HTTP_Handler(srv))
 	r.PUT("/api/updateBlog/{id}", _Blog_UpdateBlog0_HTTP_Handler(srv))
-	r.PUT("/api/updateAllBlogStatus/{status}", _Blog_UpdateAllCommentStatus0_HTTP_Handler(srv))
+	r.PUT("/api/updateAllBlogStatus", _Blog_UpdateAllCommentStatus0_HTTP_Handler(srv))
 	r.DELETE("/api/deleteBlog/{id}/{key}", _Blog_DeleteBlog0_HTTP_Handler(srv))
 	r.GET("/api/getTagName/{tag}", _Blog_GetBlogByTag0_HTTP_Handler(srv))
 	r.GET("/api/getAllBlog", _Blog_ListBlog0_HTTP_Handler(srv))
@@ -111,9 +111,6 @@ func _Blog_UpdateAllCommentStatus0_HTTP_Handler(srv BlogHTTPServer) func(ctx htt
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationBlogUpdateAllCommentStatus)
@@ -381,7 +378,7 @@ func (c *BlogHTTPClientImpl) ListBlog(ctx context.Context, in *ListBlogRequest, 
 
 func (c *BlogHTTPClientImpl) UpdateAllCommentStatus(ctx context.Context, in *UpdateAllCommentStatusRequest, opts ...http.CallOption) (*UpdateAllCommentStatusReply, error) {
 	var out UpdateAllCommentStatusReply
-	pattern := "/api/updateAllBlogStatus/{status}"
+	pattern := "/api/updateAllBlogStatus"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationBlogUpdateAllCommentStatus))
 	opts = append(opts, http.PathTemplate(pattern))
