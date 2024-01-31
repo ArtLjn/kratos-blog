@@ -98,7 +98,7 @@ func (r *blogRepo) DeleteBlog(ctx context.Context, request *blog.DeleteBlogReque
 
 // UpdateAllCommentStatus :dev Whether comments are allowed on the blog
 func (r *blogRepo) UpdateAllCommentStatus(ctx context.Context, request *blog.UpdateAllCommentStatusRequest) (string, error) {
-	if !r.updateFunc(nil, nil, map[string]interface{}{"comment": request.Status}, true) {
+	if !r.updateFunc(nil, map[string]interface{}{"comment": request.Status}, true) {
 		err := errors.New(vo.UPDATE_FAIL)
 		r.log.Log(log.LevelError, err)
 		return vo.UPDATE_FAIL, err
@@ -281,11 +281,11 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 		res := true
 		cacheCount := r.getHashField(TableName, strconv.Itoa(blog.ID))
 		if !r.hasHashField(TableName, strconv.Itoa(blog.ID)) {
-			res = r.updateFunc([]string{"id"}, []interface{}{blog.ID}, map[string]interface{}{"visits": 0}, false)
+			res = r.updateFunc(map[string]interface{}{"id": blog.ID}, map[string]interface{}{"visits": 0}, false)
 		} else if cacheCount < visitCount {
 			r.setHashField(TableName, strconv.Itoa(blog.ID), visitCount)
 		} else {
-			res = r.updateFunc([]string{"id"}, []interface{}{blog.ID}, map[string]interface{}{"visits": cacheCount}, false)
+			res = r.updateFunc(map[string]interface{}{"id": blog.ID}, map[string]interface{}{"visits": cacheCount}, false)
 		}
 		if !res {
 			r.log.Info(blog.ID, "update failed!")
@@ -293,8 +293,12 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 	}
 }
 
+func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogByTitleRequest) {
+	// TODO QueryBlogByTitle
+}
+
 // updateFunc :dev update the blog post methodology
-func (r *blogRepo) updateFunc(cond []string, val []interface{}, values map[string]interface{}, globalUpdate bool) bool {
+func (r *blogRepo) updateFunc(cond, values map[string]interface{}, globalUpdate bool) bool {
 	if len(values) == 0 {
 		return false
 	}
@@ -306,10 +310,10 @@ func (r *blogRepo) updateFunc(cond []string, val []interface{}, values map[strin
 		updateQuery = updateQuery.Session(&gorm.Session{AllowGlobalUpdate: true})
 	}
 
-	if len(cond) != 0 && len(val) != 0 && len(cond) == len(val) {
-		for i := 0; i < len(cond); i++ {
-			cd := fmt.Sprintf("%s = ?", cond[i])
-			updateQuery = updateQuery.Where(cd, val[i])
+	if len(cond) != 0 {
+		for cd, va := range cond {
+			cd := fmt.Sprintf("%s = ?", cd)
+			updateQuery = updateQuery.Where(cd, va)
 		}
 	}
 

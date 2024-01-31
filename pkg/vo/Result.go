@@ -32,9 +32,8 @@ type Response struct {
 	codeInfo CodeInfo
 }
 
-var (
+const (
 	INSERT_ERROR        = "插入错误"
-	CONDB_ERROR         = "数据库连接错误"
 	INSERT_SUCCESS      = "插入成功"
 	JSON_ERROR          = "JSON格式错误"
 	DELETE_ERROR        = "删除失败"
