@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"kratos-blog/app/user/internal/conf"
+	"kratos-blog/pkg/model"
 )
 
 // ProviderSet is data providers.
@@ -21,12 +22,14 @@ type Data struct {
 	c   *conf.Bootstrap
 	db  *gorm.DB
 	rdb *redis.Client
+	pf  model.PublicFunc
 }
 
 // NewData .
 func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
-	return &Data{log: l, c: c, db: db, rdb: rdb}, nil
+	pf := model.NewOFunc(l, db)
+	return &Data{log: l, c: c, db: db, rdb: rdb, pf: pf}, nil
 }
 
 // NewRegistrar add consul

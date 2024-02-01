@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"gorm.io/gorm"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/biz"
@@ -98,7 +96,7 @@ func (r *blogRepo) DeleteBlog(ctx context.Context, request *blog.DeleteBlogReque
 
 // UpdateAllCommentStatus :dev Whether comments are allowed on the blog
 func (r *blogRepo) UpdateAllCommentStatus(ctx context.Context, request *blog.UpdateAllCommentStatusRequest) (string, error) {
-	if !r.updateFunc(nil, map[string]interface{}{"comment": request.Status}, true) {
+	if err := r.data.pf.UpdateFunc(Blog{}, nil, map[string]interface{}{"comment": request.Status}, true); err != nil {
 		err := errors.New(vo.UPDATE_FAIL)
 		r.log.Log(log.LevelError, err)
 		return vo.UPDATE_FAIL, err
@@ -127,61 +125,30 @@ func (r *blogRepo) createBlogFromRequest(request *blog.CreateBlogRequest) func()
 func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogRequest) (string, []*blog.BlogData, error) {
 	role := r.queryUserMsg(ctx).Data[4]
 	r.log.Log(log.LevelInfo, role)
-	var blogs []*blog.BlogData
+	var (
+		blogs []*blog.BlogData
+		res   interface{}
+		err   error
+	)
 	switch role {
 	case Admin:
-		blogs = r.queryAllBlog([]interface{}{"tag", request.Tag})
+		res, err = r.data.pf.QueryFunc(Blog{}, map[string]interface{}{
+			"tag": request.Tag,
+		}, true)
 	case User, Visitor:
-		blogs = r.queryBlog(request, true)
+		res, err = r.data.pf.QueryFunc(Blog{}, map[string]interface{}{
+			"tag":    request.Tag,
+			"appear": true,
+		}, true)
+	}
+	if err != nil || res == nil {
+		r.log.Info(vo.QUERY_EMPTY)
+	}
+	r.data.pf.ParseJSONToStruct(res, &blogs)
+	if len(blogs) == 0 {
+		return vo.QUERY_EMPTY, blogs, nil
 	}
 	return vo.QUERY_SUCCESS, blogs, nil
-}
-
-// queryBlog :dev query blog posts based on tags and permissions
-func (r *blogRepo) queryBlog(req *blog.GetBlogRequest, appear bool) []*blog.BlogData {
-	var (
-		blogs    []Blog
-		blogData []*blog.BlogData
-	)
-	if err := r.data.db.Where("tag = ?", req.Tag).Where("appear = ?", appear).
-		Find(&blogs).Error; err != nil {
-		panic(err)
-	}
-	d, _ := json.Marshal(&blogs)
-	if err := json.Unmarshal(d, &blogData); err != nil {
-		panic(err)
-	}
-	return blogData
-}
-
-// queryAllBlog :dev search all blog posts based on tags
-func (r *blogRepo) queryAllBlog(cond []interface{}) []*blog.BlogData {
-	var (
-		blogs    []Blog
-		blogData []*blog.BlogData
-		rule     = "create_time DESC"
-	)
-	if len(cond) != 0 {
-		if len(cond)%2 != 0 {
-			cond = append(cond, cond[len(cond)])
-		}
-		// sort in descending order based on criteria
-		str := fmt.Sprintf("%s = ?", cond[0])
-		if err := r.data.db.Order(rule).Where(str, cond[1]).
-			Find(&blogs).Error; err != nil {
-			panic(err)
-		}
-	} else {
-		if err := r.data.db.Order(rule).
-			Find(&blogs).Error; err != nil {
-			panic(err)
-		}
-	}
-	d, _ := json.Marshal(&blogs)
-	if err := json.Unmarshal(d, &blogData); err != nil {
-		panic(err)
-	}
-	return blogData
 }
 
 // queryUserMsg :dev query user information
@@ -191,8 +158,8 @@ func (r *blogRepo) queryUserMsg(ctx context.Context) *user.GetUserReply {
 		panic(errors.New("ctx false"))
 	}
 	token := req.Header.Get(Token)
-	// The token is empty,granting the visitor permissions
-	if token == "" {
+
+	grantVisitorRole := func() *user.GetUserReply {
 		visit := make([]string, 4)
 		visit = append(visit, Visitor)
 		return &user.GetUserReply{
@@ -203,12 +170,19 @@ func (r *blogRepo) queryUserMsg(ctx context.Context) *user.GetUserReply {
 			Data: visit,
 		}
 	}
+	// The token is empty,granting the visitor permissions
+	if token == "" {
+		return grantVisitorRole()
+	}
 	username, _ := r.data.rdb.Get(context.Background(), token).Result()
 	r.log.Info("username:", username)
 	// call grpc to query the user
 	res, err := r.data.uc.GetUser(context.Background(), &user.GetUserRequest{
 		Name: username,
 	})
+	if res.Data[4] == "" {
+		return grantVisitorRole()
+	}
 	if err != nil {
 		panic(err)
 	}
@@ -222,23 +196,40 @@ func (r *blogRepo) queryUserMsg(ctx context.Context) *user.GetUserReply {
 func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) (string, []*blog.BlogData, error) {
 	role := r.queryUserMsg(ctx).Data[4]
 	r.log.Log(log.LevelInfo, role)
-	var data []*blog.BlogData
+	var (
+		blogs []*blog.BlogData
+		res   interface{}
+		err   error
+	)
+
+	parse := func(m interface{}, blogs *[]*blog.BlogData) {
+		var data []*blog.BlogData
+		e := r.data.pf.ParseJSONToStruct(m, &data)
+		if e != nil {
+			panic(e)
+		}
+		*blogs = data
+	}
 	switch role {
 	case Admin:
 		if exists, _ := r.data.rdb.Exists(CTX, AdminNotes).Result(); exists == 1 {
 			return vo.QUERY_SUCCESS, r.restoreList(AdminNotes), nil
 		}
-		data = r.queryAllBlog(nil)
-		r.setCacheList(AdminNotes, r.parseList(data))
+		res, err = r.data.pf.QueryFunc(Blog{}, nil, true)
+		parse(res, &blogs)
+		r.setCacheList(AdminNotes, r.parseList(blogs))
 	case User, Visitor:
 		if exists, _ := r.data.rdb.Exists(CTX, Notes).Result(); exists == 1 {
 			return vo.QUERY_SUCCESS, r.restoreList(Notes), nil
 		}
-		data = r.queryAllBlog([]interface{}{"appear", true})
-		r.setCacheList(Notes, r.parseList(data))
+		res, err = r.data.pf.QueryFunc(Blog{}, map[string]interface{}{"appear": true}, true)
+		parse(res, &blogs)
+		r.setCacheList(Notes, r.parseList(blogs))
 	}
-
-	return vo.QUERY_SUCCESS, data, nil
+	if err != nil {
+		return vo.QUERY_FAIL, blogs, nil
+	}
+	return vo.QUERY_SUCCESS, blogs, nil
 }
 
 // QueryBlogById :dev more blog post ID query blog posts
@@ -278,16 +269,16 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 	// traverse the list
 	for _, blog := range blogs {
 		visitCount := blog.Visits
-		res := true
+		var res error
 		cacheCount := r.getHashField(TableName, strconv.Itoa(blog.ID))
 		if !r.hasHashField(TableName, strconv.Itoa(blog.ID)) {
-			res = r.updateFunc(map[string]interface{}{"id": blog.ID}, map[string]interface{}{"visits": 0}, false)
+			res = r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": blog.ID}, map[string]interface{}{"visits": 0}, false)
 		} else if cacheCount < visitCount {
 			r.setHashField(TableName, strconv.Itoa(blog.ID), visitCount)
 		} else {
-			res = r.updateFunc(map[string]interface{}{"id": blog.ID}, map[string]interface{}{"visits": cacheCount}, false)
+			res = r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": blog.ID}, map[string]interface{}{"visits": cacheCount}, false)
 		}
-		if !res {
+		if res != nil {
 			r.log.Info(blog.ID, "update failed!")
 		}
 	}
@@ -295,37 +286,6 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 
 func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogByTitleRequest) {
 	// TODO QueryBlogByTitle
-}
-
-// updateFunc :dev update the blog post methodology
-func (r *blogRepo) updateFunc(cond, values map[string]interface{}, globalUpdate bool) bool {
-	if len(values) == 0 {
-		return false
-	}
-
-	updateQuery := r.data.db.Model(Blog{})
-
-	// Allow global updates
-	if globalUpdate {
-		updateQuery = updateQuery.Session(&gorm.Session{AllowGlobalUpdate: true})
-	}
-
-	if len(cond) != 0 {
-		for cd, va := range cond {
-			cd := fmt.Sprintf("%s = ?", cd)
-			updateQuery = updateQuery.Where(cd, va)
-		}
-	}
-
-	for key, value := range values {
-		updateQuery = updateQuery.Update(key, value)
-	}
-
-	if err := updateQuery.Error; err != nil {
-		panic(err)
-	}
-
-	return true
 }
 
 // ***************** Redis Util *********************** //
@@ -368,8 +328,8 @@ func (r *blogRepo) restoreList(key string) []*blog.BlogData {
 	}
 	for _, serializedValue := range serializedValues {
 		var value blog.BlogData
-		if err := json.Unmarshal([]byte(serializedValue), &value); err != nil {
-			r.log.Log(log.LevelError, "Failed to deserialize value from JSON:", err)
+		if e := json.Unmarshal([]byte(serializedValue), &value); e != nil {
+			r.log.Log(log.LevelError, "Failed to deserialize value from JSON:", e)
 			continue
 		}
 		newList = append(newList, &value)

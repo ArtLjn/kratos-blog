@@ -18,6 +18,7 @@ import (
 	"gorm.io/gorm"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/conf"
+	"kratos-blog/pkg/model"
 	"sync"
 	"time"
 )
@@ -31,6 +32,7 @@ type Data struct {
 	uc  user.UserClient
 	db  *gorm.DB
 	rdb *redis.Client
+	pf  model.PublicFunc
 }
 
 var mu sync.Mutex
@@ -38,7 +40,8 @@ var mu sync.Mutex
 // NewData .
 func NewData(c *conf.Data, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
-	return &Data{log: l, uc: uc, db: db, rdb: rdb}, nil
+	pf := model.NewOFunc(l, db)
+	return &Data{log: l, uc: uc, db: db, rdb: rdb, pf: pf}, nil
 }
 
 // NewRegistrar add consul

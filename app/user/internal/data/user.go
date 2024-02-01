@@ -63,8 +63,6 @@ func (u *userRepo) AddUser(ctx context.Context, request *user.CreateUserRequest)
 	//Enable mutex
 	u.mu.Lock()
 	defer u.mu.Unlock()
-	//Delete the mailbox cache
-	defer u.data.rdb.Del(context.Background(), request.Email)
 	//Check the registration conditions
 	if err := u.validateUser(request); err != nil {
 		u.log.Log(log.LevelError, err)
@@ -75,19 +73,19 @@ func (u *userRepo) AddUser(ctx context.Context, request *user.CreateUserRequest)
 	//Create a user record
 	if err := u.data.db.Create(&user).Error; err != nil {
 		return vo.INSERT_ERROR, errors.New(vo.INSERT_ERROR)
+	} else {
+		//Delete the mailbox cache
+		u.data.rdb.Del(context.Background(), request.Email)
 	}
 	return vo.REGISTER_SUCCESS, nil
 }
 
 // Login :dev Common user login func
 func (u *userRepo) Login(ctx context.Context, request *user.LoginRequest) (string, string, error) {
-	res := func(rq *user.LoginRequest) bool {
-		if err := u.data.db.Where("name = ? and password = ?", rq.Name, MD5(rq.Pass)).First(&User{}).Error; err != nil {
-			return false
-		}
-		return true
-	}(request)
-	if res {
+	if u.data.pf.HasExist(User{}, map[string]interface{}{
+		"name":     request.Name,
+		"password": MD5(request.Pass),
+	}) {
 		//generate token
 		token := fmt.Sprintf("user-token:%s", util.GenerateToken())
 		// set up cache
@@ -174,13 +172,14 @@ func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func()
 // update validate validateUpdatePass
 func (u *userRepo) validateUpdatePass(request *user.UpdatePasswordRequest) error {
 	var user User
-	user = *u.QueryMessage("email", request.Email, user)
+	u.QueryMessage(map[string]interface{}{"email": user.Email}, &user)
 	if user.Email != request.Email {
 		return errors.New(vo.EMAIL_NOT_MATCH)
 	} else if cacheCode, _ := u.data.rdb.Get(context.Background(), request.Email).Result(); cacheCode != request.Code {
 		return errors.New(vo.KEY_ERROR)
-	} else if err := u.data.db.Model(&User{}).Where("email", request.Email).
-		Update("password", MD5(request.Password)).Error; err != nil {
+	} else if err := u.data.pf.UpdateFunc(User{}, map[string]interface{}{
+		"email": request.Email,
+	}, map[string]interface{}{"password": MD5(request.Password)}, false); err != nil {
 		return errors.New(vo.UPDATE_FAIL)
 	}
 	return nil
@@ -188,12 +187,12 @@ func (u *userRepo) validateUpdatePass(request *user.UpdatePasswordRequest) error
 
 // SetBlack :dev Set a blacklist of users who violate the rules
 func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) (string, error) {
-	if err := u.data.db.Model(&User{}).Where("name", request.Name).Update("black", true).Error; err != nil {
+	if err := u.data.pf.UpdateFunc(User{}, map[string]interface{}{"name": request.Name}, map[string]interface{}{"black": true}, false); err != nil {
 		return vo.UPDATE_FAIL, errors.New(vo.UPDATE_FAIL)
 	}
 
 	var user User
-	user = *u.QueryMessage("name", request.Name, user)
+	u.QueryMessage(map[string]interface{}{"name": request.Name}, &user)
 	// Create a coroutine to send a message
 	go func() {
 		u.mu.Lock()
@@ -209,11 +208,14 @@ func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) 
 }
 
 // QueryMessage :dev query user information
-func (u *userRepo) QueryMessage(cond, value string, data User) *User {
-	if err := u.data.db.FirstOrInit(&data, map[string]interface{}{cond: value}).Error; err != nil {
+func (u *userRepo) QueryMessage(cond map[string]interface{}, data *User) {
+	res, err := u.data.pf.QueryFunc(User{}, cond, false)
+	var user User
+	err = u.data.pf.ParseJSONToStruct(res, &user)
+	if err != nil {
 		u.log.Log(log.LevelError, err)
 	}
-	return &data
+	*data = user
 }
 
 func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
@@ -225,7 +227,7 @@ func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 		list = append([]string{}, f...)
 		return list
 	}
-	data = *u.QueryMessage("name", request.Name, data)
+	u.QueryMessage(map[string]interface{}{"name": request.Name}, &data)
 	list = append(list, data.Name, data.Email, strconv.Itoa(data.ID), data.UUID, data.Role, strconv.FormatBool(data.Black))
 	return list
 }
