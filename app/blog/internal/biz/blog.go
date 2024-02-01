@@ -11,10 +11,12 @@ type BlogRepo interface {
 	CreateBlog(ctx context.Context, request *pb.CreateBlogRequest) (string, error)
 	UpdateBlog(ctx context.Context, request *pb.UpdateBlogRequest) (string, error)
 	DeleteBlog(ctx context.Context, request *pb.DeleteBlogRequest) (string, error)
-	UpdateAllCommentStatus(ctx context.Context, request *pb.UpdateAllCommentStatusRequest) (string, error)
+	UpdateIndividualFields(ctx context.Context, request *pb.UpdateIndividualFieldsRequest) (string, error)
 	GetByTagName(ctx context.Context, request *pb.GetBlogRequest) (string, []*pb.BlogData, error)
 	ListBlog(ctx context.Context, request *pb.ListBlogRequest) (string, []*pb.BlogData, error)
 	QueryBlogById(ctx context.Context, request *pb.GetBlogIDRequest) (msg string, da pb.BlogData, e error)
+	QueryBlogByTitle(ctx context.Context, request *pb.GetBlogByTitleRequest) (string, []*pb.BlogData, error)
+	UpdateOnly(ctx context.Context, request *pb.UpdateOnlyRequest) *pb.UpdateOnlyReply
 }
 
 type BlogUseCase struct {
@@ -77,10 +79,10 @@ func (uc *BlogUseCase) DeleteBlog(ctx context.Context, request *pb.DeleteBlogReq
 	return status(200, u)
 }
 
-func (uc *BlogUseCase) UpdateAllCommentStatus(ctx context.Context, request *pb.UpdateAllCommentStatusRequest) *pb.UpdateAllCommentStatusReply {
-	u, err := uc.repo.UpdateAllCommentStatus(ctx, request)
-	status := func(code int64, msg string) *pb.UpdateAllCommentStatusReply {
-		return &pb.UpdateAllCommentStatusReply{
+func (uc *BlogUseCase) UpdateIndividualFields(ctx context.Context, request *pb.UpdateIndividualFieldsRequest) *pb.UpdateIndividualFieldsReply {
+	u, err := uc.repo.UpdateIndividualFields(ctx, request)
+	status := func(code int64, msg string) *pb.UpdateIndividualFieldsReply {
+		return &pb.UpdateIndividualFieldsReply{
 			Common: &pb.CommonReply{
 				Code:   code,
 				Result: msg,
@@ -148,4 +150,26 @@ func (uc *BlogUseCase) QueryBlogByID(ctx context.Context, request *pb.GetBlogIDR
 		return status(400, u, d)
 	}
 	return status(200, u, d)
+}
+
+func (uc *BlogUseCase) QueryBlogByTitle(ctx context.Context, request *pb.GetBlogByTitleRequest) *pb.GetBlogByTitleReply {
+	u, d, err := uc.repo.QueryBlogByTitle(ctx, request)
+	status := func(code int64, msg string, data []*pb.BlogData) *pb.GetBlogByTitleReply {
+		return &pb.GetBlogByTitleReply{
+			Common: &pb.CommonReply{
+				Code:   code,
+				Result: msg,
+			},
+			Data: data,
+		}
+	}
+	if err != nil {
+		uc.log.Log(log.LevelError, err)
+		return status(400, u, d)
+	}
+	return status(200, u, d)
+}
+
+func (uc *BlogUseCase) UpdateOnly(ctx context.Context, request *pb.UpdateOnlyRequest) *pb.UpdateOnlyReply {
+	return uc.repo.UpdateOnly(ctx, request)
 }

@@ -21,8 +21,8 @@ func (s *BlogService) CreateBlog(ctx context.Context, req *pb.CreateBlogRequest)
 func (s *BlogService) UpdateBlog(ctx context.Context, req *pb.UpdateBlogRequest) (*pb.UpdateBlogReply, error) {
 	return s.uc.UpdateBlog(ctx, req), nil
 }
-func (s *BlogService) UpdateAllCommentStatus(ctx context.Context, req *pb.UpdateAllCommentStatusRequest) (*pb.UpdateAllCommentStatusReply, error) {
-	return s.uc.UpdateAllCommentStatus(ctx, req), nil
+func (s *BlogService) UpdateIndividualFields(ctx context.Context, req *pb.UpdateIndividualFieldsRequest) (*pb.UpdateIndividualFieldsReply, error) {
+	return s.uc.UpdateIndividualFields(ctx, req), nil
 }
 func (s *BlogService) DeleteBlog(ctx context.Context, req *pb.DeleteBlogRequest) (*pb.DeleteBlogReply, error) {
 	return s.uc.DeleteBlog(ctx, req), nil
@@ -37,11 +37,8 @@ func (s *BlogService) GetBlogByID(ctx context.Context, req *pb.GetBlogIDRequest)
 	return s.uc.QueryBlogByID(ctx, req), nil
 }
 func (s *BlogService) GetBlogByTitle(ctx context.Context, req *pb.GetBlogByTitleRequest) (*pb.GetBlogByTitleReply, error) {
-	return &pb.GetBlogByTitleReply{}, nil
+	return s.uc.QueryBlogByTitle(ctx, req), nil
 }
-func (s *BlogService) UpdateAllowComment(ctx context.Context, req *pb.UpdateAllowRequest) (*pb.UpdateAllowReply, error) {
-	return &pb.UpdateAllowReply{}, nil
-}
-func (s *BlogService) UpdateAppear(ctx context.Context, req *pb.UpdateAllowRequest) (*pb.UpdateAllowReply, error) {
-	return &pb.UpdateAllowReply{}, nil
+func (s *BlogService) UpdateOnly(ctx context.Context, req *pb.UpdateOnlyRequest) (*pb.UpdateOnlyReply, error) {
+	return s.uc.UpdateOnly(ctx, req), nil
 }

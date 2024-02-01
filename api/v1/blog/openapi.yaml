@@ -149,78 +149,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /api/updateAllBlogStatus:
-        put:
-            tags:
-                - Blog
-            operationId: Blog_UpdateAllCommentStatus
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateAllCommentStatusRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateAllCommentStatusReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /api/updateAllow:
-        put:
-            tags:
-                - Blog
-            operationId: Blog_UpdateAllowComment
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateAllowRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateAllowReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /api/updateAppear:
-        put:
-            tags:
-                - Blog
-            operationId: Blog_UpdateAppear
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateAllowRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateAllowReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
     /api/updateBlog/{id}:
         put:
             tags:
@@ -246,6 +174,54 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UpdateBlogReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/updateIndividual:
+        put:
+            tags:
+                - Blog
+            operationId: Blog_UpdateIndividualFields
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateIndividualFieldsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateIndividualFieldsReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/updateOnly:
+        put:
+            tags:
+                - Blog
+            operationId: Blog_UpdateOnly
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateOnlyRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateOnlyReply'
                 default:
                     description: Default error response
                     content:
@@ -308,7 +284,9 @@ components:
                 common:
                     $ref: '#/components/schemas/CommonReply'
                 data:
-                    $ref: '#/components/schemas/BlogData'
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/BlogData'
         GetBlogIDReply:
             type: object
             properties:
@@ -358,24 +336,6 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        UpdateAllCommentStatusReply:
-            type: object
-            properties:
-                common:
-                    $ref: '#/components/schemas/CommonReply'
-        UpdateAllCommentStatusRequest:
-            type: object
-            properties:
-                status:
-                    type: boolean
-        UpdateAllowReply:
-            type: object
-            properties:
-                common:
-                    $ref: '#/components/schemas/CommonReply'
-        UpdateAllowRequest:
-            type: object
-            properties: {}
         UpdateBlogReply:
             type: object
             properties:
@@ -389,5 +349,31 @@ components:
                     format: uint32
                 data:
                     $ref: '#/components/schemas/BlogData'
+        UpdateIndividualFieldsReply:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
+        UpdateIndividualFieldsRequest:
+            type: object
+            properties:
+                raw:
+                    type: string
+                status:
+                    type: boolean
+        UpdateOnlyReply:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
+        UpdateOnlyRequest:
+            type: object
+            properties:
+                raw:
+                    type: string
+                id:
+                    type: string
+                res:
+                    type: boolean
 tags:
     - name: Blog

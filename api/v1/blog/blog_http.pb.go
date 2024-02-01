@@ -25,10 +25,9 @@ const OperationBlogGetBlogByID = "/api.v1.Blog/GetBlogByID"
 const OperationBlogGetBlogByTag = "/api.v1.Blog/GetBlogByTag"
 const OperationBlogGetBlogByTitle = "/api.v1.Blog/GetBlogByTitle"
 const OperationBlogListBlog = "/api.v1.Blog/ListBlog"
-const OperationBlogUpdateAllCommentStatus = "/api.v1.Blog/UpdateAllCommentStatus"
-const OperationBlogUpdateAllowComment = "/api.v1.Blog/UpdateAllowComment"
-const OperationBlogUpdateAppear = "/api.v1.Blog/UpdateAppear"
 const OperationBlogUpdateBlog = "/api.v1.Blog/UpdateBlog"
+const OperationBlogUpdateIndividualFields = "/api.v1.Blog/UpdateIndividualFields"
+const OperationBlogUpdateOnly = "/api.v1.Blog/UpdateOnly"
 
 type BlogHTTPServer interface {
 	CreateBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
@@ -37,24 +36,22 @@ type BlogHTTPServer interface {
 	GetBlogByTag(context.Context, *GetBlogRequest) (*GetBlogReply, error)
 	GetBlogByTitle(context.Context, *GetBlogByTitleRequest) (*GetBlogByTitleReply, error)
 	ListBlog(context.Context, *ListBlogRequest) (*ListBlogReply, error)
-	UpdateAllCommentStatus(context.Context, *UpdateAllCommentStatusRequest) (*UpdateAllCommentStatusReply, error)
-	UpdateAllowComment(context.Context, *UpdateAllowRequest) (*UpdateAllowReply, error)
-	UpdateAppear(context.Context, *UpdateAllowRequest) (*UpdateAllowReply, error)
 	UpdateBlog(context.Context, *UpdateBlogRequest) (*UpdateBlogReply, error)
+	UpdateIndividualFields(context.Context, *UpdateIndividualFieldsRequest) (*UpdateIndividualFieldsReply, error)
+	UpdateOnly(context.Context, *UpdateOnlyRequest) (*UpdateOnlyReply, error)
 }
 
 func RegisterBlogHTTPServer(s *http.Server, srv BlogHTTPServer) {
 	r := s.Route("/")
 	r.POST("/api/addBlog", _Blog_CreateBlog0_HTTP_Handler(srv))
 	r.PUT("/api/updateBlog/{id}", _Blog_UpdateBlog0_HTTP_Handler(srv))
-	r.PUT("/api/updateAllBlogStatus", _Blog_UpdateAllCommentStatus0_HTTP_Handler(srv))
+	r.PUT("/api/updateIndividual", _Blog_UpdateIndividualFields0_HTTP_Handler(srv))
 	r.DELETE("/api/deleteBlog/{id}/{key}", _Blog_DeleteBlog0_HTTP_Handler(srv))
 	r.GET("/api/getTagName/{tag}", _Blog_GetBlogByTag0_HTTP_Handler(srv))
 	r.GET("/api/getAllBlog", _Blog_ListBlog0_HTTP_Handler(srv))
 	r.GET("/api/getId/{id}", _Blog_GetBlogByID0_HTTP_Handler(srv))
 	r.GET("/api/searchBlog/{title}", _Blog_GetBlogByTitle0_HTTP_Handler(srv))
-	r.PUT("/api/updateAllow", _Blog_UpdateAllowComment0_HTTP_Handler(srv))
-	r.PUT("/api/updateAppear", _Blog_UpdateAppear0_HTTP_Handler(srv))
+	r.PUT("/api/updateOnly", _Blog_UpdateOnly0_HTTP_Handler(srv))
 }
 
 func _Blog_CreateBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
@@ -104,24 +101,24 @@ func _Blog_UpdateBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) e
 	}
 }
 
-func _Blog_UpdateAllCommentStatus0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
+func _Blog_UpdateIndividualFields0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in UpdateAllCommentStatusRequest
+		var in UpdateIndividualFieldsRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationBlogUpdateAllCommentStatus)
+		http.SetOperation(ctx, OperationBlogUpdateIndividualFields)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.UpdateAllCommentStatus(ctx, req.(*UpdateAllCommentStatusRequest))
+			return srv.UpdateIndividualFields(ctx, req.(*UpdateIndividualFieldsRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*UpdateAllCommentStatusReply)
+		reply := out.(*UpdateIndividualFieldsReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -233,46 +230,24 @@ func _Blog_GetBlogByTitle0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Contex
 	}
 }
 
-func _Blog_UpdateAllowComment0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
+func _Blog_UpdateOnly0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in UpdateAllowRequest
+		var in UpdateOnlyRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationBlogUpdateAllowComment)
+		http.SetOperation(ctx, OperationBlogUpdateOnly)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.UpdateAllowComment(ctx, req.(*UpdateAllowRequest))
+			return srv.UpdateOnly(ctx, req.(*UpdateOnlyRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*UpdateAllowReply)
-		return ctx.Result(200, reply)
-	}
-}
-
-func _Blog_UpdateAppear0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in UpdateAllowRequest
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationBlogUpdateAppear)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.UpdateAppear(ctx, req.(*UpdateAllowRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*UpdateAllowReply)
+		reply := out.(*UpdateOnlyReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -284,10 +259,9 @@ type BlogHTTPClient interface {
 	GetBlogByTag(ctx context.Context, req *GetBlogRequest, opts ...http.CallOption) (rsp *GetBlogReply, err error)
 	GetBlogByTitle(ctx context.Context, req *GetBlogByTitleRequest, opts ...http.CallOption) (rsp *GetBlogByTitleReply, err error)
 	ListBlog(ctx context.Context, req *ListBlogRequest, opts ...http.CallOption) (rsp *ListBlogReply, err error)
-	UpdateAllCommentStatus(ctx context.Context, req *UpdateAllCommentStatusRequest, opts ...http.CallOption) (rsp *UpdateAllCommentStatusReply, err error)
-	UpdateAllowComment(ctx context.Context, req *UpdateAllowRequest, opts ...http.CallOption) (rsp *UpdateAllowReply, err error)
-	UpdateAppear(ctx context.Context, req *UpdateAllowRequest, opts ...http.CallOption) (rsp *UpdateAllowReply, err error)
 	UpdateBlog(ctx context.Context, req *UpdateBlogRequest, opts ...http.CallOption) (rsp *UpdateBlogReply, err error)
+	UpdateIndividualFields(ctx context.Context, req *UpdateIndividualFieldsRequest, opts ...http.CallOption) (rsp *UpdateIndividualFieldsReply, err error)
+	UpdateOnly(ctx context.Context, req *UpdateOnlyRequest, opts ...http.CallOption) (rsp *UpdateOnlyReply, err error)
 }
 
 type BlogHTTPClientImpl struct {
@@ -376,50 +350,37 @@ func (c *BlogHTTPClientImpl) ListBlog(ctx context.Context, in *ListBlogRequest, 
 	return &out, err
 }
 
-func (c *BlogHTTPClientImpl) UpdateAllCommentStatus(ctx context.Context, in *UpdateAllCommentStatusRequest, opts ...http.CallOption) (*UpdateAllCommentStatusReply, error) {
-	var out UpdateAllCommentStatusReply
-	pattern := "/api/updateAllBlogStatus"
-	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationBlogUpdateAllCommentStatus))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
-func (c *BlogHTTPClientImpl) UpdateAllowComment(ctx context.Context, in *UpdateAllowRequest, opts ...http.CallOption) (*UpdateAllowReply, error) {
-	var out UpdateAllowReply
-	pattern := "/api/updateAllow"
-	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationBlogUpdateAllowComment))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
-func (c *BlogHTTPClientImpl) UpdateAppear(ctx context.Context, in *UpdateAllowRequest, opts ...http.CallOption) (*UpdateAllowReply, error) {
-	var out UpdateAllowReply
-	pattern := "/api/updateAppear"
-	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationBlogUpdateAppear))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
 func (c *BlogHTTPClientImpl) UpdateBlog(ctx context.Context, in *UpdateBlogRequest, opts ...http.CallOption) (*UpdateBlogReply, error) {
 	var out UpdateBlogReply
 	pattern := "/api/updateBlog/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationBlogUpdateBlog))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *BlogHTTPClientImpl) UpdateIndividualFields(ctx context.Context, in *UpdateIndividualFieldsRequest, opts ...http.CallOption) (*UpdateIndividualFieldsReply, error) {
+	var out UpdateIndividualFieldsReply
+	pattern := "/api/updateIndividual"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBlogUpdateIndividualFields))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *BlogHTTPClientImpl) UpdateOnly(ctx context.Context, in *UpdateOnlyRequest, opts ...http.CallOption) (*UpdateOnlyReply, error) {
+	var out UpdateOnlyReply
+	pattern := "/api/updateOnly"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBlogUpdateOnly))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {

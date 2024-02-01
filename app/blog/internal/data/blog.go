@@ -19,6 +19,8 @@ const (
 	AdminNotes string = "adminNotes"
 	Notes      string = "notes"
 	TableName  string = "BlogVisits"
+	Comment    string = "comment"
+	Appear     string = "appear"
 )
 
 var (
@@ -94,9 +96,16 @@ func (r *blogRepo) DeleteBlog(ctx context.Context, request *blog.DeleteBlogReque
 	return vo.DELETE_SUCCESS, nil
 }
 
-// UpdateAllCommentStatus :dev Whether comments are allowed on the blog
-func (r *blogRepo) UpdateAllCommentStatus(ctx context.Context, request *blog.UpdateAllCommentStatusRequest) (string, error) {
-	if err := r.data.pf.UpdateFunc(Blog{}, nil, map[string]interface{}{"comment": request.Status}, true); err != nil {
+// UpdateIndividualFields :dev Whether comments are allowed on the blog
+func (r *blogRepo) UpdateIndividualFields(ctx context.Context, request *blog.UpdateIndividualFieldsRequest) (string, error) {
+	var condName string
+	switch request.Raw {
+	case 0:
+		condName = Comment
+	case 1:
+		condName = Appear
+	}
+	if err := r.data.pf.UpdateFunc(Blog{}, nil, map[string]interface{}{condName: request.Status}, true); err != nil {
 		err := errors.New(vo.UPDATE_FAIL)
 		r.log.Log(log.LevelError, err)
 		return vo.UPDATE_FAIL, err
@@ -211,6 +220,7 @@ func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDReq
 	r.log.Log(log.LevelInfo, role)
 	var b Blog
 	if err := r.data.db.Where("id = ?", request.Id).First(&b).Error; err != nil {
+		r.log.Errorf("query error %s", err)
 		return vo.QUERY_FAIL, blog.BlogData{}, err
 	}
 	if err := r.data.pf.ParseJSONToStruct(b, &da); err != nil {
@@ -255,8 +265,47 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 	}
 }
 
-func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogByTitleRequest) {
-	// TODO QueryBlogByTitle
+// QueryBlogByTitle :dev query for matching blog posts based on the title
+func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogByTitleRequest) (string, []*blog.BlogData, error) {
+	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
+	var (
+		data  []*blog.BlogData
+		blogs []Blog
+	)
+	if role {
+		keyword := "%" + request.Title + "%"
+		if err := r.data.db.Where("title LIKE ?", keyword).Find(&blogs).Error; err != nil {
+			r.log.Log(log.LevelError, err)
+			return vo.QUERY_FAIL, nil, errors.New(vo.QUERY_FAIL)
+		}
+		r.data.pf.ParseJSONToStruct(blogs, &data)
+		return vo.QUERY_SUCCESS, data, nil
+	}
+	return vo.PERMISSION_ERROR, nil, errors.New(vo.PERMISSION_ERROR)
+}
+
+func (r *blogRepo) UpdateOnly(ctx context.Context, request *blog.UpdateOnlyRequest) *blog.UpdateOnlyReply {
+	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
+	if role {
+		var condName string
+		switch request.Raw {
+		case 0:
+			condName = Comment
+		case 1:
+			condName = Appear
+		}
+		if err := r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": request.Id},
+			map[string]interface{}{condName: request.Res}, false); err != nil {
+			return &blog.UpdateOnlyReply{Common: &blog.CommonReply{Code: 400, Result: vo.UPDATE_FAIL}}
+		}
+		return &blog.UpdateOnlyReply{Common: &blog.CommonReply{Code: 200, Result: vo.UPDATE_SUCCESS}}
+	}
+	return &blog.UpdateOnlyReply{
+		Common: &blog.CommonReply{
+			Code:   401,
+			Result: vo.PERMISSION_ERROR,
+		},
+	}
 }
 
 // ***************** Redis Util *********************** //

@@ -21,14 +21,13 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Blog_CreateBlog_FullMethodName             = "/api.v1.Blog/CreateBlog"
 	Blog_UpdateBlog_FullMethodName             = "/api.v1.Blog/UpdateBlog"
-	Blog_UpdateAllCommentStatus_FullMethodName = "/api.v1.Blog/UpdateAllCommentStatus"
+	Blog_UpdateIndividualFields_FullMethodName = "/api.v1.Blog/UpdateIndividualFields"
 	Blog_DeleteBlog_FullMethodName             = "/api.v1.Blog/DeleteBlog"
 	Blog_GetBlogByTag_FullMethodName           = "/api.v1.Blog/GetBlogByTag"
 	Blog_ListBlog_FullMethodName               = "/api.v1.Blog/ListBlog"
 	Blog_GetBlogByID_FullMethodName            = "/api.v1.Blog/GetBlogByID"
 	Blog_GetBlogByTitle_FullMethodName         = "/api.v1.Blog/GetBlogByTitle"
-	Blog_UpdateAllowComment_FullMethodName     = "/api.v1.Blog/UpdateAllowComment"
-	Blog_UpdateAppear_FullMethodName           = "/api.v1.Blog/UpdateAppear"
+	Blog_UpdateOnly_FullMethodName             = "/api.v1.Blog/UpdateOnly"
 )
 
 // BlogClient is the client API for Blog service.
@@ -37,14 +36,13 @@ const (
 type BlogClient interface {
 	CreateBlog(ctx context.Context, in *CreateBlogRequest, opts ...grpc.CallOption) (*CreateBlogReply, error)
 	UpdateBlog(ctx context.Context, in *UpdateBlogRequest, opts ...grpc.CallOption) (*UpdateBlogReply, error)
-	UpdateAllCommentStatus(ctx context.Context, in *UpdateAllCommentStatusRequest, opts ...grpc.CallOption) (*UpdateAllCommentStatusReply, error)
+	UpdateIndividualFields(ctx context.Context, in *UpdateIndividualFieldsRequest, opts ...grpc.CallOption) (*UpdateIndividualFieldsReply, error)
 	DeleteBlog(ctx context.Context, in *DeleteBlogRequest, opts ...grpc.CallOption) (*DeleteBlogReply, error)
 	GetBlogByTag(ctx context.Context, in *GetBlogRequest, opts ...grpc.CallOption) (*GetBlogReply, error)
 	ListBlog(ctx context.Context, in *ListBlogRequest, opts ...grpc.CallOption) (*ListBlogReply, error)
 	GetBlogByID(ctx context.Context, in *GetBlogIDRequest, opts ...grpc.CallOption) (*GetBlogIDReply, error)
 	GetBlogByTitle(ctx context.Context, in *GetBlogByTitleRequest, opts ...grpc.CallOption) (*GetBlogByTitleReply, error)
-	UpdateAllowComment(ctx context.Context, in *UpdateAllowRequest, opts ...grpc.CallOption) (*UpdateAllowReply, error)
-	UpdateAppear(ctx context.Context, in *UpdateAllowRequest, opts ...grpc.CallOption) (*UpdateAllowReply, error)
+	UpdateOnly(ctx context.Context, in *UpdateOnlyRequest, opts ...grpc.CallOption) (*UpdateOnlyReply, error)
 }
 
 type blogClient struct {
@@ -73,9 +71,9 @@ func (c *blogClient) UpdateBlog(ctx context.Context, in *UpdateBlogRequest, opts
 	return out, nil
 }
 
-func (c *blogClient) UpdateAllCommentStatus(ctx context.Context, in *UpdateAllCommentStatusRequest, opts ...grpc.CallOption) (*UpdateAllCommentStatusReply, error) {
-	out := new(UpdateAllCommentStatusReply)
-	err := c.cc.Invoke(ctx, Blog_UpdateAllCommentStatus_FullMethodName, in, out, opts...)
+func (c *blogClient) UpdateIndividualFields(ctx context.Context, in *UpdateIndividualFieldsRequest, opts ...grpc.CallOption) (*UpdateIndividualFieldsReply, error) {
+	out := new(UpdateIndividualFieldsReply)
+	err := c.cc.Invoke(ctx, Blog_UpdateIndividualFields_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -127,18 +125,9 @@ func (c *blogClient) GetBlogByTitle(ctx context.Context, in *GetBlogByTitleReque
 	return out, nil
 }
 
-func (c *blogClient) UpdateAllowComment(ctx context.Context, in *UpdateAllowRequest, opts ...grpc.CallOption) (*UpdateAllowReply, error) {
-	out := new(UpdateAllowReply)
-	err := c.cc.Invoke(ctx, Blog_UpdateAllowComment_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *blogClient) UpdateAppear(ctx context.Context, in *UpdateAllowRequest, opts ...grpc.CallOption) (*UpdateAllowReply, error) {
-	out := new(UpdateAllowReply)
-	err := c.cc.Invoke(ctx, Blog_UpdateAppear_FullMethodName, in, out, opts...)
+func (c *blogClient) UpdateOnly(ctx context.Context, in *UpdateOnlyRequest, opts ...grpc.CallOption) (*UpdateOnlyReply, error) {
+	out := new(UpdateOnlyReply)
+	err := c.cc.Invoke(ctx, Blog_UpdateOnly_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -151,14 +140,13 @@ func (c *blogClient) UpdateAppear(ctx context.Context, in *UpdateAllowRequest, o
 type BlogServer interface {
 	CreateBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	UpdateBlog(context.Context, *UpdateBlogRequest) (*UpdateBlogReply, error)
-	UpdateAllCommentStatus(context.Context, *UpdateAllCommentStatusRequest) (*UpdateAllCommentStatusReply, error)
+	UpdateIndividualFields(context.Context, *UpdateIndividualFieldsRequest) (*UpdateIndividualFieldsReply, error)
 	DeleteBlog(context.Context, *DeleteBlogRequest) (*DeleteBlogReply, error)
 	GetBlogByTag(context.Context, *GetBlogRequest) (*GetBlogReply, error)
 	ListBlog(context.Context, *ListBlogRequest) (*ListBlogReply, error)
 	GetBlogByID(context.Context, *GetBlogIDRequest) (*GetBlogIDReply, error)
 	GetBlogByTitle(context.Context, *GetBlogByTitleRequest) (*GetBlogByTitleReply, error)
-	UpdateAllowComment(context.Context, *UpdateAllowRequest) (*UpdateAllowReply, error)
-	UpdateAppear(context.Context, *UpdateAllowRequest) (*UpdateAllowReply, error)
+	UpdateOnly(context.Context, *UpdateOnlyRequest) (*UpdateOnlyReply, error)
 	mustEmbedUnimplementedBlogServer()
 }
 
@@ -172,8 +160,8 @@ func (UnimplementedBlogServer) CreateBlog(context.Context, *CreateBlogRequest) (
 func (UnimplementedBlogServer) UpdateBlog(context.Context, *UpdateBlogRequest) (*UpdateBlogReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateBlog not implemented")
 }
-func (UnimplementedBlogServer) UpdateAllCommentStatus(context.Context, *UpdateAllCommentStatusRequest) (*UpdateAllCommentStatusReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateAllCommentStatus not implemented")
+func (UnimplementedBlogServer) UpdateIndividualFields(context.Context, *UpdateIndividualFieldsRequest) (*UpdateIndividualFieldsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateIndividualFields not implemented")
 }
 func (UnimplementedBlogServer) DeleteBlog(context.Context, *DeleteBlogRequest) (*DeleteBlogReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteBlog not implemented")
@@ -190,11 +178,8 @@ func (UnimplementedBlogServer) GetBlogByID(context.Context, *GetBlogIDRequest) (
 func (UnimplementedBlogServer) GetBlogByTitle(context.Context, *GetBlogByTitleRequest) (*GetBlogByTitleReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBlogByTitle not implemented")
 }
-func (UnimplementedBlogServer) UpdateAllowComment(context.Context, *UpdateAllowRequest) (*UpdateAllowReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateAllowComment not implemented")
-}
-func (UnimplementedBlogServer) UpdateAppear(context.Context, *UpdateAllowRequest) (*UpdateAllowReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateAppear not implemented")
+func (UnimplementedBlogServer) UpdateOnly(context.Context, *UpdateOnlyRequest) (*UpdateOnlyReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateOnly not implemented")
 }
 func (UnimplementedBlogServer) mustEmbedUnimplementedBlogServer() {}
 
@@ -245,20 +230,20 @@ func _Blog_UpdateBlog_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Blog_UpdateAllCommentStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateAllCommentStatusRequest)
+func _Blog_UpdateIndividualFields_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateIndividualFieldsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BlogServer).UpdateAllCommentStatus(ctx, in)
+		return srv.(BlogServer).UpdateIndividualFields(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Blog_UpdateAllCommentStatus_FullMethodName,
+		FullMethod: Blog_UpdateIndividualFields_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BlogServer).UpdateAllCommentStatus(ctx, req.(*UpdateAllCommentStatusRequest))
+		return srv.(BlogServer).UpdateIndividualFields(ctx, req.(*UpdateIndividualFieldsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -353,38 +338,20 @@ func _Blog_GetBlogByTitle_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Blog_UpdateAllowComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateAllowRequest)
+func _Blog_UpdateOnly_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateOnlyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BlogServer).UpdateAllowComment(ctx, in)
+		return srv.(BlogServer).UpdateOnly(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Blog_UpdateAllowComment_FullMethodName,
+		FullMethod: Blog_UpdateOnly_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BlogServer).UpdateAllowComment(ctx, req.(*UpdateAllowRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Blog_UpdateAppear_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateAllowRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(BlogServer).UpdateAppear(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Blog_UpdateAppear_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BlogServer).UpdateAppear(ctx, req.(*UpdateAllowRequest))
+		return srv.(BlogServer).UpdateOnly(ctx, req.(*UpdateOnlyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -405,8 +372,8 @@ var Blog_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Blog_UpdateBlog_Handler,
 		},
 		{
-			MethodName: "UpdateAllCommentStatus",
-			Handler:    _Blog_UpdateAllCommentStatus_Handler,
+			MethodName: "UpdateIndividualFields",
+			Handler:    _Blog_UpdateIndividualFields_Handler,
 		},
 		{
 			MethodName: "DeleteBlog",
@@ -429,12 +396,8 @@ var Blog_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Blog_GetBlogByTitle_Handler,
 		},
 		{
-			MethodName: "UpdateAllowComment",
-			Handler:    _Blog_UpdateAllowComment_Handler,
-		},
-		{
-			MethodName: "UpdateAppear",
-			Handler:    _Blog_UpdateAppear_Handler,
+			MethodName: "UpdateOnly",
+			Handler:    _Blog_UpdateOnly_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

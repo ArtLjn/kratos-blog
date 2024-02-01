@@ -18,9 +18,9 @@ service Blog {
 			body:"*",
 		};
 	};
-	rpc UpdateAllCommentStatus (UpdateAllCommentStatusRequest) returns (UpdateAllCommentStatusReply) {
+	rpc UpdateIndividualFields (UpdateIndividualFieldsRequest) returns (UpdateIndividualFieldsReply) {
 		option (google.api.http) = {
-			put: "/api/updateAllBlogStatus",
+			put: "/api/updateIndividual",
 			body:"*",
 		};
 	};
@@ -49,15 +49,10 @@ service Blog {
 			get:"/api/searchBlog/{title}",
 		};
 	};
-	rpc UpdateAllowComment (UpdateAllowRequest) returns (UpdateAllowReply) {
+
+	rpc UpdateOnly (UpdateOnlyRequest) returns (UpdateOnlyReply) {
 		option (google.api.http) = {
-			put:"/api/updateAllow",
-			body:"*",
-		};
-	}
-	rpc UpdateAppear (UpdateAllowRequest) returns (UpdateAllowReply) {
-		option (google.api.http) = {
-			put:"/api/updateAppear",
+			put:"/api/updateOnly",
 			body:"*",
 		};
 	}
@@ -97,10 +92,11 @@ message UpdateBlogReply {
 	CommonReply common = 1;
 }
 
-message UpdateAllCommentStatusRequest {
-	bool status = 1;
+message UpdateIndividualFieldsRequest {
+	int64 raw = 1;
+	bool status = 2;
 }
-message UpdateAllCommentStatusReply {
+message UpdateIndividualFieldsReply {
 	CommonReply common = 1;
 }
 
@@ -131,11 +127,15 @@ message GetBlogByTitleRequest {
 }
 message GetBlogByTitleReply {
 	CommonReply common = 1;
-	BlogData data = 2;
+	repeated BlogData data = 2;
 }
 
-message UpdateAllowRequest {}
-message UpdateAllowReply {
+message UpdateOnlyRequest {
+	int64 raw = 1;
+	int64 id = 2;
+	bool res = 3;
+}
+message UpdateOnlyReply {
 	CommonReply common = 1;
 }
 
