@@ -123,51 +123,44 @@ func (r *blogRepo) createBlogFromRequest(request *blog.CreateBlogRequest) func()
 
 // GetByTagName :dev search blog posts based on tags
 func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogRequest) (string, []*blog.BlogData, error) {
-	role := r.queryUserMsg(ctx).Data[4]
+	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
 	r.log.Log(log.LevelInfo, role)
 	var (
 		blogs []*blog.BlogData
-		res   interface{}
 		err   error
 	)
-	switch role {
-	case Admin:
-		res, err = r.data.pf.QueryFunc(Blog{}, map[string]interface{}{
-			"tag": request.Tag,
-		}, true)
-	case User, Visitor:
-		res, err = r.data.pf.QueryFunc(Blog{}, map[string]interface{}{
-			"tag":    request.Tag,
-			"appear": true,
-		}, true)
+	if role {
+		admin := AdminRoleFactory{r: r, req: request}
+		blogs, err = admin.QueryTag()
+	} else {
+		v := UserOrVisitFactory{r: r, req: request}
+		blogs, err = v.QueryTag()
 	}
-	if err != nil || res == nil {
-		r.log.Info(vo.QUERY_EMPTY)
-	}
-	r.data.pf.ParseJSONToStruct(res, &blogs)
-	if len(blogs) == 0 {
-		return vo.QUERY_EMPTY, blogs, nil
+	if err != nil {
+		return err.Error(), nil, err
 	}
 	return vo.QUERY_SUCCESS, blogs, nil
 }
 
 // queryUserMsg :dev query user information
-func (r *blogRepo) queryUserMsg(ctx context.Context) *user.GetUserReply {
+func (r *blogRepo) queryUserMsg(ctx context.Context) *RolePermission {
 	req, ok := http.RequestFromServerContext(ctx)
 	if !ok {
 		panic(errors.New("ctx false"))
 	}
 	token := req.Header.Get(Token)
 
-	grantVisitorRole := func() *user.GetUserReply {
+	grantVisitorRole := func() *RolePermission {
 		visit := make([]string, 4)
 		visit = append(visit, Visitor)
-		return &user.GetUserReply{
-			Common: &user.CommonReply{
-				Code:   200,
-				Result: vo.QUERY_SUCCESS,
+		return &RolePermission{
+			u: &user.GetUserReply{
+				Common: &user.CommonReply{
+					Code:   200,
+					Result: vo.QUERY_SUCCESS,
+				},
+				Data: visit,
 			},
-			Data: visit,
 		}
 	}
 	// The token is empty,granting the visitor permissions
@@ -189,42 +182,22 @@ func (r *blogRepo) queryUserMsg(ctx context.Context) *user.GetUserReply {
 	if res.Common.Code != 200 {
 		panic(errors.New(res.Common.Result))
 	}
-	return res
+	return &RolePermission{u: res}
 }
 
 // ListBlog :dev query all blog posts based on permissions
 func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) (string, []*blog.BlogData, error) {
-	role := r.queryUserMsg(ctx).Data[4]
-	r.log.Log(log.LevelInfo, role)
+	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
 	var (
 		blogs []*blog.BlogData
-		res   interface{}
 		err   error
 	)
-
-	parse := func(m interface{}, blogs *[]*blog.BlogData) {
-		var data []*blog.BlogData
-		e := r.data.pf.ParseJSONToStruct(m, &data)
-		if e != nil {
-			panic(e)
-		}
-		*blogs = data
-	}
-	switch role {
-	case Admin:
-		if exists, _ := r.data.rdb.Exists(CTX, AdminNotes).Result(); exists == 1 {
-			return vo.QUERY_SUCCESS, r.restoreList(AdminNotes), nil
-		}
-		res, err = r.data.pf.QueryFunc(Blog{}, nil, true)
-		parse(res, &blogs)
-		r.setCacheList(AdminNotes, r.parseList(blogs))
-	case User, Visitor:
-		if exists, _ := r.data.rdb.Exists(CTX, Notes).Result(); exists == 1 {
-			return vo.QUERY_SUCCESS, r.restoreList(Notes), nil
-		}
-		res, err = r.data.pf.QueryFunc(Blog{}, map[string]interface{}{"appear": true}, true)
-		parse(res, &blogs)
-		r.setCacheList(Notes, r.parseList(blogs))
+	if role {
+		admin := AdminRoleFactory{r: r, reb: request}
+		blogs, err = admin.QueryListBlog()
+	} else {
+		v := UserOrVisitFactory{r: r, reb: request}
+		blogs, err = v.QueryListBlog()
 	}
 	if err != nil {
 		return vo.QUERY_FAIL, blogs, nil
@@ -234,20 +207,18 @@ func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) 
 
 // QueryBlogById :dev more blog post ID query blog posts
 func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDRequest) (msg string, da blog.BlogData, e error) {
-	role := r.queryUserMsg(ctx).Data[4]
+	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
 	r.log.Log(log.LevelInfo, role)
 	var b Blog
 	if err := r.data.db.Where("id = ?", request.Id).First(&b).Error; err != nil {
 		return vo.QUERY_FAIL, blog.BlogData{}, err
 	}
-	f, _ := json.Marshal(&b)
-	if err := json.Unmarshal(f, &da); err != nil {
+	if err := r.data.pf.ParseJSONToStruct(b, &da); err != nil {
 		return vo.JSON_ERROR, blog.BlogData{}, err
 	}
-	if b.Appear == false {
-		if role == User || role == Visitor {
-			return vo.FORBIDDEN_ACCESS, blog.BlogData{}, nil
-		}
+
+	if !b.Appear && !role {
+		return vo.FORBIDDEN_ACCESS, blog.BlogData{}, nil
 	}
 	strID := strconv.Itoa(int(request.Id))
 	if r.hasHashField(TableName, strID) {
@@ -344,9 +315,9 @@ func (r *blogRepo) setCacheList(key string, o []interface{}) {
 			r.log.Log(log.LevelError, err)
 			continue
 		}
-		i, err := r.data.rdb.RPush(CTX, key, serializedValue).Result()
-		if err != nil {
-			r.log.Log(log.LevelError, "Failed to push serialized value to Redis list:", err)
+		i, e := r.data.rdb.RPush(CTX, key, serializedValue).Result()
+		if e != nil {
+			r.log.Log(log.LevelError, "Failed to push serialized value to Redis list:", e)
 		}
 		r.log.Log(log.LevelInfo, "Successfully pushed value to Redis list", i)
 	}
