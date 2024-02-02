@@ -30,11 +30,15 @@ func wireApp(conf *conf.Bootstrap,registry *conf.Registry,logger log.Logger) (*k
 	if err != nil {
 		return nil, nil, err
 	}
+	filterRepo := data.NewFilterRepo(dataData,logger)
 	blogRepo := data.NewBlogRepo(dataData, logger)
 	blogUsecase := biz.NewBlogUseCase(blogRepo, logger)
 	blogService := service.NewBlogService(blogUsecase)
-	grpcServer := server.NewGRPCServer(conf.Server, blogService, logger)
-	httpServer := server.NewHTTPServer(conf.Server, blogService, logger)
+	tagRepo := data.NewTagRepo(dataData,logger)
+	tagUseCase := biz.NewTagUseCase(tagRepo,logger)
+	tagService := service.NewTagService(tagUseCase)
+	grpcServer := server.NewGRPCServer(conf.Server, blogService,tagService, logger)
+	httpServer := server.NewHTTPServer(conf.Server, blogService,tagService,filterRepo, logger)
 	app := newApp(logger, grpcServer, httpServer,r)
 	return app, func() {
 	}, nil

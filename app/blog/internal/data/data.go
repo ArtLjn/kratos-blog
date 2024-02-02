@@ -19,29 +19,34 @@ import (
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/conf"
 	"kratos-blog/pkg/model"
+	"kratos-blog/pkg/role"
 	"sync"
 	"time"
 )
 
-// ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewRegistrar, NewDiscovery)
+var (
+	CTX = context.Background()
+	// ProviderSet is data providers.
+	ProviderSet = wire.NewSet(NewData, NewRegistrar, NewDiscovery)
+	mu          sync.Mutex
+)
 
 // Data .
 type Data struct {
-	log *log.Helper
-	uc  user.UserClient
-	db  *gorm.DB
-	rdb *redis.Client
-	pf  model.PublicFunc
+	log  *log.Helper
+	uc   user.UserClient
+	db   *gorm.DB
+	rdb  *redis.Client
+	pf   model.PublicFunc
+	role *role.Role
 }
-
-var mu sync.Mutex
 
 // NewData .
 func NewData(c *conf.Data, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
 	pf := model.NewOFunc(l, db)
-	return &Data{log: l, uc: uc, db: db, rdb: rdb, pf: pf}, nil
+	role := role.NewRole(rdb, uc, l)
+	return &Data{log: l, uc: uc, db: db, rdb: rdb, pf: pf, role: role}, nil
 }
 
 // NewRegistrar add consul

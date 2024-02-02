@@ -3,29 +3,14 @@ package data
 import (
 	"errors"
 	"kratos-blog/api/v1/blog"
-	"kratos-blog/api/v1/user"
 	"kratos-blog/pkg/vo"
 )
 
-const (
-	Admin   = "admin"
-	User    = "user"
-	Visitor = "visitor"
-)
-
-type RolePermissionStrategy interface {
-	CheckPermission() bool
-	GetRole() RolePermissionStrategy
-}
 type BlogFactory interface {
 	QueryTag() ([]*blog.BlogData, error)
 	QueryListBlog() ([]*blog.BlogData, error)
 }
 
-type RolePermission struct {
-	u    *user.GetUserReply
-	role string
-}
 type AdminRoleFactory struct {
 	r   *blogRepo
 	req *blog.GetBlogRequest
@@ -35,21 +20,6 @@ type UserOrVisitFactory struct {
 	r   *blogRepo
 	req *blog.GetBlogRequest
 	reb *blog.ListBlogRequest
-}
-
-func (r *RolePermission) CheckPermission() bool {
-	switch r.role {
-	case Admin:
-		return true
-	case User, Visitor:
-		return false
-	}
-	return false
-}
-
-func (r *RolePermission) GetRole() RolePermissionStrategy {
-	r.role = r.u.Data[4]
-	return r
 }
 
 func (a *AdminRoleFactory) QueryTag() ([]*blog.BlogData, error) {

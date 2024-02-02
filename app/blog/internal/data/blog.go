@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/transport/http"
 	"kratos-blog/api/v1/blog"
-	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/biz"
 	"kratos-blog/pkg/vo"
 	"strconv"
@@ -21,10 +19,6 @@ const (
 	TableName  string = "BlogVisits"
 	Comment    string = "comment"
 	Appear     string = "appear"
-)
-
-var (
-	CTX = context.Background()
 )
 
 type blogRepo struct {
@@ -132,7 +126,7 @@ func (r *blogRepo) createBlogFromRequest(request *blog.CreateBlogRequest) func()
 
 // GetByTagName :dev search blog posts based on tags
 func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogRequest) (string, []*blog.BlogData, error) {
-	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
+	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
 	r.log.Log(log.LevelInfo, role)
 	var (
 		blogs []*blog.BlogData
@@ -151,52 +145,9 @@ func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogReques
 	return vo.QUERY_SUCCESS, blogs, nil
 }
 
-// queryUserMsg :dev query user information
-func (r *blogRepo) queryUserMsg(ctx context.Context) *RolePermission {
-	req, ok := http.RequestFromServerContext(ctx)
-	if !ok {
-		panic(errors.New("ctx false"))
-	}
-	token := req.Header.Get(Token)
-
-	grantVisitorRole := func() *RolePermission {
-		visit := make([]string, 4)
-		visit = append(visit, Visitor)
-		return &RolePermission{
-			u: &user.GetUserReply{
-				Common: &user.CommonReply{
-					Code:   200,
-					Result: vo.QUERY_SUCCESS,
-				},
-				Data: visit,
-			},
-		}
-	}
-	// The token is empty,granting the visitor permissions
-	if token == "" {
-		return grantVisitorRole()
-	}
-	username, _ := r.data.rdb.Get(context.Background(), token).Result()
-	r.log.Info("username:", username)
-	// call grpc to query the user
-	res, err := r.data.uc.GetUser(context.Background(), &user.GetUserRequest{
-		Name: username,
-	})
-	if res.Data[4] == "" {
-		return grantVisitorRole()
-	}
-	if err != nil {
-		panic(err)
-	}
-	if res.Common.Code != 200 {
-		panic(errors.New(res.Common.Result))
-	}
-	return &RolePermission{u: res}
-}
-
 // ListBlog :dev query all blog posts based on permissions
 func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) (string, []*blog.BlogData, error) {
-	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
+	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
 	var (
 		blogs []*blog.BlogData
 		err   error
@@ -216,7 +167,7 @@ func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) 
 
 // QueryBlogById :dev more blog post ID query blog posts
 func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDRequest) (msg string, da blog.BlogData, e error) {
-	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
+	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
 	r.log.Log(log.LevelInfo, role)
 	var b Blog
 	if err := r.data.db.Where("id = ?", request.Id).First(&b).Error; err != nil {
@@ -267,7 +218,7 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 
 // QueryBlogByTitle :dev query for matching blog posts based on the title
 func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogByTitleRequest) (string, []*blog.BlogData, error) {
-	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
+	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
 	var (
 		data  []*blog.BlogData
 		blogs []Blog
@@ -285,7 +236,7 @@ func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogBy
 }
 
 func (r *blogRepo) UpdateOnly(ctx context.Context, request *blog.UpdateOnlyRequest) *blog.UpdateOnlyReply {
-	role := r.queryUserMsg(ctx).GetRole().CheckPermission()
+	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
 	if role {
 		var condName string
 		switch request.Raw {
