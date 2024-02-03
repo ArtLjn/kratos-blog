@@ -11,6 +11,8 @@ import (
 	"gopkg.in/gomail.v2"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/user/internal/biz"
+	"kratos-blog/pkg/model"
+	"kratos-blog/pkg/role"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
 	"strconv"
@@ -22,13 +24,8 @@ type userRepo struct {
 	data *Data
 	log  *log.Helper
 	mu   sync.Mutex
+	model.PublicFunc
 }
-
-// Role
-var (
-	AdminRole  = "admin"
-	CommonRole = "user"
-)
 
 type User struct {
 	ID       int    `json:"id" gorm:"primary_key;auto_increment"`
@@ -164,7 +161,7 @@ func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func()
 		user.UUID = uuid.New().String()
 		user.Black = false
 		user.Password = MD5(user.Password)
-		user.Role = CommonRole
+		user.Role = role.User
 		return user
 	}
 }
@@ -172,7 +169,8 @@ func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func()
 // update validate validateUpdatePass
 func (u *userRepo) validateUpdatePass(request *user.UpdatePasswordRequest) error {
 	var user User
-	u.QueryMessage(map[string]interface{}{"email": user.Email}, &user)
+	data, _ := u.QueryFunc(User{}, map[string]interface{}{"email": request.Email}, false)
+	u.data.pf.ParseJSONToStruct(data, &user)
 	if user.Email != request.Email {
 		return errors.New(vo.EMAIL_NOT_MATCH)
 	} else if cacheCode, _ := u.data.rdb.Get(context.Background(), request.Email).Result(); cacheCode != request.Code {
@@ -192,7 +190,8 @@ func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) 
 	}
 
 	var user User
-	u.QueryMessage(map[string]interface{}{"name": request.Name}, &user)
+	data, _ := u.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
+	u.data.pf.ParseJSONToStruct(data, &user)
 	// Create a coroutine to send a message
 	go func() {
 		u.mu.Lock()
@@ -207,15 +206,29 @@ func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) 
 	return vo.UPDATE_SUCCESS, nil
 }
 
-// QueryMessage :dev query user information
-func (u *userRepo) QueryMessage(cond map[string]interface{}, data *User) {
-	res, err := u.data.pf.QueryFunc(User{}, cond, false)
-	var user User
-	err = u.data.pf.ParseJSONToStruct(res, &user)
-	if err != nil {
-		u.log.Log(log.LevelError, err)
+// QueryFunc :dev query user information
+func (u *userRepo) QueryFunc(m interface{}, cond map[string]interface{}, isList bool) (interface{}, error) {
+	query := u.data.db.Model(m)
+
+	if len(cond) != 0 {
+		for cd, va := range cond {
+			c := fmt.Sprintf("%s = ?", cd)
+			query = query.Where(c, va)
+		}
 	}
-	*data = user
+
+	var strategy model.QueryStrategy
+	if isList {
+		strategy = &model.ListQueryStrategy{}
+	} else {
+		strategy = &model.SingleQueryStrategy{}
+	}
+
+	data, err := strategy.Execute(query)
+	if err != nil {
+		u.log.Errorf("Error querying data: %s", err)
+	}
+	return data, err
 }
 
 func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
@@ -223,11 +236,15 @@ func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 	var list []string
 	if request.Name == u.data.c.Admin.Username {
 		f := make([]string, 3)
-		f = append(f, u.data.c.Admin.Username, AdminRole)
+		f = append(f, u.data.c.Admin.Username, role.Admin)
 		list = append([]string{}, f...)
 		return list
 	}
-	u.QueryMessage(map[string]interface{}{"name": request.Name}, &data)
+	d, err := u.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
+	if err != nil {
+		u.log.Log(log.LevelError, err)
+	}
+	u.data.pf.ParseJSONToStruct(d, &data)
 	list = append(list, data.Name, data.Email, strconv.Itoa(data.ID), data.UUID, data.Role, strconv.FormatBool(data.Black))
 	return list
 }

@@ -17,11 +17,11 @@ func NewTagService(uc *biz.TagUseCase) *TagService {
 }
 
 func (s *TagService) CreateTag(ctx context.Context, req *pb.CreateTagRequest) (*pb.CreateTagReply, error) {
-	return &pb.CreateTagReply{}, nil
+	return s.uc.CreateTag(ctx, req), nil
 }
 func (s *TagService) DeleteTag(ctx context.Context, req *pb.DeleteTagRequest) (*pb.DeleteTagReply, error) {
-	return &pb.DeleteTagReply{}, nil
+	return s.uc.DeleteTag(ctx, req), nil
 }
 func (s *TagService) ListTag(ctx context.Context, req *pb.ListTagRequest) (*pb.ListTagReply, error) {
-	return &pb.ListTagReply{}, nil
+	return s.uc.SearchAllTag(ctx, req), nil
 }

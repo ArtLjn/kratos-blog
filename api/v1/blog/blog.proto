@@ -69,6 +69,13 @@ service Blog {
 			get:"/api/getCacheBlog"
 		};
 	}
+
+	rpc DeleteCacheBlog(DeleteCacheBlogRequest) returns(DeleteCacheBlogReply) {
+		option (google.api.http) = {
+			delete:"/api/deleteCacheBlog",
+			body:"*"
+		};
+	}
 }
 
 message BlogData {
@@ -163,4 +170,11 @@ message GetBlogIDRequest {
 message GetBlogIDReply {
 	CommonReply common = 1;
 	BlogData data = 2;
+}
+
+message DeleteCacheBlogRequest {
+	string key = 1;
+}
+message DeleteCacheBlogReply {
+	CommonReply common = 1;
 }

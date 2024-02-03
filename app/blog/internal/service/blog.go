@@ -48,3 +48,6 @@ func (s *BlogService) CacheBlog(ctx context.Context, req *pb.CreateBlogRequest) 
 func (s *BlogService) GetCacheBlog(ctx context.Context, req *pb.ListBlogRequest) (*pb.ListCacheReply, error) {
 	return s.uc.GetAllCacheBlog(ctx), nil
 }
+func (s *BlogService) DeleteCacheBlog(ctx context.Context, req *pb.DeleteCacheBlogRequest) (*pb.DeleteCacheBlogReply, error) {
+	return s.uc.DeleteCacheBlog(ctx, req), nil
+}

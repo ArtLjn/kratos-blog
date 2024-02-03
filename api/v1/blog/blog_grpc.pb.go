@@ -30,6 +30,7 @@ const (
 	Blog_UpdateOnly_FullMethodName             = "/api.v1.Blog/UpdateOnly"
 	Blog_CacheBlog_FullMethodName              = "/api.v1.Blog/CacheBlog"
 	Blog_GetCacheBlog_FullMethodName           = "/api.v1.Blog/GetCacheBlog"
+	Blog_DeleteCacheBlog_FullMethodName        = "/api.v1.Blog/DeleteCacheBlog"
 )
 
 // BlogClient is the client API for Blog service.
@@ -47,6 +48,7 @@ type BlogClient interface {
 	UpdateOnly(ctx context.Context, in *UpdateOnlyRequest, opts ...grpc.CallOption) (*UpdateOnlyReply, error)
 	CacheBlog(ctx context.Context, in *CreateBlogRequest, opts ...grpc.CallOption) (*CreateBlogReply, error)
 	GetCacheBlog(ctx context.Context, in *ListBlogRequest, opts ...grpc.CallOption) (*ListCacheReply, error)
+	DeleteCacheBlog(ctx context.Context, in *DeleteCacheBlogRequest, opts ...grpc.CallOption) (*DeleteCacheBlogReply, error)
 }
 
 type blogClient struct {
@@ -156,6 +158,15 @@ func (c *blogClient) GetCacheBlog(ctx context.Context, in *ListBlogRequest, opts
 	return out, nil
 }
 
+func (c *blogClient) DeleteCacheBlog(ctx context.Context, in *DeleteCacheBlogRequest, opts ...grpc.CallOption) (*DeleteCacheBlogReply, error) {
+	out := new(DeleteCacheBlogReply)
+	err := c.cc.Invoke(ctx, Blog_DeleteCacheBlog_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BlogServer is the server API for Blog service.
 // All implementations must embed UnimplementedBlogServer
 // for forward compatibility
@@ -171,6 +182,7 @@ type BlogServer interface {
 	UpdateOnly(context.Context, *UpdateOnlyRequest) (*UpdateOnlyReply, error)
 	CacheBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	GetCacheBlog(context.Context, *ListBlogRequest) (*ListCacheReply, error)
+	DeleteCacheBlog(context.Context, *DeleteCacheBlogRequest) (*DeleteCacheBlogReply, error)
 	mustEmbedUnimplementedBlogServer()
 }
 
@@ -210,6 +222,9 @@ func (UnimplementedBlogServer) CacheBlog(context.Context, *CreateBlogRequest) (*
 }
 func (UnimplementedBlogServer) GetCacheBlog(context.Context, *ListBlogRequest) (*ListCacheReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCacheBlog not implemented")
+}
+func (UnimplementedBlogServer) DeleteCacheBlog(context.Context, *DeleteCacheBlogRequest) (*DeleteCacheBlogReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteCacheBlog not implemented")
 }
 func (UnimplementedBlogServer) mustEmbedUnimplementedBlogServer() {}
 
@@ -422,6 +437,24 @@ func _Blog_GetCacheBlog_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Blog_DeleteCacheBlog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteCacheBlogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlogServer).DeleteCacheBlog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blog_DeleteCacheBlog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlogServer).DeleteCacheBlog(ctx, req.(*DeleteCacheBlogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Blog_ServiceDesc is the grpc.ServiceDesc for Blog service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -472,6 +505,10 @@ var Blog_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCacheBlog",
 			Handler:    _Blog_GetCacheBlog_Handler,
+		},
+		{
+			MethodName: "DeleteCacheBlog",
+			Handler:    _Blog_DeleteCacheBlog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

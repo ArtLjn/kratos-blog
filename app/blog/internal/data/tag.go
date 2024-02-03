@@ -30,15 +30,6 @@ func NewTagRepo(data *Data, logger log.Logger) biz.TagRepo {
 }
 
 func (t *tagRepo) CreateTag(ctx context.Context, request *pb.CreateTagRequest) *pb.CreateTagReply {
-	permission := t.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
-	if !permission {
-		return &pb.CreateTagReply{
-			Common: &pb.CommonReply{
-				Code:   401,
-				Result: vo.PERMISSION_ERROR,
-			},
-		}
-	}
 	var tag Tag
 	t.data.pf.ParseJSONToStruct(request, &tag)
 	if err := t.data.db.Create(&tag).Error; err != nil {
@@ -46,5 +37,51 @@ func (t *tagRepo) CreateTag(ctx context.Context, request *pb.CreateTagRequest) *
 	}
 	return &pb.CreateTagReply{
 		Common: &pb.CommonReply{Code: 200, Result: vo.INSERT_SUCCESS},
+	}
+}
+
+func (t *tagRepo) DeleteTag(ctx context.Context, request *pb.DeleteTagRequest) *pb.DeleteTagReply {
+	if err := t.data.pf.DeleteFunc(Tag{}, map[string]interface{}{"id": request.Id}); err != nil {
+		return &pb.DeleteTagReply{
+			Common: &pb.CommonReply{
+				Code:   500,
+				Result: vo.DELETE_ERROR,
+			},
+		}
+	}
+	return &pb.DeleteTagReply{
+		Common: &pb.CommonReply{
+			Code:   200,
+			Result: vo.DELETE_SUCCESS,
+		},
+	}
+}
+
+func (t *tagRepo) SearchAllTag(ctx context.Context, request *pb.ListTagRequest) *pb.ListTagReply {
+	data, err := t.data.pf.QueryFunc(Tag{}, nil, true)
+	if err != nil {
+		t.log.Log(log.LevelError, err)
+		return &pb.ListTagReply{
+			Common: &pb.CommonReply{
+				Code:   400,
+				Result: vo.QUERY_FAIL,
+			},
+		}
+	}
+	var tagData []pb.TagData
+	t.data.pf.ParseJSONToStruct(data, &tagData)
+	if len(tagData) == 0 {
+		return &pb.ListTagReply{
+			Common: &pb.CommonReply{
+				Code:   400,
+				Result: vo.QUERY_EMPTY,
+			},
+		}
+	}
+	return &pb.ListTagReply{
+		Common: &pb.CommonReply{
+			Code:   200,
+			Result: vo.QUERY_SUCCESS,
+		},
 	}
 }

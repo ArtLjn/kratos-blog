@@ -125,8 +125,8 @@ func (o *OFunc) QueryFunc(model interface{}, cond map[string]interface{}, isList
 
 	if len(cond) != 0 {
 		for cd, va := range cond {
-			cd := fmt.Sprintf("%s = ?", cd)
-			query = query.Where(cd, va)
+			c := fmt.Sprintf("%s = ?", cd)
+			query = query.Where(c, va)
 		}
 	}
 

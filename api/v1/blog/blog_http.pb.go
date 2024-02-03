@@ -22,6 +22,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationBlogCacheBlog = "/api.v1.Blog/CacheBlog"
 const OperationBlogCreateBlog = "/api.v1.Blog/CreateBlog"
 const OperationBlogDeleteBlog = "/api.v1.Blog/DeleteBlog"
+const OperationBlogDeleteCacheBlog = "/api.v1.Blog/DeleteCacheBlog"
 const OperationBlogGetBlogByID = "/api.v1.Blog/GetBlogByID"
 const OperationBlogGetBlogByTag = "/api.v1.Blog/GetBlogByTag"
 const OperationBlogGetBlogByTitle = "/api.v1.Blog/GetBlogByTitle"
@@ -35,6 +36,7 @@ type BlogHTTPServer interface {
 	CacheBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	CreateBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	DeleteBlog(context.Context, *DeleteBlogRequest) (*DeleteBlogReply, error)
+	DeleteCacheBlog(context.Context, *DeleteCacheBlogRequest) (*DeleteCacheBlogReply, error)
 	GetBlogByID(context.Context, *GetBlogIDRequest) (*GetBlogIDReply, error)
 	GetBlogByTag(context.Context, *GetBlogRequest) (*GetBlogReply, error)
 	GetBlogByTitle(context.Context, *GetBlogByTitleRequest) (*GetBlogByTitleReply, error)
@@ -58,6 +60,7 @@ func RegisterBlogHTTPServer(s *http.Server, srv BlogHTTPServer) {
 	r.PUT("/api/updateOnly", _Blog_UpdateOnly0_HTTP_Handler(srv))
 	r.POST("/api/cacheBlog", _Blog_CacheBlog0_HTTP_Handler(srv))
 	r.GET("/api/getCacheBlog", _Blog_GetCacheBlog0_HTTP_Handler(srv))
+	r.DELETE("/api/deleteCacheBlog", _Blog_DeleteCacheBlog0_HTTP_Handler(srv))
 }
 
 func _Blog_CreateBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
@@ -299,10 +302,33 @@ func _Blog_GetCacheBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context)
 	}
 }
 
+func _Blog_DeleteCacheBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeleteCacheBlogRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBlogDeleteCacheBlog)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteCacheBlog(ctx, req.(*DeleteCacheBlogRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeleteCacheBlogReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type BlogHTTPClient interface {
 	CacheBlog(ctx context.Context, req *CreateBlogRequest, opts ...http.CallOption) (rsp *CreateBlogReply, err error)
 	CreateBlog(ctx context.Context, req *CreateBlogRequest, opts ...http.CallOption) (rsp *CreateBlogReply, err error)
 	DeleteBlog(ctx context.Context, req *DeleteBlogRequest, opts ...http.CallOption) (rsp *DeleteBlogReply, err error)
+	DeleteCacheBlog(ctx context.Context, req *DeleteCacheBlogRequest, opts ...http.CallOption) (rsp *DeleteCacheBlogReply, err error)
 	GetBlogByID(ctx context.Context, req *GetBlogIDRequest, opts ...http.CallOption) (rsp *GetBlogIDReply, err error)
 	GetBlogByTag(ctx context.Context, req *GetBlogRequest, opts ...http.CallOption) (rsp *GetBlogReply, err error)
 	GetBlogByTitle(ctx context.Context, req *GetBlogByTitleRequest, opts ...http.CallOption) (rsp *GetBlogByTitleReply, err error)
@@ -354,6 +380,19 @@ func (c *BlogHTTPClientImpl) DeleteBlog(ctx context.Context, in *DeleteBlogReque
 	opts = append(opts, http.Operation(OperationBlogDeleteBlog))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *BlogHTTPClientImpl) DeleteCacheBlog(ctx context.Context, in *DeleteCacheBlogRequest, opts ...http.CallOption) (*DeleteCacheBlogReply, error) {
+	var out DeleteCacheBlogReply
+	pattern := "/api/deleteCacheBlog"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBlogDeleteCacheBlog))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -13,8 +13,10 @@ import (
 	"strings"
 )
 
+const Token = "token"
+
+// RoleSwitch
 const (
-	Token   = "token"
 	Admin   = "admin"
 	User    = "user"
 	Visitor = "visitor"

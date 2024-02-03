@@ -299,6 +299,24 @@ func (r *blogRepo) GetCacheBlog(ctx context.Context) *blog.ListCacheReply {
 	}
 }
 
+func (r *blogRepo) DeleteCacheBlog(ctx context.Context, request *blog.DeleteCacheBlogRequest) *blog.DeleteCacheBlogReply {
+	_, err := r.data.rdb.HDel(CTX, CacheBlog, request.Key).Result()
+	if err != nil {
+		return &blog.DeleteCacheBlogReply{
+			Common: &blog.CommonReply{
+				Code:   500,
+				Result: vo.DELETE_ERROR,
+			},
+		}
+	}
+	return &blog.DeleteCacheBlogReply{
+		Common: &blog.CommonReply{
+			Code:   200,
+			Result: vo.DELETE_SUCCESS,
+		},
+	}
+}
+
 // ***************** Redis Util *********************** //
 
 func (r *blogRepo) setHashField(hashKey, field string, val interface{}) {

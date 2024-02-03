@@ -19,6 +19,7 @@ type BlogRepo interface {
 	UpdateOnly(ctx context.Context, request *pb.UpdateOnlyRequest) *pb.UpdateOnlyReply
 	CacheBlog(ctx context.Context, request *pb.CreateBlogRequest) *pb.CreateBlogReply
 	GetCacheBlog(ctx context.Context) *pb.ListCacheReply
+	DeleteCacheBlog(ctx context.Context, request *pb.DeleteCacheBlogRequest) *pb.DeleteCacheBlogReply
 }
 
 type BlogUseCase struct {
@@ -30,14 +31,18 @@ func NewBlogUseCase(repo BlogRepo, logger log.Logger) *BlogUseCase {
 	return &BlogUseCase{repo: repo, log: log.NewHelper(logger)}
 }
 
+func SetStatus(code int64, msg string) *pb.CommonReply {
+	return &pb.CommonReply{
+		Code:   code,
+		Result: msg,
+	}
+}
+
 func (uc *BlogUseCase) AddBlog(ctx context.Context, request *pb.CreateBlogRequest) *pb.CreateBlogReply {
 	u, err := uc.repo.CreateBlog(ctx, request)
 	status := func(code int64, msg string) *pb.CreateBlogReply {
 		return &pb.CreateBlogReply{
-			Common: &pb.CommonReply{
-				Code:   code,
-				Result: msg,
-			},
+			Common: SetStatus(code, msg),
 		}
 	}
 	if err != nil {
@@ -51,10 +56,7 @@ func (uc *BlogUseCase) UpdateBlog(ctx context.Context, request *pb.UpdateBlogReq
 	u, err := uc.repo.UpdateBlog(ctx, request)
 	status := func(code int64, msg string) *pb.UpdateBlogReply {
 		return &pb.UpdateBlogReply{
-			Common: &pb.CommonReply{
-				Code:   code,
-				Result: msg,
-			},
+			Common: SetStatus(code, msg),
 		}
 	}
 	if err != nil {
@@ -68,10 +70,7 @@ func (uc *BlogUseCase) DeleteBlog(ctx context.Context, request *pb.DeleteBlogReq
 	u, err := uc.repo.DeleteBlog(ctx, request)
 	status := func(code int64, msg string) *pb.DeleteBlogReply {
 		return &pb.DeleteBlogReply{
-			Common: &pb.CommonReply{
-				Code:   code,
-				Result: msg,
-			},
+			Common: SetStatus(code, msg),
 		}
 	}
 	if err != nil {
@@ -85,10 +84,7 @@ func (uc *BlogUseCase) UpdateIndividualFields(ctx context.Context, request *pb.U
 	u, err := uc.repo.UpdateIndividualFields(ctx, request)
 	status := func(code int64, msg string) *pb.UpdateIndividualFieldsReply {
 		return &pb.UpdateIndividualFieldsReply{
-			Common: &pb.CommonReply{
-				Code:   code,
-				Result: msg,
-			},
+			Common: SetStatus(code, msg),
 		}
 	}
 	if err != nil {
@@ -102,11 +98,8 @@ func (uc *BlogUseCase) GetByTagName(ctx context.Context, request *pb.GetBlogRequ
 	u, d, err := uc.repo.GetByTagName(ctx, request)
 	status := func(code int64, msg string, list []*pb.BlogData) *pb.GetBlogReply {
 		return &pb.GetBlogReply{
-			Common: &pb.CommonReply{
-				Code:   code,
-				Result: msg,
-			},
-			List: d,
+			Common: SetStatus(code, msg),
+			List:   d,
 		}
 	}
 	if err != nil {
@@ -120,11 +113,8 @@ func (uc *BlogUseCase) ListBlog(ctx context.Context, request *pb.ListBlogRequest
 	u, d, err := uc.repo.ListBlog(ctx, request)
 	status := func(code int64, msg string, list []*pb.BlogData) *pb.ListBlogReply {
 		return &pb.ListBlogReply{
-			Common: &pb.CommonReply{
-				Code:   code,
-				Result: msg,
-			},
-			List: d,
+			Common: SetStatus(code, msg),
+			List:   d,
 		}
 	}
 	if err != nil {
@@ -140,11 +130,8 @@ func (uc *BlogUseCase) QueryBlogByID(ctx context.Context, request *pb.GetBlogIDR
 	u, d, err := uc.repo.QueryBlogById(ctx, request)
 	status := func(code int64, msg string, data pb.BlogData) *pb.GetBlogIDReply {
 		return &pb.GetBlogIDReply{
-			Common: &pb.CommonReply{
-				Code:   code,
-				Result: msg,
-			},
-			Data: &data,
+			Common: SetStatus(code, msg),
+			Data:   &data,
 		}
 	}
 	if err != nil {
@@ -158,11 +145,8 @@ func (uc *BlogUseCase) QueryBlogByTitle(ctx context.Context, request *pb.GetBlog
 	u, d, err := uc.repo.QueryBlogByTitle(ctx, request)
 	status := func(code int64, msg string, data []*pb.BlogData) *pb.GetBlogByTitleReply {
 		return &pb.GetBlogByTitleReply{
-			Common: &pb.CommonReply{
-				Code:   code,
-				Result: msg,
-			},
-			Data: data,
+			Common: SetStatus(code, msg),
+			Data:   data,
 		}
 	}
 	if err != nil {
@@ -182,4 +166,8 @@ func (uc *BlogUseCase) CacheBlog(ctx context.Context, request *pb.CreateBlogRequ
 
 func (uc *BlogUseCase) GetAllCacheBlog(ctx context.Context) *pb.ListCacheReply {
 	return uc.repo.GetCacheBlog(ctx)
+}
+
+func (uc *BlogUseCase) DeleteCacheBlog(ctx context.Context, request *pb.DeleteCacheBlogRequest) *pb.DeleteCacheBlogReply {
+	return uc.repo.DeleteCacheBlog(ctx, request)
 }
