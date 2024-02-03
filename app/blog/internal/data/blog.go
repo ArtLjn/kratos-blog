@@ -4,21 +4,23 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/app/blog/internal/biz"
 	"kratos-blog/pkg/vo"
 	"strconv"
+	"sync"
 	"time"
 )
 
 const (
-	Token      string = "token"
 	AdminNotes string = "adminNotes"
 	Notes      string = "notes"
 	TableName  string = "BlogVisits"
 	Comment    string = "comment"
 	Appear     string = "appear"
+	CacheBlog  string = "cacheBlog"
 )
 
 type blogRepo struct {
@@ -218,44 +220,82 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 
 // QueryBlogByTitle :dev query for matching blog posts based on the title
 func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogByTitleRequest) (string, []*blog.BlogData, error) {
-	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
 	var (
 		data  []*blog.BlogData
 		blogs []Blog
 	)
-	if role {
-		keyword := "%" + request.Title + "%"
-		if err := r.data.db.Where("title LIKE ?", keyword).Find(&blogs).Error; err != nil {
-			r.log.Log(log.LevelError, err)
-			return vo.QUERY_FAIL, nil, errors.New(vo.QUERY_FAIL)
-		}
-		r.data.pf.ParseJSONToStruct(blogs, &data)
-		return vo.QUERY_SUCCESS, data, nil
+	keyword := "%" + request.Title + "%"
+	if err := r.data.db.Where("title LIKE ?", keyword).Find(&blogs).Error; err != nil {
+		r.log.Log(log.LevelError, err)
+		return vo.QUERY_FAIL, nil, errors.New(vo.QUERY_FAIL)
 	}
+	r.data.pf.ParseJSONToStruct(blogs, &data)
+	return vo.QUERY_SUCCESS, data, nil
 	return vo.PERMISSION_ERROR, nil, errors.New(vo.PERMISSION_ERROR)
 }
 
 func (r *blogRepo) UpdateOnly(ctx context.Context, request *blog.UpdateOnlyRequest) *blog.UpdateOnlyReply {
-	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
-	if role {
-		var condName string
-		switch request.Raw {
-		case 0:
-			condName = Comment
-		case 1:
-			condName = Appear
-		}
-		if err := r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": request.Id},
-			map[string]interface{}{condName: request.Res}, false); err != nil {
-			return &blog.UpdateOnlyReply{Common: &blog.CommonReply{Code: 400, Result: vo.UPDATE_FAIL}}
-		}
-		return &blog.UpdateOnlyReply{Common: &blog.CommonReply{Code: 200, Result: vo.UPDATE_SUCCESS}}
+	var condName string
+	switch request.Raw {
+	case 0:
+		condName = Comment
+	case 1:
+		condName = Appear
 	}
-	return &blog.UpdateOnlyReply{
+	if err := r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": request.Id},
+		map[string]interface{}{condName: request.Res}, false); err != nil {
+		return &blog.UpdateOnlyReply{Common: &blog.CommonReply{Code: 400, Result: vo.UPDATE_FAIL}}
+	}
+	return &blog.UpdateOnlyReply{Common: &blog.CommonReply{Code: 200, Result: vo.UPDATE_SUCCESS}}
+}
+
+func (r *blogRepo) CacheBlog(ctx context.Context, request *blog.CreateBlogRequest) *blog.CreateBlogReply {
+	blogID := fmt.Sprintf("%s-%s", time.Now().Format("2006-01-02 15:04"), *request.Data.Title)
+	data, _ := json.Marshal(&request.Data)
+	r.setHashField(CacheBlog, blogID, string(data))
+	return &blog.CreateBlogReply{
 		Common: &blog.CommonReply{
-			Code:   401,
-			Result: vo.PERMISSION_ERROR,
+			Code:   200,
+			Result: vo.CREATE_SUCCESS,
 		},
+	}
+}
+
+func (r *blogRepo) GetCacheBlog(ctx context.Context) *blog.ListCacheReply {
+	data, err := r.data.rdb.HGetAll(CTX, CacheBlog).Result()
+	if err != nil {
+		r.log.Log(log.LevelError, err)
+	}
+
+	var (
+		list []string
+		mu   sync.Mutex
+		wg   sync.WaitGroup
+	)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for key, val := range data {
+			newMap := map[string]interface{}{
+				key: val,
+			}
+			f, _ := json.Marshal(&newMap)
+
+			mu.Lock()
+			list = append(list, string(f))
+			mu.Unlock()
+		}
+	}()
+
+	wg.Wait()
+
+	return &blog.ListCacheReply{
+		Common: &blog.CommonReply{
+			Code:   200,
+			Result: vo.QUERY_SUCCESS,
+		},
+		Data: list,
 	}
 }
 

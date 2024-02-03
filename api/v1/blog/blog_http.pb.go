@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.7.1
 // - protoc             v4.25.1
-// source: blog.proto
+// source: v1/blog/blog.proto
 
 package blog
 
@@ -19,22 +19,26 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationBlogCacheBlog = "/api.v1.Blog/CacheBlog"
 const OperationBlogCreateBlog = "/api.v1.Blog/CreateBlog"
 const OperationBlogDeleteBlog = "/api.v1.Blog/DeleteBlog"
 const OperationBlogGetBlogByID = "/api.v1.Blog/GetBlogByID"
 const OperationBlogGetBlogByTag = "/api.v1.Blog/GetBlogByTag"
 const OperationBlogGetBlogByTitle = "/api.v1.Blog/GetBlogByTitle"
+const OperationBlogGetCacheBlog = "/api.v1.Blog/GetCacheBlog"
 const OperationBlogListBlog = "/api.v1.Blog/ListBlog"
 const OperationBlogUpdateBlog = "/api.v1.Blog/UpdateBlog"
 const OperationBlogUpdateIndividualFields = "/api.v1.Blog/UpdateIndividualFields"
 const OperationBlogUpdateOnly = "/api.v1.Blog/UpdateOnly"
 
 type BlogHTTPServer interface {
+	CacheBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	CreateBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	DeleteBlog(context.Context, *DeleteBlogRequest) (*DeleteBlogReply, error)
 	GetBlogByID(context.Context, *GetBlogIDRequest) (*GetBlogIDReply, error)
 	GetBlogByTag(context.Context, *GetBlogRequest) (*GetBlogReply, error)
 	GetBlogByTitle(context.Context, *GetBlogByTitleRequest) (*GetBlogByTitleReply, error)
+	GetCacheBlog(context.Context, *ListBlogRequest) (*ListCacheReply, error)
 	ListBlog(context.Context, *ListBlogRequest) (*ListBlogReply, error)
 	UpdateBlog(context.Context, *UpdateBlogRequest) (*UpdateBlogReply, error)
 	UpdateIndividualFields(context.Context, *UpdateIndividualFieldsRequest) (*UpdateIndividualFieldsReply, error)
@@ -52,6 +56,8 @@ func RegisterBlogHTTPServer(s *http.Server, srv BlogHTTPServer) {
 	r.GET("/api/getId/{id}", _Blog_GetBlogByID0_HTTP_Handler(srv))
 	r.GET("/api/searchBlog/{title}", _Blog_GetBlogByTitle0_HTTP_Handler(srv))
 	r.PUT("/api/updateOnly", _Blog_UpdateOnly0_HTTP_Handler(srv))
+	r.POST("/api/cacheBlog", _Blog_CacheBlog0_HTTP_Handler(srv))
+	r.GET("/api/getCacheBlog", _Blog_GetCacheBlog0_HTTP_Handler(srv))
 }
 
 func _Blog_CreateBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
@@ -252,12 +258,55 @@ func _Blog_UpdateOnly0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) e
 	}
 }
 
+func _Blog_CacheBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CreateBlogRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBlogCacheBlog)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CacheBlog(ctx, req.(*CreateBlogRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CreateBlogReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Blog_GetCacheBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListBlogRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBlogGetCacheBlog)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetCacheBlog(ctx, req.(*ListBlogRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListCacheReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type BlogHTTPClient interface {
+	CacheBlog(ctx context.Context, req *CreateBlogRequest, opts ...http.CallOption) (rsp *CreateBlogReply, err error)
 	CreateBlog(ctx context.Context, req *CreateBlogRequest, opts ...http.CallOption) (rsp *CreateBlogReply, err error)
 	DeleteBlog(ctx context.Context, req *DeleteBlogRequest, opts ...http.CallOption) (rsp *DeleteBlogReply, err error)
 	GetBlogByID(ctx context.Context, req *GetBlogIDRequest, opts ...http.CallOption) (rsp *GetBlogIDReply, err error)
 	GetBlogByTag(ctx context.Context, req *GetBlogRequest, opts ...http.CallOption) (rsp *GetBlogReply, err error)
 	GetBlogByTitle(ctx context.Context, req *GetBlogByTitleRequest, opts ...http.CallOption) (rsp *GetBlogByTitleReply, err error)
+	GetCacheBlog(ctx context.Context, req *ListBlogRequest, opts ...http.CallOption) (rsp *ListCacheReply, err error)
 	ListBlog(ctx context.Context, req *ListBlogRequest, opts ...http.CallOption) (rsp *ListBlogReply, err error)
 	UpdateBlog(ctx context.Context, req *UpdateBlogRequest, opts ...http.CallOption) (rsp *UpdateBlogReply, err error)
 	UpdateIndividualFields(ctx context.Context, req *UpdateIndividualFieldsRequest, opts ...http.CallOption) (rsp *UpdateIndividualFieldsReply, err error)
@@ -270,6 +319,19 @@ type BlogHTTPClientImpl struct {
 
 func NewBlogHTTPClient(client *http.Client) BlogHTTPClient {
 	return &BlogHTTPClientImpl{client}
+}
+
+func (c *BlogHTTPClientImpl) CacheBlog(ctx context.Context, in *CreateBlogRequest, opts ...http.CallOption) (*CreateBlogReply, error) {
+	var out CreateBlogReply
+	pattern := "/api/cacheBlog"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBlogCacheBlog))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
 }
 
 func (c *BlogHTTPClientImpl) CreateBlog(ctx context.Context, in *CreateBlogRequest, opts ...http.CallOption) (*CreateBlogReply, error) {
@@ -329,6 +391,19 @@ func (c *BlogHTTPClientImpl) GetBlogByTitle(ctx context.Context, in *GetBlogByTi
 	pattern := "/api/searchBlog/{title}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationBlogGetBlogByTitle))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *BlogHTTPClientImpl) GetCacheBlog(ctx context.Context, in *ListBlogRequest, opts ...http.CallOption) (*ListCacheReply, error) {
+	var out ListCacheReply
+	pattern := "/api/getCacheBlog"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationBlogGetCacheBlog))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

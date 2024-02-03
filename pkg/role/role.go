@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	Token   string = "token"
-	Admin          = "admin"
-	User           = "user"
-	Visitor        = "visitor"
+	Token   = "token"
+	Admin   = "admin"
+	User    = "user"
+	Visitor = "visitor"
 )
 
 type Role struct {
@@ -97,16 +97,20 @@ func (r *Permission) GetRole() PermissionStrategy {
 	return r
 }
 
-func (r *Role) FilterPermission(whiteList []string) http.FilterFunc {
+func (r *Role) FilterPermission(whiteList, blackList []string) http.FilterFunc {
 	return func(handler h.Handler) h.Handler {
 		return h.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			if req.Method == h.MethodGet || isPathInWhiteList(req.URL.Path, whiteList) {
-				handler.ServeHTTP(w, req)
-				return
+
+			if !r.IsPathInList(req.URL.Path, blackList) {
+				if req.Method == h.MethodGet || r.IsPathInList(req.URL.Path, whiteList) {
+					handler.ServeHTTP(w, req)
+					return
+				}
 			}
 
 			token := req.Header.Get("token")
 			if token == "" {
+				r.WritePermissionError(w)
 				return
 			}
 
@@ -120,17 +124,16 @@ func (r *Role) FilterPermission(whiteList []string) http.FilterFunc {
 
 			m := &Permission{U: res}
 			if !m.GetRole().CheckPermission() {
-				writePermissionError(w)
+				r.WritePermissionError(w)
 				return
 			}
-
 			handler.ServeHTTP(w, req)
 		})
 	}
 }
 
-func isPathInWhiteList(path string, whiteList []string) bool {
-	for _, wlPath := range whiteList {
+func (r *Role) IsPathInList(path string, List []string) bool {
+	for _, wlPath := range List {
 		if strings.HasPrefix(path, wlPath) {
 			return true
 		}
@@ -138,7 +141,7 @@ func isPathInWhiteList(path string, whiteList []string) bool {
 	return false
 }
 
-func writePermissionError(w http.ResponseWriter) {
+func (r *Role) WritePermissionError(w http.ResponseWriter) {
 	w.WriteHeader(401)
 	rep := map[string]interface{}{
 		"code":   401,

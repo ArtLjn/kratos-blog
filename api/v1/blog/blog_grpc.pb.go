@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.25.1
-// source: blog.proto
+// source: v1/blog/blog.proto
 
 package blog
 
@@ -28,6 +28,8 @@ const (
 	Blog_GetBlogByID_FullMethodName            = "/api.v1.Blog/GetBlogByID"
 	Blog_GetBlogByTitle_FullMethodName         = "/api.v1.Blog/GetBlogByTitle"
 	Blog_UpdateOnly_FullMethodName             = "/api.v1.Blog/UpdateOnly"
+	Blog_CacheBlog_FullMethodName              = "/api.v1.Blog/CacheBlog"
+	Blog_GetCacheBlog_FullMethodName           = "/api.v1.Blog/GetCacheBlog"
 )
 
 // BlogClient is the client API for Blog service.
@@ -43,6 +45,8 @@ type BlogClient interface {
 	GetBlogByID(ctx context.Context, in *GetBlogIDRequest, opts ...grpc.CallOption) (*GetBlogIDReply, error)
 	GetBlogByTitle(ctx context.Context, in *GetBlogByTitleRequest, opts ...grpc.CallOption) (*GetBlogByTitleReply, error)
 	UpdateOnly(ctx context.Context, in *UpdateOnlyRequest, opts ...grpc.CallOption) (*UpdateOnlyReply, error)
+	CacheBlog(ctx context.Context, in *CreateBlogRequest, opts ...grpc.CallOption) (*CreateBlogReply, error)
+	GetCacheBlog(ctx context.Context, in *ListBlogRequest, opts ...grpc.CallOption) (*ListCacheReply, error)
 }
 
 type blogClient struct {
@@ -134,6 +138,24 @@ func (c *blogClient) UpdateOnly(ctx context.Context, in *UpdateOnlyRequest, opts
 	return out, nil
 }
 
+func (c *blogClient) CacheBlog(ctx context.Context, in *CreateBlogRequest, opts ...grpc.CallOption) (*CreateBlogReply, error) {
+	out := new(CreateBlogReply)
+	err := c.cc.Invoke(ctx, Blog_CacheBlog_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *blogClient) GetCacheBlog(ctx context.Context, in *ListBlogRequest, opts ...grpc.CallOption) (*ListCacheReply, error) {
+	out := new(ListCacheReply)
+	err := c.cc.Invoke(ctx, Blog_GetCacheBlog_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BlogServer is the server API for Blog service.
 // All implementations must embed UnimplementedBlogServer
 // for forward compatibility
@@ -147,6 +169,8 @@ type BlogServer interface {
 	GetBlogByID(context.Context, *GetBlogIDRequest) (*GetBlogIDReply, error)
 	GetBlogByTitle(context.Context, *GetBlogByTitleRequest) (*GetBlogByTitleReply, error)
 	UpdateOnly(context.Context, *UpdateOnlyRequest) (*UpdateOnlyReply, error)
+	CacheBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
+	GetCacheBlog(context.Context, *ListBlogRequest) (*ListCacheReply, error)
 	mustEmbedUnimplementedBlogServer()
 }
 
@@ -180,6 +204,12 @@ func (UnimplementedBlogServer) GetBlogByTitle(context.Context, *GetBlogByTitleRe
 }
 func (UnimplementedBlogServer) UpdateOnly(context.Context, *UpdateOnlyRequest) (*UpdateOnlyReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateOnly not implemented")
+}
+func (UnimplementedBlogServer) CacheBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CacheBlog not implemented")
+}
+func (UnimplementedBlogServer) GetCacheBlog(context.Context, *ListBlogRequest) (*ListCacheReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCacheBlog not implemented")
 }
 func (UnimplementedBlogServer) mustEmbedUnimplementedBlogServer() {}
 
@@ -356,6 +386,42 @@ func _Blog_UpdateOnly_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Blog_CacheBlog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateBlogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlogServer).CacheBlog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blog_CacheBlog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlogServer).CacheBlog(ctx, req.(*CreateBlogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Blog_GetCacheBlog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListBlogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlogServer).GetCacheBlog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blog_GetCacheBlog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlogServer).GetCacheBlog(ctx, req.(*ListBlogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Blog_ServiceDesc is the grpc.ServiceDesc for Blog service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -399,7 +465,15 @@ var Blog_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateOnly",
 			Handler:    _Blog_UpdateOnly_Handler,
 		},
+		{
+			MethodName: "CacheBlog",
+			Handler:    _Blog_CacheBlog_Handler,
+		},
+		{
+			MethodName: "GetCacheBlog",
+			Handler:    _Blog_GetCacheBlog_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "blog.proto",
+	Metadata: "v1/blog/blog.proto",
 }

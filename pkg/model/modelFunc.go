@@ -72,8 +72,8 @@ func (o *OFunc) UpdateFunc(model interface{}, cond, values map[string]interface{
 
 	if len(cond) != 0 {
 		for cd, va := range cond {
-			cd := fmt.Sprintf("%s = ?", cd)
-			updateQuery = updateQuery.Where(cd, va)
+			c := fmt.Sprintf("%s = ?", cd)
+			updateQuery = updateQuery.Where(c, va)
 		}
 	}
 

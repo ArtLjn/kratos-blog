@@ -56,6 +56,19 @@ service Blog {
 			body:"*",
 		};
 	}
+
+	rpc CacheBlog(CreateBlogRequest) returns (CreateBlogReply) {
+		option (google.api.http) = {
+			post:"/api/cacheBlog",
+			body:"*",
+		};
+	}
+
+	rpc GetCacheBlog(ListBlogRequest) returns (ListCacheReply) {
+		option (google.api.http) = {
+			get:"/api/getCacheBlog"
+		};
+	}
 }
 
 message BlogData {
@@ -120,6 +133,11 @@ message ListBlogRequest {}
 message ListBlogReply {
 	CommonReply common = 1;
 	repeated BlogData List = 2;
+}
+
+message ListCacheReply {
+	CommonReply common = 1;
+	repeated string data = 2;
 }
 
 message GetBlogByTitleRequest {

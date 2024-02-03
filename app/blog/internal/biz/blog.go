@@ -17,6 +17,8 @@ type BlogRepo interface {
 	QueryBlogById(ctx context.Context, request *pb.GetBlogIDRequest) (msg string, da pb.BlogData, e error)
 	QueryBlogByTitle(ctx context.Context, request *pb.GetBlogByTitleRequest) (string, []*pb.BlogData, error)
 	UpdateOnly(ctx context.Context, request *pb.UpdateOnlyRequest) *pb.UpdateOnlyReply
+	CacheBlog(ctx context.Context, request *pb.CreateBlogRequest) *pb.CreateBlogReply
+	GetCacheBlog(ctx context.Context) *pb.ListCacheReply
 }
 
 type BlogUseCase struct {
@@ -172,4 +174,12 @@ func (uc *BlogUseCase) QueryBlogByTitle(ctx context.Context, request *pb.GetBlog
 
 func (uc *BlogUseCase) UpdateOnly(ctx context.Context, request *pb.UpdateOnlyRequest) *pb.UpdateOnlyReply {
 	return uc.repo.UpdateOnly(ctx, request)
+}
+
+func (uc *BlogUseCase) CacheBlog(ctx context.Context, request *pb.CreateBlogRequest) *pb.CreateBlogReply {
+	return uc.repo.CacheBlog(ctx, request)
+}
+
+func (uc *BlogUseCase) GetAllCacheBlog(ctx context.Context) *pb.ListCacheReply {
+	return uc.repo.GetCacheBlog(ctx)
 }

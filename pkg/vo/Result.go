@@ -61,6 +61,8 @@ const (
 	EMAIL_COOLDOWN      = "请稍后再试！"
 	LIST_EMPTY          = "空列表"
 	PERMISSION_ERROR    = "权限错误"
+	CREATE_SUCCESS      = "创建成功"
+	CREATE_FAIL         = "创建失败"
 )
 
 func (r *Response) SetCode(code int) CodeBuilder {

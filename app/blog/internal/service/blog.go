@@ -42,3 +42,9 @@ func (s *BlogService) GetBlogByTitle(ctx context.Context, req *pb.GetBlogByTitle
 func (s *BlogService) UpdateOnly(ctx context.Context, req *pb.UpdateOnlyRequest) (*pb.UpdateOnlyReply, error) {
 	return s.uc.UpdateOnly(ctx, req), nil
 }
+func (s *BlogService) CacheBlog(ctx context.Context, req *pb.CreateBlogRequest) (*pb.CreateBlogReply, error) {
+	return s.uc.CacheBlog(ctx, req), nil
+}
+func (s *BlogService) GetCacheBlog(ctx context.Context, req *pb.ListBlogRequest) (*pb.ListCacheReply, error) {
+	return s.uc.GetAllCacheBlog(ctx), nil
+}

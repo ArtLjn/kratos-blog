@@ -11,6 +11,12 @@ import (
 	"kratos-blog/app/blog/internal/service"
 )
 
+var (
+	blackList = []string{
+		"/api/searchBlog",
+	}
+)
+
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, blog *service.BlogService, tag *service.TagService,
 	f *data.FilterRepo, logger log.Logger) *http.Server {
@@ -18,7 +24,9 @@ func NewHTTPServer(c *conf.Server, blog *service.BlogService, tag *service.TagSe
 		http.Middleware(
 			recovery.Recovery(),
 		),
-		http.Filter(f.NewFilter(nil)),
+		http.Filter(
+			f.NewFilter(nil, blackList),
+			f.DeleteCache()),
 	}
 	if c.Http.Network != "" {
 		opts = append(opts, http.Network(c.Http.Network))
