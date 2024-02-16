@@ -8,6 +8,8 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Api api = 3;
+  Service service = 4;
 }
 
 message Server {
@@ -42,10 +44,21 @@ message Data {
   Redis redis = 2;
 }
 
+message Api {
+  string ip = 1;
+}
+
 message Registry {
   message Consul {
     string address = 1;
     string scheme = 2;
   }
   Consul consul = 1;
+}
+
+message Service {
+  message User {
+    string endpoint = 1;
+  }
+  User user = 1;
 }

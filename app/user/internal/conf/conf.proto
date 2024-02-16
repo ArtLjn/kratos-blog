@@ -56,6 +56,7 @@ message Admin {
   string password = 2;
 }
 
+
 message Registry {
   message Consul {
     string address = 1;

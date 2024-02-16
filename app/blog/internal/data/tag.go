@@ -10,7 +10,7 @@ import (
 
 type Tag struct {
 	ID      int    `json:"id" gorm:"primary_key;auto_increment"`
-	TagName string `json:"tagName"`
+	TagName string `gorm:"column:tagName" json:"tagName"`
 }
 
 func (t *Tag) TableName() string {
@@ -31,7 +31,7 @@ func NewTagRepo(data *Data, logger log.Logger) biz.TagRepo {
 
 func (t *tagRepo) CreateTag(ctx context.Context, request *pb.CreateTagRequest) *pb.CreateTagReply {
 	var tag Tag
-	t.data.pf.ParseJSONToStruct(request, &tag)
+	t.data.pf.ParseJSONToStruct(request.Data, &tag)
 	if err := t.data.db.Create(&tag).Error; err != nil {
 		return &pb.CreateTagReply{Common: &pb.CommonReply{Code: 500, Result: vo.INSERT_ERROR}}
 	}
@@ -68,8 +68,11 @@ func (t *tagRepo) SearchAllTag(ctx context.Context, request *pb.ListTagRequest) 
 			},
 		}
 	}
-	var tagData []pb.TagData
-	t.data.pf.ParseJSONToStruct(data, &tagData)
+	var tagData []*pb.TagData
+	e := t.data.pf.ParseJSONToStruct(data, &tagData)
+	if e != nil {
+		t.log.Log(log.LevelError, e)
+	}
 	if len(tagData) == 0 {
 		return &pb.ListTagReply{
 			Common: &pb.CommonReply{
@@ -83,5 +86,6 @@ func (t *tagRepo) SearchAllTag(ctx context.Context, request *pb.ListTagRequest) 
 			Code:   200,
 			Result: vo.QUERY_SUCCESS,
 		},
+		Data: tagData,
 	}
 }

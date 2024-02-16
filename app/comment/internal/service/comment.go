@@ -16,7 +16,7 @@ func NewCommentService(uc *biz.CommUseCase) *CommentService {
 }
 
 func (s *CommentService) AddComment(ctx context.Context, req *pb.CreateCommentRequest) (*pb.CreateCommentReply, error) {
-	return &pb.CreateCommentReply{}, nil
+	return s.uc.AddComment(ctx, req), nil
 }
 func (s *CommentService) AddReward(ctx context.Context, req *pb.CreateRewardRequest) (*pb.CreateRewardReply, error) {
 	return &pb.CreateRewardReply{}, nil

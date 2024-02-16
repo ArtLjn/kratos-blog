@@ -206,31 +206,6 @@ func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) 
 	return vo.UPDATE_SUCCESS, nil
 }
 
-// QueryFunc :dev query user information
-func (u *userRepo) QueryFunc(m interface{}, cond map[string]interface{}, isList bool) (interface{}, error) {
-	query := u.data.db.Model(m)
-
-	if len(cond) != 0 {
-		for cd, va := range cond {
-			c := fmt.Sprintf("%s = ?", cd)
-			query = query.Where(c, va)
-		}
-	}
-
-	var strategy model.QueryStrategy
-	if isList {
-		strategy = &model.ListQueryStrategy{}
-	} else {
-		strategy = &model.SingleQueryStrategy{}
-	}
-
-	data, err := strategy.Execute(query)
-	if err != nil {
-		u.log.Errorf("Error querying data: %s", err)
-	}
-	return data, err
-}
-
 func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 	var data User
 	var list []string

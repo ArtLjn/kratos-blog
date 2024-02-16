@@ -7,7 +7,6 @@
 package main
 
 import (
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/app/comment/internal/biz"
@@ -20,19 +19,22 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data,registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confData *conf.Bootstrap,registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
 	r := data.NewRegistrar(registry)
-	db := data.NewDB(confData)
-	rdb := data.NewRDB(confData)
-	dataData, err := data.NewData(confData, logger,db,rdb)
+	discovery := data.NewDiscovery(registry)
+	userClient := data.NewGrpcServiceClient(confData.Service,discovery)
+	db := data.NewDB(confData.Data)
+	rdb := data.NewRDB(confData.Data)
+	dataData, err := data.NewData(confData, logger,db,rdb,userClient)
 	if err != nil {
 		return nil, nil, err
 	}
-	commRepo := data.NewCommRepo(dataData, logger)
+	sensitiveList := data.QueryWords(db)
+	commRepo := data.NewCommRepo(dataData, logger,sensitiveList)
 	commUsecase := biz.NewUCommUseCase(commRepo, logger)
 	commService := service.NewCommentService(commUsecase)
-	grpcServer := server.NewGRPCServer(confServer, commService, logger)
-	httpServer := server.NewHTTPServer(confServer, commService, logger)
+	grpcServer := server.NewGRPCServer(confData.Server, commService, logger)
+	httpServer := server.NewHTTPServer(confData.Server, commService, logger)
 	app := newApp(logger, grpcServer, httpServer,r)
 	return app, func() {
 	}, nil

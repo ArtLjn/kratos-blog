@@ -11,11 +11,13 @@ import (
 )
 
 type PublicFunc interface {
+	CreateFunc(data, model interface{}) error
 	UpdateFunc(model interface{}, cond, values map[string]interface{}, globalUpdate bool) error
 	HasExist(model interface{}, cond map[string]interface{}) bool
 	QueryFunc(model interface{}, cond map[string]interface{}, isList bool) (interface{}, error)
 	ParseJSONToStruct(jsonStr interface{}, resultStruct interface{}) error
 	DeleteFunc(model interface{}, cond map[string]interface{}) error
+	ParseJSONStrToStruct(jsonStr string, list *[]interface{}) (error, bool)
 }
 
 type QueryStrategy interface {
@@ -54,6 +56,16 @@ func NewOFunc(l *log.Helper, db *gorm.DB) PublicFunc {
 		l:  l,
 		db: db,
 	}
+}
+
+// CreateFunc :dev
+func (o *OFunc) CreateFunc(data, model interface{}) error {
+	o.ParseJSONToStruct(data, &model)
+	if err := o.db.Create(model).Error; err != nil {
+		o.l.Info(err)
+		return errors.New(vo.INSERT_ERROR)
+	}
+	return nil
 }
 
 // UpdateFunc :dev
@@ -118,10 +130,9 @@ func (o *OFunc) QueryFunc(model interface{}, cond map[string]interface{}, isList
 	var (
 		data interface{}
 		err  error
-		rule = "create_time DESC"
 	)
 
-	query := o.db.Model(model).Order(rule)
+	query := o.db.Model(model)
 
 	if len(cond) != 0 {
 		for cd, va := range cond {
@@ -153,6 +164,19 @@ func (o *OFunc) ParseJSONToStruct(jsonStr interface{}, resultStruct interface{})
 		return fmt.Errorf("error parsing JSON: %s", err)
 	}
 	return nil
+}
+
+func (o *OFunc) ParseJSONStrToStruct(jsonStr string, list *[]interface{}) (error, bool) {
+	if len(jsonStr) == 0 {
+		return errors.New(vo.LIST_EMPTY), false
+	}
+	var memoryList []interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &memoryList); err != nil {
+		fmt.Errorf("error parsing JSON: %s", err)
+		return errors.New(vo.JSON_ERROR), false
+	}
+	*list = memoryList
+	return nil, true
 }
 
 // DeleteFunc :dev Incoming condition deletion

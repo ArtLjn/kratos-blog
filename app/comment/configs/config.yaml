@@ -15,3 +15,8 @@ data:
     write_timeout: 0.2s
     db: 0
     password:
+api:
+  ip: https://api.oioweb.cn/api/ip/ipaddress?ip=
+service:
+  user:
+    endpoint: discovery:///user.service

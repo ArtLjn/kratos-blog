@@ -21,5 +21,5 @@ mail:
   port: 465
   host: smtp.qq.com
 admin:
-  username: liujunnan
-  password: 320324liu
+  username: test
+  password: test

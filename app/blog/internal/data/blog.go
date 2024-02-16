@@ -41,8 +41,8 @@ type Blog struct {
 	Preface    string `json:"preface"`
 	Photo      string `json:"photo"`
 	Tag        string `json:"tag"`
-	CreateTime string `json:"createTime"`
-	UpdateTime string `json:"updateTime"`
+	CreateTime string `gorm:"column:createTime" json:"createTime"`
+	UpdateTime string `gorm:"column:updateTime" json:"updateTime"`
 	Visits     uint64 `json:"visits"`
 	Content    string `json:"content"`
 	Appear     bool   `json:"appear"`
@@ -231,7 +231,6 @@ func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogBy
 	}
 	r.data.pf.ParseJSONToStruct(blogs, &data)
 	return vo.QUERY_SUCCESS, data, nil
-	return vo.PERMISSION_ERROR, nil, errors.New(vo.PERMISSION_ERROR)
 }
 
 func (r *blogRepo) UpdateOnly(ctx context.Context, request *blog.UpdateOnlyRequest) *blog.UpdateOnlyReply {

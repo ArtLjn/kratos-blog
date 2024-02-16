@@ -63,6 +63,14 @@ const (
 	PERMISSION_ERROR    = "权限错误"
 	CREATE_SUCCESS      = "创建成功"
 	CREATE_FAIL         = "创建失败"
+	IPADDR_ERROR        = "无效的IP地址"
+)
+
+const (
+	BAD_REQUEST        = 400
+	SUCCESS_REQUEST    = 200
+	PERMISSION_REQUEST = 401
+	SYSTEM_ERROR       = 500
 )
 
 func (r *Response) SetCode(code int) CodeBuilder {

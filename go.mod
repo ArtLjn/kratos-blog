@@ -5,12 +5,12 @@ go 1.18
 require (
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20240119085030-a556a2b53120
 	github.com/go-kratos/kratos/v2 v2.7.2
-	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.1
 	github.com/google/wire v0.5.0
 	github.com/hashicorp/consul/api v1.27.0
 	github.com/redis/go-redis/v9 v9.4.0
-	github.com/tx7do/kratos-authn v1.0.0
+	github.com/robfig/cron/v3 v3.0.1
+	github.com/thedevsaddam/gojsonq v2.3.0+incompatible
 	go.uber.org/automaxprocs v1.5.3
 	google.golang.org/genproto/googleapis/api v0.0.0-20231002182017-d307bd883b97
 	google.golang.org/grpc v1.59.0
@@ -51,7 +51,6 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20221212215047-62379fc7944b // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.6 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
