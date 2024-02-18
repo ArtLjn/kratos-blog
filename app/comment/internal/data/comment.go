@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 	"kratos-blog/api/v1/comment"
@@ -197,7 +196,9 @@ func (c *commRepo) QueryCommentCond(cond map[string]interface{}) Comment {
 	return comment
 }
 
-func (c *commRepo) ExtractParentComments(ctx context.Context, req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply {
+func (c *commRepo) ExtractParentComments(ctx context.Context,
+
+	req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply {
 	body, err := c.data.pf.QueryFunc(Comment{}, map[string]interface{}{"article_id": req.Id}, true)
 	if err != nil {
 		c.log.Log(log.LevelError, err)
@@ -213,6 +214,7 @@ func (c *commRepo) ExtractParentComments(ctx context.Context, req *comment.Extra
 	commentSet := make(map[string][]bean.CommentBean)
 	for _, comment := range comments {
 		c.data.pf.ParseJSONToStruct(comment, &cmo)
+		cmo.ID = strconv.Itoa(comment.ID)
 		if len(comment.OriginID) != 0 {
 			c.data.pf.ParseJSONToStruct(comment, &child)
 			if _, ok := commentSet[comment.OriginID]; !ok {
@@ -221,8 +223,8 @@ func (c *commRepo) ExtractParentComments(ctx context.Context, req *comment.Extra
 			} else {
 				for index, parentComment := range commentSet[comment.OriginID] {
 					if parentComment.ID == comment.OriginID {
-						h := commentSet[comment.OriginID][index].ChildComments
-						h = append(h, child)
+						commentSet[comment.OriginID][index].ChildComments =
+							append(commentSet[comment.OriginID][index].ChildComments, child)
 						break
 					}
 				}
@@ -232,6 +234,6 @@ func (c *commRepo) ExtractParentComments(ctx context.Context, req *comment.Extra
 		}
 	}
 	byteRes, _ := json.Marshal(commentSet)
-	fmt.Println(string(byteRes))
-	return &comment.ExtractParentCommentsReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS, List: []string{string(byteRes)}}
+	return &comment.ExtractParentCommentsReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS,
+		List: []string{string(byteRes)}}
 }

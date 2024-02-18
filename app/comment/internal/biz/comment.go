@@ -10,7 +10,8 @@ type CommRepo interface {
 	CheckWords(word string) []string
 	AddComment(ctx context.Context, req *comment.CreateCommentRequest) *comment.CreateCommentReply
 	AddReward(ctx context.Context, req *comment.CreateRewardRequest) *comment.CreateRewardReply
-	ExtractParentComments(ctx context.Context, req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply
+	ExtractParentComments(ctx context.Context,
+		req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply
 }
 
 type CommUseCase struct {
