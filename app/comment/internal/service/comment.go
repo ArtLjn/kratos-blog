@@ -19,8 +19,8 @@ func (s *CommentService) AddComment(ctx context.Context, req *pb.CreateCommentRe
 	return s.uc.AddComment(ctx, req), nil
 }
 func (s *CommentService) AddReward(ctx context.Context, req *pb.CreateRewardRequest) (*pb.CreateRewardReply, error) {
-	return &pb.CreateRewardReply{}, nil
+	return s.uc.AddReward(ctx, req), nil
 }
 func (s *CommentService) ExtractParentComments(ctx context.Context, req *pb.ExtractParentCommentsRequest) (*pb.ExtractParentCommentsReply, error) {
-	return &pb.ExtractParentCommentsReply{}, nil
+	return s.uc.ExtractParentComments(ctx, req), nil
 }

@@ -11,9 +11,9 @@ import (
 	"gopkg.in/gomail.v2"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/user/internal/biz"
+	"kratos-blog/pkg/jwt"
 	"kratos-blog/pkg/model"
 	"kratos-blog/pkg/role"
-	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
 	"strconv"
 	"sync"
@@ -84,9 +84,10 @@ func (u *userRepo) Login(ctx context.Context, request *user.LoginRequest) (strin
 		"password": MD5(request.Pass),
 	}) {
 		//generate token
-		token := fmt.Sprintf("user-token:%s", util.GenerateToken())
-		// set up cache
-		u.data.rdb.Set(context.Background(), token, request.Name, 7*24*time.Hour)
+		token, err := jwt.Sign(request.Name)
+		if err != nil {
+			return vo.GENERATE_TOKEN_FAIL, "", err
+		}
 		return vo.LOGIN_SUCCESS, token, nil
 	}
 	return vo.LOGIN_FAIL, "", errors.New(vo.LOGIN_FAIL)
@@ -169,7 +170,7 @@ func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func()
 // update validate validateUpdatePass
 func (u *userRepo) validateUpdatePass(request *user.UpdatePasswordRequest) error {
 	var user User
-	data, _ := u.QueryFunc(User{}, map[string]interface{}{"email": request.Email}, false)
+	data, _ := u.data.pf.QueryFunc(User{}, map[string]interface{}{"email": request.Email}, false)
 	u.data.pf.ParseJSONToStruct(data, &user)
 	if user.Email != request.Email {
 		return errors.New(vo.EMAIL_NOT_MATCH)
@@ -190,7 +191,7 @@ func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) 
 	}
 
 	var user User
-	data, _ := u.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
+	data, _ := u.data.pf.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
 	u.data.pf.ParseJSONToStruct(data, &user)
 	// Create a coroutine to send a message
 	go func() {
@@ -215,7 +216,7 @@ func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 		list = append([]string{}, f...)
 		return list
 	}
-	d, err := u.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
+	d, err := u.data.pf.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
 	if err != nil {
 		u.log.Log(log.LevelError, err)
 	}
@@ -235,9 +236,10 @@ func (u *userRepo) AdminLogin(request *user.AdminLoginRequest) *user.AdminLoginR
 	if request.Name == u.data.c.Admin.Username &&
 		request.Password == u.data.c.Admin.Password {
 		// generate token
-		token := fmt.Sprintf("admin-token:%s", util.GenerateToken())
-		// set up cache
-		u.data.rdb.Set(context.Background(), token, request.Name, 7*24*time.Hour)
+		token, err := jwt.Sign(request.Name)
+		if err != nil {
+			return status(&user.CommonReply{Code: vo.BAD_REQUEST, Result: vo.GENERATE_TOKEN_FAIL}, nil)
+		}
 		return status(&user.CommonReply{Code: 200, Result: vo.LOGIN_SUCCESS}, []string{token})
 	}
 	return status(&user.CommonReply{Code: 400, Result: vo.LOGIN_FAIL}, nil)

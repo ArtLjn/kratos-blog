@@ -8,6 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/redis/go-redis/v9"
 	"kratos-blog/api/v1/user"
+	"kratos-blog/pkg/jwt"
 	"kratos-blog/pkg/vo"
 	h "net/http"
 	"strings"
@@ -66,7 +67,7 @@ func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
 	if token == "" {
 		return grantVisitorRole()
 	}
-	username, _ := r.rdb.Get(context.Background(), token).Result()
+	username := jwt.GetLoginName(token)
 	r.log.Info("username:", username)
 	// call grpc to query the user
 	res, err := r.uc.GetUser(context.Background(), &user.GetUserRequest{
@@ -116,7 +117,7 @@ func (r *Role) FilterPermission(whiteList, blackList []string) http.FilterFunc {
 				return
 			}
 
-			username, _ := r.rdb.Get(context.Background(), token).Result()
+			username := jwt.GetLoginName(token)
 			res, err := r.uc.GetUser(context.Background(), &user.GetUserRequest{
 				Name: username,
 			})

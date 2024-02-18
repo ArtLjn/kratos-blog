@@ -9,6 +9,8 @@ import (
 type CommRepo interface {
 	CheckWords(word string) []string
 	AddComment(ctx context.Context, req *comment.CreateCommentRequest) *comment.CreateCommentReply
+	AddReward(ctx context.Context, req *comment.CreateRewardRequest) *comment.CreateRewardReply
+	ExtractParentComments(ctx context.Context, req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply
 }
 
 type CommUseCase struct {
@@ -21,6 +23,13 @@ func NewUCommUseCase(repo CommRepo, logger log.Logger) *CommUseCase {
 }
 
 func (c *CommUseCase) AddComment(ctx context.Context, req *comment.CreateCommentRequest) *comment.CreateCommentReply {
-	resp := c.repo.AddComment(ctx, req)
-	return resp
+	return c.repo.AddComment(ctx, req)
+}
+
+func (c *CommUseCase) AddReward(ctx context.Context, req *comment.CreateRewardRequest) *comment.CreateRewardReply {
+	return c.repo.AddReward(ctx, req)
+}
+
+func (c *CommUseCase) ExtractParentComments(ctx context.Context, req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply {
+	return c.repo.ExtractParentComments(ctx, req)
 }

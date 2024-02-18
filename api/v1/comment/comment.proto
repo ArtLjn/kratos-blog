@@ -54,6 +54,6 @@ message ExtractParentCommentsRequest {
 message ExtractParentCommentsReply {
 	int64 code = 1;
 	string result = 2;
-	string data = 3;
+	repeated string list = 3;
 }
 

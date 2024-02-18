@@ -3,14 +3,17 @@ package data
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 	"kratos-blog/api/v1/comment"
 	"kratos-blog/app/comment/internal/biz"
+	"kratos-blog/app/comment/internal/data/bean"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -117,7 +120,7 @@ func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentReq
 		ArticleID:   req.ArticleId,
 		Comment:     req.Comment,
 		CommentAddr: ipAddr,
-		CommentTime: time.Now().Format("2022-12-22 01:12"),
+		CommentTime: time.Now().Format("2006-01-02 15:04"),
 		Name:        name,
 		Email:       email,
 	}
@@ -129,5 +132,106 @@ func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentReq
 			Result: vo.INSERT_ERROR,
 		}
 	}
-	return &comment.CreateCommentReply{Code: vo.SUCCESS_REQUEST, Result: vo.INSERT_SUCCESS}
+	return &comment.CreateCommentReply{Code: vo.SUCCESS_REQUEST, Result: vo.TALK_SUCCESS}
+}
+
+func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardRequest) *comment.CreateRewardReply {
+	if words := c.CheckWords(req.RewardContent); len(words) != 0 {
+		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.TALK_ERROR}
+	}
+	ipAddr := c.GetIp(req.RewardAddr)
+	if len(ipAddr) == 0 {
+		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.IPADDR_ERROR}
+	}
+
+	originComment := c.QueryCommentCond(map[string]interface{}{"id": req.RewardId, "article_id": req.ArticleId})
+	if len(originComment.ArticleID) == 0 {
+		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.REQUEST_FAIL}
+	}
+
+	currentComment := originComment
+	if len(currentComment.RewardName) != 0 {
+		c.P(&currentComment, ctx, req.RewardContent, ipAddr, req.RewardId)
+		currentComment.ID = 0
+		err := c.data.pf.CreateFunc(currentComment, &Comment{})
+		if err != nil {
+			c.log.Log(log.LevelError, err)
+			return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.TALK_FAIL}
+		}
+	} else {
+		c.P(&originComment, ctx, req.RewardContent, ipAddr, req.RewardId)
+		var data map[string]interface{}
+		c.data.pf.ParseJSONToStruct(originComment, &data)
+		err := c.data.pf.UpdateFunc(Comment{}, map[string]interface{}{
+			"id": req.RewardId,
+		}, data, false)
+		if err != nil {
+			c.log.Log(log.LevelError, err)
+			return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.TALK_FAIL}
+		}
+	}
+
+	return &comment.CreateRewardReply{Code: vo.SUCCESS_REQUEST, Result: vo.TALK_SUCCESS}
+}
+
+func (c *commRepo) P(com *Comment, ctx context.Context, data ...string) {
+	user := c.data.role.QueryUserMsg(ctx)
+	name, email := user.U.Data[0], user.U.Data[1]
+	com.RewardName = name
+	com.RewardContent = data[0]
+	com.RewardEmail = email
+	com.RewardAddr = data[1]
+	com.RewardTime = time.Now().Format("2006-01-02 15:04")
+	com.OriginID = data[2]
+}
+
+func (c *commRepo) QueryCommentCond(cond map[string]interface{}) Comment {
+	originComment, err := c.data.pf.QueryFunc(Comment{}, cond, false)
+	comment := Comment{}
+	empty := comment
+	if err != nil {
+		c.log.Log(log.LevelError, err)
+		return empty
+	}
+	c.data.pf.ParseJSONToStruct(originComment, &comment)
+	return comment
+}
+
+func (c *commRepo) ExtractParentComments(ctx context.Context, req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply {
+	body, err := c.data.pf.QueryFunc(Comment{}, map[string]interface{}{"article_id": req.Id}, true)
+	if err != nil {
+		c.log.Log(log.LevelError, err)
+		return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
+	}
+	var (
+		comments []Comment
+		cmo      bean.CommentBean
+		child    bean.ChildComment
+	)
+	c.data.pf.ParseJSONToStruct(body, &comments)
+
+	commentSet := make(map[string][]bean.CommentBean)
+	for _, comment := range comments {
+		c.data.pf.ParseJSONToStruct(comment, &cmo)
+		if len(comment.OriginID) != 0 {
+			c.data.pf.ParseJSONToStruct(comment, &child)
+			if _, ok := commentSet[comment.OriginID]; !ok {
+				cmo.ChildComments = append(cmo.ChildComments, []bean.ChildComment{child}...)
+				commentSet[comment.OriginID] = append(commentSet[comment.OriginID], cmo)
+			} else {
+				for index, parentComment := range commentSet[comment.OriginID] {
+					if parentComment.ID == comment.OriginID {
+						h := commentSet[comment.OriginID][index].ChildComments
+						h = append(h, child)
+						break
+					}
+				}
+			}
+		} else {
+			commentSet[strconv.Itoa(comment.ID)] = append(commentSet[strconv.Itoa(comment.ID)], cmo)
+		}
+	}
+	byteRes, _ := json.Marshal(commentSet)
+	fmt.Println(string(byteRes))
+	return &comment.ExtractParentCommentsReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS, List: []string{string(byteRes)}}
 }

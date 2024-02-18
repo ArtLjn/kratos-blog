@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20240119085030-a556a2b53120
 	github.com/go-kratos/kratos/v2 v2.7.2
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.1
 	github.com/google/wire v0.5.0
 	github.com/hashicorp/consul/api v1.27.0

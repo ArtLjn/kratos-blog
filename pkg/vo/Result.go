@@ -48,6 +48,9 @@ const (
 	REQUEST_FAIL        = "请求失败"
 	TALK_ERROR          = "请文明发言"
 	TALK_FORBIDDEN      = "禁止评论"
+	TALK_SUCCESS        = "评论成功"
+	TALK_FAIL           = "评论失败"
+	REWARD_FAIL         = "回复失败"
 	FREQUENCY_ANOMALIES = "频率异常"
 	KEY_ERROR           = "验证码错误"
 	NAME_EXIST          = "用户名已存在"
@@ -64,6 +67,7 @@ const (
 	CREATE_SUCCESS      = "创建成功"
 	CREATE_FAIL         = "创建失败"
 	IPADDR_ERROR        = "无效的IP地址"
+	GENERATE_TOKEN_FAIL = "生成Token失败"
 )
 
 const (
