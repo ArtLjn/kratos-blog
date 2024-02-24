@@ -234,6 +234,7 @@ func (c *commRepo) ExtractParentComments(ctx context.Context,
 		}
 	}
 	byteRes, _ := json.Marshal(commentSet)
+	strBody := string(byteRes)
 	return &comment.ExtractParentCommentsReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS,
-		List: []string{string(byteRes)}}
+		List: []string{strBody}}
 }
