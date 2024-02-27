@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 	"kratos-blog/api/v1/comment"
@@ -74,7 +75,7 @@ func (c *commRepo) CheckWords(word string) []string {
 }
 
 func (c *commRepo) GetIp(ip string) string {
-	uri := c.data.c.Api.GetIp() + ip
+	uri := fmt.Sprintf("%s%s", c.data.c.Api.GetIp(), ip)
 	body, err := util.Request(http.MethodGet, uri, nil)
 	if err != nil {
 		c.log.Log(log.LevelError, err)
@@ -176,6 +177,10 @@ func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardReque
 func (c *commRepo) P(com *Comment, ctx context.Context, data ...string) {
 	user := c.data.role.QueryUserMsg(ctx)
 	name, email := user.U.Data[0], user.U.Data[1]
+	if len(name) == 0 || len(email) == 0 {
+		name = "访客"
+		email = "example@qq.com"
+	}
 	com.RewardName = name
 	com.RewardContent = data[0]
 	com.RewardEmail = email
