@@ -64,7 +64,7 @@ func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
 		}
 	}
 	// The token is empty,granting the visitor permissions
-	if token == "" {
+	if len(token) == 0 {
 		return grantVisitorRole()
 	}
 	username := jwt.GetLoginName(token)
@@ -73,7 +73,7 @@ func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
 	res, err := r.uc.GetUser(context.Background(), &user.GetUserRequest{
 		Name: username,
 	})
-	if res.Data[4] == "" {
+	if len(res.Data[4]) == 0 {
 		return grantVisitorRole()
 	}
 	if err != nil {
@@ -112,7 +112,7 @@ func (r *Role) FilterPermission(whiteList, blackList []string) http.FilterFunc {
 			}
 
 			token := req.Header.Get("token")
-			if token == "" {
+			if len(token) == 0 {
 				r.WritePermissionError(w)
 				return
 			}

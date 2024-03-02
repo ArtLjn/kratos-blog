@@ -91,6 +91,7 @@ func InitDB(db *gorm.DB) {
 	if err := db.AutoMigrate(
 		&Blog{},
 		&Tag{},
+		Friend{},
 	); err != nil {
 		panic(err)
 	}

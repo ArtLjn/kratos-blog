@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/uuid"
 	"gopkg.in/gomail.v2"
 	"kratos-blog/api/v1/user"
@@ -79,6 +80,17 @@ func (u *userRepo) AddUser(ctx context.Context, request *user.CreateUserRequest)
 
 // Login :dev Common user login func
 func (u *userRepo) Login(ctx context.Context, request *user.LoginRequest) (string, string, error) {
+	req, ok := http.RequestFromServerContext(ctx)
+	if !ok {
+		u.log.Errorf("%v\n", "parse ctx fail")
+	}
+	quireToken := req.Header.Get(role.Token)
+	username := jwt.GetLoginName(quireToken)
+	if len(username) != 0 {
+		if u.data.pf.HasExist(User{}, map[string]interface{}{"name": username}) {
+			return vo.LOGIN_SUCCESS, quireToken, nil
+		}
+	}
 	if u.data.pf.HasExist(User{}, map[string]interface{}{
 		"name":     request.Name,
 		"password": MD5(request.Pass),

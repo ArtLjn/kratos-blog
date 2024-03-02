@@ -11,6 +11,7 @@ type FilterRepo struct {
 	log  *log.Helper
 }
 
+// 当对文章进行修改时,需要清除redis缓存的接口
 var (
 	pathList = []string{
 		"/api/addBlog",
@@ -29,10 +30,12 @@ func NewFilterRepo(data *Data, logger log.Logger) *FilterRepo {
 	}
 }
 
+// NewFilter :dev 权限认证
 func (f *FilterRepo) NewFilter(whiteList, blackList []string) http.FilterFunc {
 	return f.data.role.FilterPermission(whiteList, blackList)
 }
 
+// DeleteCache :dev 清除redis缓存
 func (f *FilterRepo) DeleteCache() http.FilterFunc {
 	return func(handler h.Handler) h.Handler {
 		return h.HandlerFunc(func(writer h.ResponseWriter, request *h.Request) {

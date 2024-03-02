@@ -37,8 +37,11 @@ func wireApp(conf *conf.Bootstrap,registry *conf.Registry,logger log.Logger) (*k
 	tagRepo := data.NewTagRepo(dataData,logger)
 	tagUseCase := biz.NewTagUseCase(tagRepo,logger)
 	tagService := service.NewTagService(tagUseCase)
-	grpcServer := server.NewGRPCServer(conf.Server, blogService,tagService, logger)
-	httpServer := server.NewHTTPServer(conf, blogService,tagService,filterRepo, logger)
+	friendRepo := data.NewFriendRepo(dataData,logger)
+	friendUseCase := biz.NewFriendUseCase(friendRepo,logger)
+	friendService := service.NewFriendService(friendUseCase)
+	grpcServer := server.NewGRPCServer(conf.Server, blogService,friendService,tagService, logger)
+	httpServer := server.NewHTTPServer(conf, blogService,friendService,tagService,filterRepo, logger)
 	app := newApp(logger, grpcServer, httpServer,r)
 	return app, func() {
 	}, nil

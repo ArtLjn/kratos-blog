@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package friend;
+
+option go_package = "/friend;friend";
+option java_multiple_files = true;
+option java_package = "friend";
+import "google/api/annotations.proto";
+
+service Friend {
+	rpc CreateFriend (CreateFriendRequest) returns (CreateFriendReply) {
+		option (google.api.http) = {
+			post:'/api/addFriend',
+			body:"*",
+		};
+	};
+	rpc UpdateFriend (UpdateFriendRequest) returns (UpdateFriendReply) {
+		option (google.api.http) = {
+			put:'/api/updateFriend',
+			body:"*"
+		};
+	};
+	rpc DeleteFriend (DeleteFriendRequest) returns (DeleteFriendReply) {
+		option (google.api.http) = {
+			delete:'/api/deleteFriend/{id}'
+		};
+	};
+	rpc GetFriend (GetFriendRequest) returns (GetFriendReply) {
+		option (google.api.http) = {
+			get:"/api/getFriend/{id}"
+		};
+	};
+	rpc ListFriend (ListFriendRequest) returns (ListFriendReply) {
+		option (google.api.http) = {
+			get:'/api/getAllFriend'
+		};
+	};
+}
+
+message FriendData {
+	optional int64 id = 1;
+	optional string title = 2;
+	optional string preface = 3;
+	optional string url = 4;
+	optional string photo = 5;
+	optional string date = 6;
+}
+
+message CommonReply {
+	int64 code = 1;
+	string result = 2;
+}
+
+message CreateFriendRequest {
+	FriendData data = 2;
+}
+message CreateFriendReply {
+	CommonReply common = 1;
+}
+
+message UpdateFriendRequest {
+	FriendData data = 2;
+}
+message UpdateFriendReply {
+	CommonReply common = 1;
+}
+
+message DeleteFriendRequest {
+	int64 id = 1;
+}
+message DeleteFriendReply {
+	CommonReply common = 1;
+}
+
+message GetFriendRequest {
+	int64 id = 1;
+}
+message GetFriendReply {
+	CommonReply common = 1;
+	FriendData data = 2;
+}
+
+message ListFriendRequest {}
+message ListFriendReply {
+	CommonReply common = 1;
+	repeated FriendData data = 2;
+}
