@@ -68,6 +68,7 @@ const (
 	CREATE_FAIL         = "创建失败"
 	IPADDR_ERROR        = "无效的IP地址"
 	GENERATE_TOKEN_FAIL = "生成Token失败"
+	REQUIRE_FILE_ERROR  = "文件获取失败"
 )
 
 const (

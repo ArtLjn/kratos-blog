@@ -39,14 +39,15 @@ type Data struct {
 	rdb  *redis.Client
 	pf   model.PublicFunc
 	role *role.Role
+	c    *conf.Bootstrap
 }
 
 // NewData .
-func NewData(c *conf.Data, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
+func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
 	pf := model.NewOFunc(l, db)
 	role := role.NewRole(rdb, uc, l)
-	return &Data{log: l, uc: uc, db: db, rdb: rdb, pf: pf, role: role}, nil
+	return &Data{log: l, uc: uc, db: db, rdb: rdb, pf: pf, role: role, c: c}, nil
 }
 
 // NewRegistrar add consul

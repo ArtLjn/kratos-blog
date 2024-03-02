@@ -19,6 +19,6 @@ service:
   user:
     endpoint: discovery:///user.service
 upload:
-  path: E:\HongDou-Go-Blog\kratos-blog
+  path: E:\HongDou-Go-Blog\kratos-blog\pkg\upload\file
   domain: http://localhost:8080
-  maxsize: 10 MB
+  maxsize: 3 MB

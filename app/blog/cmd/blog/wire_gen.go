@@ -26,7 +26,7 @@ func wireApp(conf *conf.Bootstrap,registry *conf.Registry,logger log.Logger) (*k
 	r := data.NewRegistrar(registry)
 	db := data.NewDB(conf.Data)
 	rdb := data.NewRDB(conf.Data)
-	dataData, err := data.NewData(conf.Data,logger,db,rdb,userClient)
+	dataData, err := data.NewData(conf,logger,db,rdb,userClient)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,7 +38,7 @@ func wireApp(conf *conf.Bootstrap,registry *conf.Registry,logger log.Logger) (*k
 	tagUseCase := biz.NewTagUseCase(tagRepo,logger)
 	tagService := service.NewTagService(tagUseCase)
 	grpcServer := server.NewGRPCServer(conf.Server, blogService,tagService, logger)
-	httpServer := server.NewHTTPServer(conf.Server, blogService,tagService,filterRepo, logger)
+	httpServer := server.NewHTTPServer(conf, blogService,tagService,filterRepo, logger)
 	app := newApp(logger, grpcServer, httpServer,r)
 	return app, func() {
 	}, nil

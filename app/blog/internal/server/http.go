@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -9,25 +10,31 @@ import (
 	"kratos-blog/app/blog/internal/conf"
 	"kratos-blog/app/blog/internal/data"
 	"kratos-blog/app/blog/internal/service"
+	"kratos-blog/pkg/upload"
 )
 
 var (
 	blackList = []string{
 		"/api/searchBlog",
 	}
+	whiteList = []string{
+		"/util/upload",
+	}
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, blog *service.BlogService, tag *service.TagService,
+func NewHTTPServer(cf *conf.Bootstrap, blog *service.BlogService, tag *service.TagService,
 	f *data.FilterRepo, logger log.Logger) *http.Server {
+	c := cf.Server
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
 		),
 		http.Filter(
-			f.NewFilter(nil, blackList),
+			f.NewFilter(whiteList, blackList),
 			f.DeleteCache()),
 	}
+
 	if c.Http.Network != "" {
 		opts = append(opts, http.Network(c.Http.Network))
 	}
@@ -38,7 +45,20 @@ func NewHTTPServer(c *conf.Server, blog *service.BlogService, tag *service.TagSe
 		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
 	}
 	srv := http.NewServer(opts...)
+	router := gin.Default()
+	NewGinRouter(cf, router)
+	srv.HandlePrefix("/util", router)
 	v1.RegisterBlogHTTPServer(srv, blog)
 	v2.RegisterTagHTTPServer(srv, tag)
 	return srv
+}
+
+func NewGinRouter(c *conf.Bootstrap, router *gin.Engine) {
+	po := upload.UploadRepo{
+		UploadPath: c.Upload.Path,
+		Domain:     c.Upload.Domain,
+		MaxSize:    c.Upload.Maxsize,
+	}
+	utilGroup := router.Group("/util")
+	utilGroup.POST("/upload", po.GinUploadImg)
 }

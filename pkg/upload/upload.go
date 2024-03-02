@@ -2,11 +2,12 @@ package upload
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/uuid"
 	"io"
+	"kratos-blog/pkg/vo"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -19,25 +20,58 @@ type UploadRepo struct {
 	MaxSize    string // 最大文件大小（字节）
 }
 
-func (u *UploadRepo) UploadImg(ctx context.Context, uri *string) {
+// GinUploadImg :dev 使用gin框架进行文件上传
+func (u *UploadRepo) GinUploadImg(ctx *gin.Context) {
+	file, err := ctx.FormFile("file")
+	size, _ := ParseSize(u.MaxSize)
+	res := vo.Response{}
+	if err != nil {
+		ctx.JSON(vo.BAD_REQUEST, res.SetCode(vo.BAD_REQUEST).SetInfo(vo.REQUIRE_FILE_ERROR).GetCodeInfo())
+		return
+	} else if file.Size > size {
+		info := fmt.Sprintf("上传文件大小不的大于%s", u.MaxSize)
+		ctx.JSON(vo.BAD_REQUEST, res.SetCode(vo.BAD_REQUEST).SetInfo(info).GetCodeInfo())
+		return
+	}
+	originName := file.Filename
+	lastDotIndex := strings.LastIndex(originName, ".")
+	if lastDotIndex == -1 {
+		ctx.JSON(vo.BAD_REQUEST, res.SetCode(vo.BAD_REQUEST).SetInfo("文件后缀获取失败").GetCodeInfo())
+		return
+	}
+	// 提取后缀名
+	extension := originName[lastDotIndex+1:]
+	newFileName := fmt.Sprintf("%s%s%s", uuid.New().String()[:8], ".", extension)
+	savePath := filepath.Join(u.UploadPath, newFileName)
+	getLastIndex(&u.Domain)
+	if err := ctx.SaveUploadedFile(file, savePath); err != nil {
+		ctx.JSON(vo.BAD_REQUEST, res.SetCode(vo.BAD_REQUEST).SetInfo("上传文件失败").GetCodeInfo())
+		return
+	}
+	uri := fmt.Sprintf("%s%s", u.Domain, newFileName)
+	ctx.JSON(vo.SUCCESS_REQUEST, res.SetCode(vo.SUCCESS_REQUEST).SetInfo("上传成功").SetData(uri).GetCodeInfo())
+}
+
+// UploadImg kratos 通用上传文件
+func (u *UploadRepo) UploadImg(ctx context.Context, uri *string) error {
 	req, ok := http.RequestFromServerContext(ctx)
 	if !ok {
-		panic(errors.New("ctx false"))
+		return fmt.Errorf("%v\n", "解析context异常")
+	} else if !strings.Contains(req.Header.Get("Content-Type"), "multipart/form-data") {
+		return fmt.Errorf("Invalid Content-Type: %v\n", req.Header.Get("Content-Type"))
 	}
 	size, _ := ParseSize(u.MaxSize)
 	file, handler, err := req.FormFile("file")
 	if err != nil {
-		fmt.Println(err)
-		return
-	} else if ep := req.ParseMultipartForm(size); ep != nil {
-		fmt.Sprintf("Error Retrieving the File: %v", ep)
-		return
+		return err
+	} else if handler.Size > size {
+		return fmt.Errorf("%v%s\n", "上传文件大小不的大于", u.MaxSize)
 	}
 	defer file.Close()
 	originName := handler.Filename
 	lastDotIndex := strings.LastIndex(originName, ".")
 	if lastDotIndex == -1 {
-		return
+		return fmt.Errorf("%v\n", "文件后缀获取失败")
 	}
 	// 提取后缀名
 	extension := originName[lastDotIndex+1:]
@@ -46,22 +80,20 @@ func (u *UploadRepo) UploadImg(ctx context.Context, uri *string) {
 	getLastIndex(&u.Domain)
 	// 创建上传目录
 	if !directoryExists(u.UploadPath) {
-		os.Mkdir(u.UploadPath, os.ModePerm)
+		os.MkdirAll(u.UploadPath, os.ModePerm)
 	}
 	if e := checkPathAvailability(u.UploadPath); e != nil {
-		fmt.Printf("Path is not available: %v\n", err)
-		return
+		return fmt.Errorf("Path is not available: %v\n", e)
 	}
 	// 创建上传文件
 	f, es := os.Create(savePath)
 	if es != nil {
-		fmt.Sprintf("create file error: %v\n", es)
-		return
+		return fmt.Errorf("create file error: %v\n", es)
 	}
 	defer f.Close()
 	io.Copy(f, file)
 	*uri = fmt.Sprintf("%s%s", u.Domain, newFileName)
-	return
+	return nil
 }
 
 func getLastIndex(uri *string) {
