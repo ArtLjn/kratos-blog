@@ -7,7 +7,9 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/uuid"
 	"io"
+	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
+	h2 "net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -18,6 +20,60 @@ type UploadRepo struct {
 	UploadPath string //上传路径
 	Domain     string // 域名
 	MaxSize    string // 最大文件大小（字节）
+	Url        string // 外部uri
+}
+
+// BingPhoto :dev 获取bing每日图片接口
+func (u *UploadRepo) BingPhoto(uri *string) error {
+	body, err := util.Request(h2.MethodGet, u.Url, nil)
+	if err != nil {
+		return err
+	}
+	images := util.GetJsonVal("images", body).([]interface{})
+	if len(images) == 0 {
+		return fmt.Errorf("require images failed \n")
+	}
+	imageUri := images[0].(map[string]interface{})
+	img, ok := imageUri["url"].(string)
+	if ok {
+		fullUri := fmt.Sprintf("%s%s", "https://cn.bing.com", img)
+		res, e := h2.Get(fullUri)
+		if e != nil {
+			return e
+		} else if res.StatusCode != h2.StatusOK {
+			return fmt.Errorf("The request failure status code is %d\n", res.StatusCode)
+		}
+		defer res.Body.Close()
+		newImgName := fmt.Sprintf("%s%s", uuid.New().String()[:8], ".jpg")
+		savePath := fmt.Sprintf("%s%s", u.UploadPath, newImgName)
+		if ue := u.CopyFile(savePath, res.Body); ue != nil {
+			return ue
+		}
+		*uri = fmt.Sprintf("%s%s", u.Domain, newImgName)
+		return nil
+	}
+	return fmt.Errorf("The image URI parsing failed \n")
+}
+
+func (u *UploadRepo) CopyFile(savePath string, src io.Reader) error {
+	// 创建上传目录
+	if !directoryExists(u.UploadPath) {
+		os.MkdirAll(u.UploadPath, os.ModePerm)
+	}
+	if !directoryExists(u.UploadPath) {
+		os.MkdirAll(u.UploadPath, os.ModePerm)
+	}
+	if e := checkPathAvailability(u.UploadPath); e != nil {
+		return fmt.Errorf("Path is not available: %v\n", e)
+	}
+	// 创建上传文件
+	f, es := os.Create(savePath)
+	if es != nil {
+		return fmt.Errorf("create file error: %v\n", es)
+	}
+	defer f.Close()
+	io.Copy(f, src)
+	return nil
 }
 
 // GinUploadImg :dev 使用gin框架进行文件上传
@@ -78,20 +134,10 @@ func (u *UploadRepo) UploadImg(ctx context.Context, uri *string) error {
 	newFileName := fmt.Sprintf("%s%s%s", uuid.New().String()[:8], ".", extension)
 	savePath := filepath.Join(u.UploadPath, newFileName)
 	getLastIndex(&u.Domain)
-	// 创建上传目录
-	if !directoryExists(u.UploadPath) {
-		os.MkdirAll(u.UploadPath, os.ModePerm)
+	ue := u.CopyFile(savePath, file)
+	if ue != nil {
+		return ue
 	}
-	if e := checkPathAvailability(u.UploadPath); e != nil {
-		return fmt.Errorf("Path is not available: %v\n", e)
-	}
-	// 创建上传文件
-	f, es := os.Create(savePath)
-	if es != nil {
-		return fmt.Errorf("create file error: %v\n", es)
-	}
-	defer f.Close()
-	io.Copy(f, file)
 	*uri = fmt.Sprintf("%s%s", u.Domain, newFileName)
 	return nil
 }
