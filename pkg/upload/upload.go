@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/uuid"
+	"github.com/thedevsaddam/gojsonq"
 	"io"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
@@ -14,6 +15,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
 type UploadRepo struct {
@@ -23,14 +26,49 @@ type UploadRepo struct {
 	Url        string // 外部uri
 }
 
+// CurrentBing :dev 今日Bing图片
+type CurrentBing struct {
+	Url            string
+	lastUpdateTime time.Time
+	mu             sync.Mutex
+}
+
+var current CurrentBing
+
+// GetBingPhoto :dev GetBingPhoto 获取Bing每日随机图片
+func (u *UploadRepo) GetBingPhoto(ctx *gin.Context) {
+	res := vo.Response{}
+
+	updateLastUpdateTime := func() error {
+		current.mu.Lock()
+		defer current.mu.Unlock()
+		err := u.BingPhoto(&current.Url)
+		if err != nil {
+			return err
+		}
+		current.lastUpdateTime = time.Now()
+		return nil
+	}
+
+	if current.lastUpdateTime.IsZero() || current.lastUpdateTime.Day() != time.Now().Day() {
+		err := updateLastUpdateTime()
+		if err != nil {
+			ctx.JSON(vo.BAD_REQUEST, res.SetCode(vo.BAD_REQUEST).SetInfo(err.Error()).GetCodeInfo())
+			return
+		}
+	}
+
+	ctx.JSON(vo.SUCCESS_REQUEST, res.SetCode(vo.SUCCESS_REQUEST).SetInfo(vo.QUERY_SUCCESS).SetData(current.Url).GetCodeInfo())
+}
+
 // BingPhoto :dev 获取bing每日图片接口
 func (u *UploadRepo) BingPhoto(uri *string) error {
 	body, err := util.Request(h2.MethodGet, u.Url, nil)
 	if err != nil {
 		return err
 	}
-	images := util.GetJsonVal("images", body).([]interface{})
-	if len(images) == 0 {
+	images, ok := gojsonq.New().JSONString(body).Find("images").([]interface{})
+	if len(images) == 0 || !ok {
 		return fmt.Errorf("require images failed \n")
 	}
 	imageUri := images[0].(map[string]interface{})
@@ -45,10 +83,11 @@ func (u *UploadRepo) BingPhoto(uri *string) error {
 		}
 		defer res.Body.Close()
 		newImgName := fmt.Sprintf("%s%s", uuid.New().String()[:8], ".jpg")
-		savePath := fmt.Sprintf("%s%s", u.UploadPath, newImgName)
+		savePath := filepath.Join(u.UploadPath, newImgName)
 		if ue := u.CopyFile(savePath, res.Body); ue != nil {
 			return ue
 		}
+		getLastIndex(&u.Domain)
 		*uri = fmt.Sprintf("%s%s", u.Domain, newImgName)
 		return nil
 	}

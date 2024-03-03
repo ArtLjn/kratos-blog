@@ -20,6 +20,7 @@ var (
 	}
 	whiteList = []string{
 		"/util/upload",
+		"/util/getBingPhoto",
 	}
 )
 
@@ -63,7 +64,9 @@ func NewGinRouter(c *conf.Bootstrap, router *gin.Engine) {
 		UploadPath: c.Upload.Path,
 		Domain:     c.Upload.Domain,
 		MaxSize:    c.Upload.Maxsize,
+		Url:        c.Upload.Uri,
 	}
 	utilGroup := router.Group("/util")
 	utilGroup.POST("/upload", po.GinUploadImg)
+	utilGroup.GET("/getBingPhoto", po.GetBingPhoto)
 }

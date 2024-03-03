@@ -11,24 +11,35 @@ import (
 )
 
 func Request(method, uri string, body interface{}) (string, error) {
-	client := &http.Client{Timeout: 3 * time.Second}
-	byteBody, _ := json.Marshal(body)
-	res, err := http.NewRequest(method, uri, bytes.NewBuffer(byteBody))
+	client := &http.Client{Timeout: 5 * time.Second}
+	var (
+		res *http.Request
+		err error
+	)
+	if body != nil {
+		byteBody, _ := json.Marshal(body)
+		res, err = http.NewRequest(method, uri, bytes.NewBuffer(byteBody))
+	} else {
+		res, err = http.NewRequest(method, uri, nil)
+	}
 	res.Header.Set("Content-Type", "application/json")
 	if err != nil {
 		return "", err
 	}
 	resp, ee := client.Do(res)
+	if ee != nil {
+		return "", ee
+	}
 	data, e := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println(string(data))
-		return "", ee
+		return "", fmt.Errorf("The request failure status code is %d\n", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 	if e != nil {
 		return "", e
 	}
-	return string(data), nil
+	bd := string(data)
+	return bd, nil
 }
 
 func GetJsonVal(body string, key string) interface{} {
