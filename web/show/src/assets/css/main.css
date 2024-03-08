@@ -1,0 +1,187 @@
+.body{
+    background-image: url("../image/boat-8123031_1280.webp");
+    height: auto;
+    background-repeat: no-repeat;
+    width: 100%;
+    top: 0;
+    left: 0;
+    min-height: 100%;
+    position: absolute; 
+    background-size: cover;
+    background-attachment: fixed;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.main-title{
+    font-size: 55px;
+    color: white;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    margin-top: 150px;
+    padding: 10px;
+    font-weight: bold;
+}
+.link{
+    text-decoration: none;
+    color: white;
+    margin-right: 20px;
+    
+ }
+
+.title{
+    color: #ede9e9;
+    font-size: 28px;
+    opacity: 0.9;
+ }
+ .bottom-title{
+    font-size: 20px;
+    color: white;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+ }
+ .footer-content{
+    color:white;
+    background:linear-gradient(to top right,rgba(197, 213, 217, 0.5),rgba(176, 188, 193, 0.5));
+    padding: 40px;
+    bottom: 0;
+  }
+  .card-dd{
+    margin: 0px auto 20px auto;
+    min-height: 500px;
+    height: auto;
+    border-radius: 10px;
+    width: calc(80%);
+    min-width:68%;
+    height: auto;
+    position: relative;
+    vertical-align: bottom;
+    background-color:rgb(255, 255, 255,0.5);
+}
+@media screen and (max-width:600px) {
+    .card-dd{
+        width: calc(89%);
+    }
+}
+.img2{
+    width: 100%;
+    border-radius: 10px;
+    min-height: 250px;
+    height: auto;
+    animation: fadeInOut 2s ease-in-out;
+    max-height: 300px;
+  }
+  .blog-t{
+    position: absolute;
+    z-index: 1;
+    color: white;
+    bottom: 15px;
+    left: 10px;
+    font-size: 25px;
+}
+.preface2{
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    position: absolute;
+    top: 120px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    margin: 10px;
+  }
+
+  .button2{
+    position: absolute;
+    top: 120px;
+    left: 0;
+    right: 0;
+    margin:50px auto 10px auto;
+    border-radius: 30px;
+    padding:12px;
+    width: 100px;
+    border: none;
+    background:linear-gradient(to top right,rgb(197, 189, 186),rgb(250, 74, 35));
+    color: white;
+    font-weight: bold;
+  }
+  
+  .blog-t2{
+    position: absolute;
+    color: white;
+    top: 60px;
+    left: 0;
+    right: 0;
+    font-size: 25px;
+    text-align: center;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  .card2{
+    width: 500px;
+    height: auto;
+    margin: 20px;
+  }
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100%{
+        opacity: 1;
+    }
+}
+.main{
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  width: calc(100%);
+  height: 500px;
+  position: absolute;
+}
+::-webkit-scrollbar {
+  width: 5px; /* 设置滚动条的宽度 */
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f7f8; /* 设置滚动条的轨道背景颜色 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to top right,rgb(199, 53, 34),rgb(239, 236, 234)); /* 设置滚动条的拖动块颜色 */
+}
+@keyframes slide-in {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes slide-in2 {
+  0% {
+    transform: translateY(-20%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes slide-in3 {
+  0% {
+    transform: translateY(20%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.page{
+  margin: 20px auto 20px auto;
+  width: calc(100%);
+  display: flex;
+  justify-content: center;
+}

@@ -42,13 +42,11 @@ type Permission struct {
 	Role string
 }
 
+// TODO 上下文token无法传递
+
 // QueryUserMsg :dev query user information
 func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
-	req, ok := http.RequestFromServerContext(ctx)
-	if !ok {
-		panic(errors.New("ctx false"))
-	}
-	token := req.Header.Get(Token)
+	token := ctx.Value("token").(string)
 
 	grantVisitorRole := func() *Permission {
 		visit := make([]string, 4)
@@ -63,6 +61,7 @@ func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
 			},
 		}
 	}
+
 	// The token is empty,granting the visitor permissions
 	if len(token) == 0 {
 		return grantVisitorRole()

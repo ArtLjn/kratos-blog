@@ -12,6 +12,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"kratos-blog/app/blog/internal/conf"
 	_ "kratos-blog/app/blog/internal/data"
+	"kratos-blog/pkg/server"
 
 	"os"
 
@@ -21,7 +22,7 @@ import (
 // go build -ldflags "-X main.Version=x.y.z"
 var (
 	// Name is the name of the compiled software.
-	Name = "blog.service"
+	Name = server.BlogService
 	// Version is the version of the compiled software.
 	Version = "1.0"
 	// flagconf is the config flag.
@@ -43,7 +44,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
-			hs,
+			//hs, // 开启 HTTP
 		),
 		kratos.Registrar(r),
 	)

@@ -116,7 +116,6 @@ func NewGrpcServiceClient(sr *conf.Service, rr registry.Discovery) user.UserClie
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 		grpc.WithHealthCheck(true),
 		grpc.WithTimeout(5*time.Second),

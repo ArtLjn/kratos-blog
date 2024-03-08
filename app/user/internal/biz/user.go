@@ -19,7 +19,7 @@ type UserRepo interface {
 	UpdatePassword(ctx context.Context, request *user.UpdatePasswordRequest) (string, error)
 	SetBlack(ctx context.Context, request *user.SetBlackRequest) (string, error)
 	GetUserMsg(request *user.GetUserRequest) []string
-	AdminLogin(request *user.AdminLoginRequest) *user.AdminLoginReply
+	AdminLogin(ctx context.Context, request *user.AdminLoginRequest) *user.AdminLoginReply
 }
 
 type UserUseCase struct {
@@ -101,5 +101,5 @@ func (u *UserUseCase) GetUserMsg(ctx context.Context, request *user.GetUserReque
 }
 
 func (u *UserUseCase) AdminLoginRsg(ctx context.Context, request *user.AdminLoginRequest) *user.AdminLoginReply {
-	return u.repo.AdminLogin(request)
+	return u.repo.AdminLogin(ctx, request)
 }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.25.1
-// source: v1/blog/blog.proto
+// source: blog.proto
 
 package blog
 
@@ -31,6 +31,9 @@ const (
 	Blog_CacheBlog_FullMethodName              = "/api.v1.Blog/CacheBlog"
 	Blog_GetCacheBlog_FullMethodName           = "/api.v1.Blog/GetCacheBlog"
 	Blog_DeleteCacheBlog_FullMethodName        = "/api.v1.Blog/DeleteCacheBlog"
+	Blog_AddSuggestBlog_FullMethodName         = "/api.v1.Blog/AddSuggestBlog"
+	Blog_DeleteSuggestBlog_FullMethodName      = "/api.v1.Blog/DeleteSuggestBlog"
+	Blog_GetAllSuggest_FullMethodName          = "/api.v1.Blog/GetAllSuggest"
 )
 
 // BlogClient is the client API for Blog service.
@@ -49,6 +52,9 @@ type BlogClient interface {
 	CacheBlog(ctx context.Context, in *CreateBlogRequest, opts ...grpc.CallOption) (*CreateBlogReply, error)
 	GetCacheBlog(ctx context.Context, in *ListBlogRequest, opts ...grpc.CallOption) (*ListCacheReply, error)
 	DeleteCacheBlog(ctx context.Context, in *DeleteCacheBlogRequest, opts ...grpc.CallOption) (*DeleteCacheBlogReply, error)
+	AddSuggestBlog(ctx context.Context, in *SuggestBlogRequest, opts ...grpc.CallOption) (*SuggestBlogReply, error)
+	DeleteSuggestBlog(ctx context.Context, in *SuggestBlogRequest, opts ...grpc.CallOption) (*SuggestBlogReply, error)
+	GetAllSuggest(ctx context.Context, in *SearchAllSuggest, opts ...grpc.CallOption) (*SearchAllReply, error)
 }
 
 type blogClient struct {
@@ -167,6 +173,33 @@ func (c *blogClient) DeleteCacheBlog(ctx context.Context, in *DeleteCacheBlogReq
 	return out, nil
 }
 
+func (c *blogClient) AddSuggestBlog(ctx context.Context, in *SuggestBlogRequest, opts ...grpc.CallOption) (*SuggestBlogReply, error) {
+	out := new(SuggestBlogReply)
+	err := c.cc.Invoke(ctx, Blog_AddSuggestBlog_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *blogClient) DeleteSuggestBlog(ctx context.Context, in *SuggestBlogRequest, opts ...grpc.CallOption) (*SuggestBlogReply, error) {
+	out := new(SuggestBlogReply)
+	err := c.cc.Invoke(ctx, Blog_DeleteSuggestBlog_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *blogClient) GetAllSuggest(ctx context.Context, in *SearchAllSuggest, opts ...grpc.CallOption) (*SearchAllReply, error) {
+	out := new(SearchAllReply)
+	err := c.cc.Invoke(ctx, Blog_GetAllSuggest_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BlogServer is the server API for Blog service.
 // All implementations must embed UnimplementedBlogServer
 // for forward compatibility
@@ -183,6 +216,9 @@ type BlogServer interface {
 	CacheBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	GetCacheBlog(context.Context, *ListBlogRequest) (*ListCacheReply, error)
 	DeleteCacheBlog(context.Context, *DeleteCacheBlogRequest) (*DeleteCacheBlogReply, error)
+	AddSuggestBlog(context.Context, *SuggestBlogRequest) (*SuggestBlogReply, error)
+	DeleteSuggestBlog(context.Context, *SuggestBlogRequest) (*SuggestBlogReply, error)
+	GetAllSuggest(context.Context, *SearchAllSuggest) (*SearchAllReply, error)
 	mustEmbedUnimplementedBlogServer()
 }
 
@@ -225,6 +261,15 @@ func (UnimplementedBlogServer) GetCacheBlog(context.Context, *ListBlogRequest) (
 }
 func (UnimplementedBlogServer) DeleteCacheBlog(context.Context, *DeleteCacheBlogRequest) (*DeleteCacheBlogReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteCacheBlog not implemented")
+}
+func (UnimplementedBlogServer) AddSuggestBlog(context.Context, *SuggestBlogRequest) (*SuggestBlogReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddSuggestBlog not implemented")
+}
+func (UnimplementedBlogServer) DeleteSuggestBlog(context.Context, *SuggestBlogRequest) (*SuggestBlogReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSuggestBlog not implemented")
+}
+func (UnimplementedBlogServer) GetAllSuggest(context.Context, *SearchAllSuggest) (*SearchAllReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllSuggest not implemented")
 }
 func (UnimplementedBlogServer) mustEmbedUnimplementedBlogServer() {}
 
@@ -455,6 +500,60 @@ func _Blog_DeleteCacheBlog_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Blog_AddSuggestBlog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SuggestBlogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlogServer).AddSuggestBlog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blog_AddSuggestBlog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlogServer).AddSuggestBlog(ctx, req.(*SuggestBlogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Blog_DeleteSuggestBlog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SuggestBlogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlogServer).DeleteSuggestBlog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blog_DeleteSuggestBlog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlogServer).DeleteSuggestBlog(ctx, req.(*SuggestBlogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Blog_GetAllSuggest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchAllSuggest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlogServer).GetAllSuggest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Blog_GetAllSuggest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlogServer).GetAllSuggest(ctx, req.(*SearchAllSuggest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Blog_ServiceDesc is the grpc.ServiceDesc for Blog service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -510,7 +609,19 @@ var Blog_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "DeleteCacheBlog",
 			Handler:    _Blog_DeleteCacheBlog_Handler,
 		},
+		{
+			MethodName: "AddSuggestBlog",
+			Handler:    _Blog_AddSuggestBlog_Handler,
+		},
+		{
+			MethodName: "DeleteSuggestBlog",
+			Handler:    _Blog_DeleteSuggestBlog_Handler,
+		},
+		{
+			MethodName: "GetAllSuggest",
+			Handler:    _Blog_GetAllSuggest_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "v1/blog/blog.proto",
+	Metadata: "blog.proto",
 }

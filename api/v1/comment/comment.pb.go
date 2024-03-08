@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.31.0
 // 	protoc        v4.25.1
-// source: friend.proto
+// source: comment.proto
 
 package comment
 

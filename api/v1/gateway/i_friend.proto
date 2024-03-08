@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package friend;
+
+option go_package = "/friend;friend";
+option java_multiple_files = true;
+option java_package = "friend";
+import "google/api/annotations.proto";
+import "api/v1/friend/friend.proto";
+service FriendService {
+  rpc CreateFriend (CreateFriendRequest) returns (CreateFriendReply) {
+    option (google.api.http) = {
+      post:'/api/addFriend',
+      body:"*",
+    };
+  };
+  rpc UpdateFriend (UpdateFriendRequest) returns (UpdateFriendReply) {
+    option (google.api.http) = {
+      put:'/api/updateFriend',
+      body:"*"
+    };
+  };
+  rpc DeleteFriend (DeleteFriendRequest) returns (DeleteFriendReply) {
+    option (google.api.http) = {
+      delete:'/api/deleteFriend/{id}'
+    };
+  };
+  rpc GetFriend (GetFriendRequest) returns (GetFriendReply) {
+    option (google.api.http) = {
+      get:"/api/getFriend/{id}"
+    };
+  };
+  rpc ListFriend (ListFriendRequest) returns (ListFriendReply) {
+    option (google.api.http) = {
+      get:'/api/getAllFriend'
+    };
+  };
+}

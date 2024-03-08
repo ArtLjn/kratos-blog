@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.7.1
 // - protoc             v4.25.1
-// source: v1/blog/blog.proto
+// source: blog.proto
 
 package blog
 
@@ -19,10 +19,13 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationBlogAddSuggestBlog = "/api.v1.Blog/AddSuggestBlog"
 const OperationBlogCacheBlog = "/api.v1.Blog/CacheBlog"
 const OperationBlogCreateBlog = "/api.v1.Blog/CreateBlog"
 const OperationBlogDeleteBlog = "/api.v1.Blog/DeleteBlog"
 const OperationBlogDeleteCacheBlog = "/api.v1.Blog/DeleteCacheBlog"
+const OperationBlogDeleteSuggestBlog = "/api.v1.Blog/DeleteSuggestBlog"
+const OperationBlogGetAllSuggest = "/api.v1.Blog/GetAllSuggest"
 const OperationBlogGetBlogByID = "/api.v1.Blog/GetBlogByID"
 const OperationBlogGetBlogByTag = "/api.v1.Blog/GetBlogByTag"
 const OperationBlogGetBlogByTitle = "/api.v1.Blog/GetBlogByTitle"
@@ -33,10 +36,13 @@ const OperationBlogUpdateIndividualFields = "/api.v1.Blog/UpdateIndividualFields
 const OperationBlogUpdateOnly = "/api.v1.Blog/UpdateOnly"
 
 type BlogHTTPServer interface {
+	AddSuggestBlog(context.Context, *SuggestBlogRequest) (*SuggestBlogReply, error)
 	CacheBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	CreateBlog(context.Context, *CreateBlogRequest) (*CreateBlogReply, error)
 	DeleteBlog(context.Context, *DeleteBlogRequest) (*DeleteBlogReply, error)
 	DeleteCacheBlog(context.Context, *DeleteCacheBlogRequest) (*DeleteCacheBlogReply, error)
+	DeleteSuggestBlog(context.Context, *SuggestBlogRequest) (*SuggestBlogReply, error)
+	GetAllSuggest(context.Context, *SearchAllSuggest) (*SearchAllReply, error)
 	GetBlogByID(context.Context, *GetBlogIDRequest) (*GetBlogIDReply, error)
 	GetBlogByTag(context.Context, *GetBlogRequest) (*GetBlogReply, error)
 	GetBlogByTitle(context.Context, *GetBlogByTitleRequest) (*GetBlogByTitleReply, error)
@@ -61,6 +67,9 @@ func RegisterBlogHTTPServer(s *http.Server, srv BlogHTTPServer) {
 	r.POST("/api/cacheBlog", _Blog_CacheBlog0_HTTP_Handler(srv))
 	r.GET("/api/getCacheBlog", _Blog_GetCacheBlog0_HTTP_Handler(srv))
 	r.DELETE("/api/deleteCacheBlog", _Blog_DeleteCacheBlog0_HTTP_Handler(srv))
+	r.POST("/api/addSuggest", _Blog_AddSuggestBlog0_HTTP_Handler(srv))
+	r.DELETE("/api/deleteSuggest/{id}", _Blog_DeleteSuggestBlog0_HTTP_Handler(srv))
+	r.GET("/api/getAllSuggest", _Blog_GetAllSuggest0_HTTP_Handler(srv))
 }
 
 func _Blog_CreateBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
@@ -305,9 +314,6 @@ func _Blog_GetCacheBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context)
 func _Blog_DeleteCacheBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in DeleteCacheBlogRequest
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
@@ -324,11 +330,77 @@ func _Blog_DeleteCacheBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Conte
 	}
 }
 
+func _Blog_AddSuggestBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SuggestBlogRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBlogAddSuggestBlog)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.AddSuggestBlog(ctx, req.(*SuggestBlogRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SuggestBlogReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Blog_DeleteSuggestBlog0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SuggestBlogRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBlogDeleteSuggestBlog)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeleteSuggestBlog(ctx, req.(*SuggestBlogRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SuggestBlogReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Blog_GetAllSuggest0_HTTP_Handler(srv BlogHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SearchAllSuggest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationBlogGetAllSuggest)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetAllSuggest(ctx, req.(*SearchAllSuggest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SearchAllReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type BlogHTTPClient interface {
+	AddSuggestBlog(ctx context.Context, req *SuggestBlogRequest, opts ...http.CallOption) (rsp *SuggestBlogReply, err error)
 	CacheBlog(ctx context.Context, req *CreateBlogRequest, opts ...http.CallOption) (rsp *CreateBlogReply, err error)
 	CreateBlog(ctx context.Context, req *CreateBlogRequest, opts ...http.CallOption) (rsp *CreateBlogReply, err error)
 	DeleteBlog(ctx context.Context, req *DeleteBlogRequest, opts ...http.CallOption) (rsp *DeleteBlogReply, err error)
 	DeleteCacheBlog(ctx context.Context, req *DeleteCacheBlogRequest, opts ...http.CallOption) (rsp *DeleteCacheBlogReply, err error)
+	DeleteSuggestBlog(ctx context.Context, req *SuggestBlogRequest, opts ...http.CallOption) (rsp *SuggestBlogReply, err error)
+	GetAllSuggest(ctx context.Context, req *SearchAllSuggest, opts ...http.CallOption) (rsp *SearchAllReply, err error)
 	GetBlogByID(ctx context.Context, req *GetBlogIDRequest, opts ...http.CallOption) (rsp *GetBlogIDReply, err error)
 	GetBlogByTag(ctx context.Context, req *GetBlogRequest, opts ...http.CallOption) (rsp *GetBlogReply, err error)
 	GetBlogByTitle(ctx context.Context, req *GetBlogByTitleRequest, opts ...http.CallOption) (rsp *GetBlogByTitleReply, err error)
@@ -345,6 +417,19 @@ type BlogHTTPClientImpl struct {
 
 func NewBlogHTTPClient(client *http.Client) BlogHTTPClient {
 	return &BlogHTTPClientImpl{client}
+}
+
+func (c *BlogHTTPClientImpl) AddSuggestBlog(ctx context.Context, in *SuggestBlogRequest, opts ...http.CallOption) (*SuggestBlogReply, error) {
+	var out SuggestBlogReply
+	pattern := "/api/addSuggest"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationBlogAddSuggestBlog))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
 }
 
 func (c *BlogHTTPClientImpl) CacheBlog(ctx context.Context, in *CreateBlogRequest, opts ...http.CallOption) (*CreateBlogReply, error) {
@@ -389,10 +474,36 @@ func (c *BlogHTTPClientImpl) DeleteBlog(ctx context.Context, in *DeleteBlogReque
 func (c *BlogHTTPClientImpl) DeleteCacheBlog(ctx context.Context, in *DeleteCacheBlogRequest, opts ...http.CallOption) (*DeleteCacheBlogReply, error) {
 	var out DeleteCacheBlogReply
 	pattern := "/api/deleteCacheBlog"
-	path := binding.EncodeURL(pattern, in, false)
+	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationBlogDeleteCacheBlog))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "DELETE", path, in, &out, opts...)
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *BlogHTTPClientImpl) DeleteSuggestBlog(ctx context.Context, in *SuggestBlogRequest, opts ...http.CallOption) (*SuggestBlogReply, error) {
+	var out SuggestBlogReply
+	pattern := "/api/deleteSuggest/{id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationBlogDeleteSuggestBlog))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *BlogHTTPClientImpl) GetAllSuggest(ctx context.Context, in *SearchAllSuggest, opts ...http.CallOption) (*SearchAllReply, error) {
+	var out SearchAllReply
+	pattern := "/api/getAllSuggest"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationBlogGetAllSuggest))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

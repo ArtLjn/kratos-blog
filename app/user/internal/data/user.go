@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/uuid"
 	"gopkg.in/gomail.v2"
 	"kratos-blog/api/v1/user"
@@ -80,17 +79,7 @@ func (u *userRepo) AddUser(ctx context.Context, request *user.CreateUserRequest)
 
 // Login :dev Common user login func
 func (u *userRepo) Login(ctx context.Context, request *user.LoginRequest) (string, string, error) {
-	req, ok := http.RequestFromServerContext(ctx)
-	if !ok {
-		u.log.Errorf("%v\n", "parse ctx fail")
-	}
-	quireToken := req.Header.Get(role.Token)
-	username := jwt.GetLoginName(quireToken)
-	if len(username) != 0 {
-		if u.data.pf.HasExist(User{}, map[string]interface{}{"name": username}) {
-			return vo.LOGIN_SUCCESS, quireToken, nil
-		}
-	}
+
 	if u.data.pf.HasExist(User{}, map[string]interface{}{
 		"name":     request.Name,
 		"password": MD5(request.Pass),
@@ -168,8 +157,8 @@ func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func()
 		if err != nil {
 			panic(err)
 		}
-		if err := json.Unmarshal(body, &user); err != nil {
-			panic(err)
+		if e := json.Unmarshal(body, &user); e != nil {
+			panic(e)
 		}
 		user.UUID = uuid.New().String()
 		user.Black = false
@@ -198,7 +187,8 @@ func (u *userRepo) validateUpdatePass(request *user.UpdatePasswordRequest) error
 
 // SetBlack :dev Set a blacklist of users who violate the rules
 func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) (string, error) {
-	if err := u.data.pf.UpdateFunc(User{}, map[string]interface{}{"name": request.Name}, map[string]interface{}{"black": true}, false); err != nil {
+	if err := u.data.pf.UpdateFunc(User{}, map[string]interface{}{"name": request.Name},
+		map[string]interface{}{"black": true}, false); err != nil {
 		return vo.UPDATE_FAIL, errors.New(vo.UPDATE_FAIL)
 	}
 
@@ -238,7 +228,7 @@ func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 }
 
 // AdminLogin :dev Super admin users are unique
-func (u *userRepo) AdminLogin(request *user.AdminLoginRequest) *user.AdminLoginReply {
+func (u *userRepo) AdminLogin(ctx context.Context, request *user.AdminLoginRequest) *user.AdminLoginReply {
 	status := func(comm *user.CommonReply, list []string) *user.AdminLoginReply {
 		return &user.AdminLoginReply{
 			Common: comm,

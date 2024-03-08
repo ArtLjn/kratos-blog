@@ -18,8 +18,3 @@ data:
 service:
   user:
     endpoint: discovery:///user.service
-upload:
-  path: E:\HongDou-Go-Blog\kratos-blog\pkg\upload\file
-  domain: http://localhost:8080
-  maxsize: 3 MB
-  uri: "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1"

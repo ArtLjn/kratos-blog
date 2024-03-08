@@ -1,0 +1,19 @@
+server:
+  http:
+    addr: 0.0.0.0:8080
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    source: root:123456@tcp(127.0.0.1:3306)/test
+  redis:
+    addr: 127.0.0.1:6379
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    db: 0
+    password:
+upload:
+  path: E:\HongDou-show\kratos-blog\pkg\upload\file
+  domain: http://localhost:8080
+  maxsize: 3 MB
+  uri: "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1"

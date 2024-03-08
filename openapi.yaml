@@ -3,14 +3,14 @@
 
 openapi: 3.0.3
 info:
-    title: Tag API
+    title: TagService API
     version: 0.0.1
 paths:
     /api/addTag:
         post:
             tags:
-                - Tag
-            operationId: Tag_CreateTag
+                - TagService
+            operationId: TagService_CreateTag
             requestBody:
                 content:
                     application/json:
@@ -33,8 +33,8 @@ paths:
     /api/deleteTag/{id}:
         delete:
             tags:
-                - Tag
-            operationId: Tag_DeleteTag
+                - TagService
+            operationId: TagService_DeleteTag
             parameters:
                 - name: id
                   in: path
@@ -58,8 +58,8 @@ paths:
     /api/getAllTag:
         get:
             tags:
-                - Tag
-            operationId: Tag_ListTag
+                - TagService
+            operationId: TagService_ListTag
             responses:
                 "200":
                     description: OK
@@ -139,4 +139,4 @@ components:
                 tagName:
                     type: string
 tags:
-    - name: Tag
+    - name: TagService

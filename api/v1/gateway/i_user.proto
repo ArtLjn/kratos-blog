@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package api.user;
+import "google/api/annotations.proto";
+
+option go_package = "gateway/api/gateway;gateway";
+option java_multiple_files = true;
+option java_package = "api.gateway";
+import "api/v1/user/user.proto";
+service UserService {
+  rpc CreateUser (CreateUserRequest) returns (CreateUserReply) {
+    option (google.api.http) = {
+      post:"/api/register/{code}",
+      body:"*",
+    };
+  };
+  rpc LoginUser (LoginRequest) returns (LoginReply) {
+    option (google.api.http) = {
+      post:"/api/login",
+      body:"*",
+    };
+  };
+  rpc SendEmail (SendEmailRequest) returns (SendEmailReply) {
+    option (google.api.http) = {
+      get:"/api/sendEmail/{email}"
+    };
+  };
+  rpc UpdatePassword (UpdatePasswordRequest) returns (UpdatePasswordReply) {
+    option (google.api.http) = {
+      post:"/api/updatePassword/{code}",
+      body:"*",
+    };
+  };
+  rpc SetBlack (SetBlackRequest) returns (SetBlackReply) {
+    option (google.api.http) = {
+      get:"/api/setBlack/{name}"
+    };
+  };
+  rpc GetUser (GetUserRequest) returns (GetUserReply) {
+    option (google.api.http) = {
+      get:"/api/getUserMessage/{name}"
+    };
+  };
+  rpc AdminLogin (AdminLoginRequest) returns (AdminLoginReply) {
+    option (google.api.http) = {
+      post:"/api/admin",
+      body:"*",
+    };
+  };
+}

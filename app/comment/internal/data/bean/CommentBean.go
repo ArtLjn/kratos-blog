@@ -12,7 +12,7 @@ type CommentBean struct {
 	Email         string         `json:"email"`
 }
 
-// ChildComment represents a child comment structure
+// ChildComment represents a child gateway structure
 type ChildComment struct {
 	RIpAddr       string `json:"reward_addr"`
 	RewardTime    string `json:"reward_time"`

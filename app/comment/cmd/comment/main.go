@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/go-kratos/kratos/v2/registry"
 	"kratos-blog/app/comment/internal/conf"
+	"kratos-blog/pkg/server"
 	"os"
 
 	"github.com/go-kratos/kratos/v2"
@@ -20,7 +21,7 @@ import (
 // go build -ldflags "-X main.Version=x.y.z"
 var (
 	// Name is the name of the compiled software.
-	Name = "comment.service"
+	Name = server.CommentService
 	// Version is the version of the compiled software.
 	Version = "1.0"
 	// flagconf is the config flag.
@@ -30,7 +31,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "E:\\HongDou-Go-Blog\\kratos-blog\\app\\comment\\configs", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Registrar) *kratos.App {
@@ -42,7 +43,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
-			hs,
+			//hs, 开启HTTP
 		),
 		kratos.Registrar(r),
 	)

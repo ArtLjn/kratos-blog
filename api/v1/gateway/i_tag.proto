@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package api.v1.tag;
+
+option go_package = "kratos-blog/api/v1/tag;tag";
+option java_multiple_files = true;
+option java_package = "api.v1.tag";
+import "google/api/annotations.proto";
+import "api/v1/tag/tag.proto";
+service TagService {
+  rpc CreateTag (CreateTagRequest) returns (CreateTagReply) {
+    option (google.api.http) = {
+      post: "/api/addTag",
+      body:"*",
+    };
+  };
+  rpc DeleteTag (DeleteTagRequest) returns (DeleteTagReply) {
+    option (google.api.http) = {
+      delete: "/api/deleteTag/{id}",
+    };
+  };
+  rpc ListTag (ListTagRequest) returns (ListTagReply) {
+    option(google.api.http) = {
+      get:"/api/getAllTag",
+    };
+  };
+}

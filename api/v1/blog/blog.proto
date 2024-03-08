@@ -73,7 +73,25 @@ service Blog {
 	rpc DeleteCacheBlog(DeleteCacheBlogRequest) returns(DeleteCacheBlogReply) {
 		option (google.api.http) = {
 			delete:"/api/deleteCacheBlog",
+		};
+	}
+
+	rpc AddSuggestBlog(SuggestBlogRequest) returns(SuggestBlogReply) {
+		option (google.api.http) = {
+			post:"/api/addSuggest",
 			body:"*"
+		};
+	}
+
+	rpc DeleteSuggestBlog(SuggestBlogRequest) returns(SuggestBlogReply) {
+		option (google.api.http) = {
+			delete:"/api/deleteSuggest/{id}",
+		};
+	}
+
+	rpc GetAllSuggest(SearchAllSuggest) returns(SearchAllReply) {
+		option (google.api.http) = {
+			get:"/api/getAllSuggest",
 		};
 	}
 }
@@ -177,4 +195,17 @@ message DeleteCacheBlogRequest {
 }
 message DeleteCacheBlogReply {
 	CommonReply common = 1;
+}
+
+message SuggestBlogRequest {
+	int64 id = 1;
+}
+message SuggestBlogReply {
+	CommonReply common = 1;
+}
+
+message SearchAllSuggest {}
+message SearchAllReply {
+	CommonReply common = 1;
+	repeated string data = 2;
 }

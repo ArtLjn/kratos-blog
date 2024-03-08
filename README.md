@@ -1,20 +1,20 @@
 # Kratos-Blog 微服务博客系统
-项目持续开发中.....
+项目持续开发中.....🥰
 
 一个基于Golang的微服务博客系统
 
 - 后端基于 [golang](https://go.dev/) + [go-kratos](https://go-kratos.dev/)
 - 前端基于 [VUE3](https://vuejs.org/) 
 
-## 项目结构
+## 项目结构 🧐
 
 | 子项目名 | 项目路径                                                                                       |
 |------|--------------------------------------------------------------------------------------------|
 | 博文服务 | [/kratos-blog/app/blog](https://gitee.com/morning-ljn/kratos-blog/tree/dev/app/blog)       |
 | 评论服务 | [/kratos-blog/app/comment](https://gitee.com/morning-ljn/kratos-blog/tree/dev/app/comment) |
 | 用户服务 | [/kratos-blog/app/user](https://gitee.com/morning-ljn/kratos-blog/tree/dev/app/user)       |
-| 管理前端 | [/kratos-blog/web/manager](https://gitee.com/morning-ljn/kratos-blog/web/manager)          |
-| 展现前端 | [/kratos-blog/web/show](https://gitee.com/morning-ljn/kratos-blog/web/show)                |
+| 管理前台 | [/kratos-blog/web/manager](https://gitee.com/morning-ljn/kratos-blog/web/manager)          |
+| 展现前台 | [/kratos-blog/web/show](https://gitee.com/morning-ljn/kratos-blog/web/show)                |
 
 ## 功能特点
 

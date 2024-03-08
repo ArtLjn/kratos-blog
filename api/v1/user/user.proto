@@ -3,9 +3,9 @@ syntax = "proto3";
 package api.user;
 import "google/api/annotations.proto";
 
-option go_package = "comment/api/comment;comment";
+option go_package = "gateway/api/gateway;gateway";
 option java_multiple_files = true;
-option java_package = "api.comment";
+option java_package = "api.gateway";
 
 service User {
 	rpc CreateUser (CreateUserRequest) returns (CreateUserReply) {

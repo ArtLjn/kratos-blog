@@ -20,6 +20,9 @@ type BlogRepo interface {
 	CacheBlog(ctx context.Context, request *pb.CreateBlogRequest) *pb.CreateBlogReply
 	GetCacheBlog(ctx context.Context) *pb.ListCacheReply
 	DeleteCacheBlog(ctx context.Context, request *pb.DeleteCacheBlogRequest) *pb.DeleteCacheBlogReply
+	AddSuggestBlog(ctx context.Context, request *pb.SuggestBlogRequest) *pb.SuggestBlogReply
+	GetAllSuggestBlog(ctx context.Context, request *pb.SearchAllSuggest) *pb.SearchAllReply
+	DeleteSuggestBlog(ctx context.Context, request *pb.SuggestBlogRequest) *pb.SuggestBlogReply
 }
 
 type BlogUseCase struct {
@@ -170,4 +173,15 @@ func (uc *BlogUseCase) GetAllCacheBlog(ctx context.Context) *pb.ListCacheReply {
 
 func (uc *BlogUseCase) DeleteCacheBlog(ctx context.Context, request *pb.DeleteCacheBlogRequest) *pb.DeleteCacheBlogReply {
 	return uc.repo.DeleteCacheBlog(ctx, request)
+}
+
+func (uc *BlogUseCase) SetSuggestBlog(ctx context.Context, request *pb.SuggestBlogRequest) *pb.SuggestBlogReply {
+	return uc.repo.AddSuggestBlog(ctx, request)
+}
+
+func (uc *BlogUseCase) GetSuggestBlog(ctx context.Context, request *pb.SearchAllSuggest) *pb.SearchAllReply {
+	return uc.repo.GetAllSuggestBlog(ctx, request)
+}
+func (uc *BlogUseCase) DeleteSuggestBlog(ctx context.Context, request *pb.SuggestBlogRequest) *pb.SuggestBlogReply {
+	return uc.repo.DeleteSuggestBlog(ctx, request)
 }

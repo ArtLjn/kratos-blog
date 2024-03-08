@@ -51,3 +51,12 @@ func (s *BlogService) GetCacheBlog(ctx context.Context, req *pb.ListBlogRequest)
 func (s *BlogService) DeleteCacheBlog(ctx context.Context, req *pb.DeleteCacheBlogRequest) (*pb.DeleteCacheBlogReply, error) {
 	return s.uc.DeleteCacheBlog(ctx, req), nil
 }
+func (s *BlogService) AddSuggestBlog(ctx context.Context, req *pb.SuggestBlogRequest) (*pb.SuggestBlogReply, error) {
+	return s.uc.SetSuggestBlog(ctx, req), nil
+}
+func (s *BlogService) GetAllSuggest(ctx context.Context, req *pb.SearchAllSuggest) (*pb.SearchAllReply, error) {
+	return s.uc.GetSuggestBlog(ctx, req), nil
+}
+func (s *BlogService) DeleteSuggestBlog(ctx context.Context, req *pb.SuggestBlogRequest) (*pb.SuggestBlogReply, error) {
+	return s.uc.DeleteSuggestBlog(ctx, req), nil
+}

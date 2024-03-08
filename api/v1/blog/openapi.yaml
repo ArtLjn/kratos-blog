@@ -30,6 +30,54 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/addSuggest:
+        post:
+            tags:
+                - Blog
+            operationId: Blog_AddSuggestBlog
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SuggestBlogRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuggestBlogReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/cacheBlog:
+        post:
+            tags:
+                - Blog
+            operationId: Blog_CacheBlog
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateBlogRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateBlogReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/deleteBlog/{id}/{key}:
         delete:
             tags:
@@ -59,6 +107,53 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/deleteCacheBlog:
+        delete:
+            tags:
+                - Blog
+            operationId: Blog_DeleteCacheBlog
+            parameters:
+                - name: key
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteCacheBlogReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/deleteSuggest/{id}:
+        delete:
+            tags:
+                - Blog
+            operationId: Blog_DeleteSuggestBlog
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SuggestBlogReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/getAllBlog:
         get:
             tags:
@@ -71,6 +166,42 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListBlogReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/getAllSuggest:
+        get:
+            tags:
+                - Blog
+            operationId: Blog_GetAllSuggest
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SearchAllReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/getCacheBlog:
+        get:
+            tags:
+                - Blog
+            operationId: Blog_GetCacheBlog
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCacheReply'
                 default:
                     description: Default error response
                     content:
@@ -278,6 +409,11 @@ components:
             properties:
                 common:
                     $ref: '#/components/schemas/CommonReply'
+        DeleteCacheBlogReply:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
         GetBlogByTitleReply:
             type: object
             properties:
@@ -320,6 +456,24 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/BlogData'
+        ListCacheReply:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
+                data:
+                    type: array
+                    items:
+                        type: string
+        SearchAllReply:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
+                data:
+                    type: array
+                    items:
+                        type: string
         Status:
             type: object
             properties:
@@ -336,6 +490,16 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        SuggestBlogReply:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
+        SuggestBlogRequest:
+            type: object
+            properties:
+                id:
+                    type: string
         UpdateBlogReply:
             type: object
             properties:
