@@ -25,11 +25,7 @@ func NewHTTPServer(c *conf.Server, comm *service.CommentService, logger log.Logg
 	if c.Http.Timeout != nil {
 		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
 	}
-	//var ms []middleware.Middleware
-	//var limiter ratelimit.Limiter
-	//limiter = bbr.NewLimiter()
-	//ms = append(ms, midRateLimit.Server(midRateLimit.WithLimiter(limiter)))
-	//opts = append(opts, http.Middleware(ms...))
+
 	srv := http.NewServer(opts...)
 	comment.RegisterCommentHTTPServer(srv, comm)
 	return srv

@@ -3,20 +3,20 @@ package service
 import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/transport/http"
 	pb "kratos-blog/api/v1/blog"
-	"kratos-blog/pkg/role"
+	"kratos-blog/app/gateway/internal/data"
 )
 
 type BlogService struct {
 	pb.UnimplementedBlogServer
-	uc  pb.BlogClient
-	log *log.Helper
+	uc   pb.BlogClient
+	log  *log.Helper
+	role *data.Role
 }
 
-func NewBlogService(logger log.Logger, uc pb.BlogClient) *BlogService {
+func NewBlogService(logger log.Logger, uc pb.BlogClient, role *data.Role) *BlogService {
 	l := log.NewHelper(log.With(logger, "module", "data"))
-	return &BlogService{uc: uc, log: l}
+	return &BlogService{uc: uc, log: l, role: role}
 }
 
 func (s *BlogService) CreateBlog(ctx context.Context, req *pb.CreateBlogRequest) (*pb.CreateBlogReply, error) {
@@ -32,12 +32,29 @@ func (s *BlogService) DeleteBlog(ctx context.Context, req *pb.DeleteBlogRequest)
 	return s.uc.DeleteBlog(ctx, req)
 }
 func (s *BlogService) GetBlogByTag(ctx context.Context, req *pb.GetBlogRequest) (*pb.GetBlogReply, error) {
+	req = &pb.GetBlogRequest{
+		Tag: req.Tag,
+		Permission: &pb.Permission{
+			Admin: s.role.QueryUserMsg(ctx).GetRole().CheckPermission(),
+		},
+	}
 	return s.uc.GetBlogByTag(ctx, req)
 }
 func (s *BlogService) ListBlog(ctx context.Context, req *pb.ListBlogRequest) (*pb.ListBlogReply, error) {
+	req = &pb.ListBlogRequest{
+		Permission: &pb.Permission{
+			Admin: s.role.QueryUserMsg(ctx).GetRole().CheckPermission(),
+		},
+	}
 	return s.uc.ListBlog(ctx, req)
 }
 func (s *BlogService) GetBlogByID(ctx context.Context, req *pb.GetBlogIDRequest) (*pb.GetBlogIDReply, error) {
+	req = &pb.GetBlogIDRequest{
+		Id: req.Id,
+		Permission: &pb.Permission{
+			Admin: s.role.QueryUserMsg(ctx).GetRole().CheckPermission(),
+		},
+	}
 	return s.uc.GetBlogByID(ctx, req)
 }
 func (s *BlogService) GetBlogByTitle(ctx context.Context, req *pb.GetBlogByTitleRequest) (*pb.GetBlogByTitleReply, error) {
@@ -63,13 +80,4 @@ func (s *BlogService) GetAllSuggest(ctx context.Context, req *pb.SearchAllSugges
 }
 func (s *BlogService) DeleteSuggestBlog(ctx context.Context, req *pb.SuggestBlogRequest) (*pb.SuggestBlogReply, error) {
 	return s.uc.DeleteSuggestBlog(ctx, req)
-}
-
-func (s *BlogService) parseToken(ctx *context.Context) string {
-	res, ok := http.RequestFromServerContext(*ctx)
-	if !ok {
-		s.log.Log(log.LevelError, "parse context failed")
-	}
-	token := res.Header.Get(role.Token)
-	return token
 }

@@ -8,34 +8,19 @@ import (
 	v3 "kratos-blog/api/v1/friend"
 	v2 "kratos-blog/api/v1/tag"
 	"kratos-blog/app/blog/internal/conf"
-	"kratos-blog/app/blog/internal/data"
 	"kratos-blog/app/blog/internal/service"
-)
-
-var (
-	blackList = []string{
-		"/api/searchBlog",
-	}
-	whiteList = []string{
-		"/util/upload",
-		"/util/getBingPhoto",
-	}
 )
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(cf *conf.Bootstrap, blog *service.BlogService,
 	friend *service.FriendService,
 	tag *service.TagService,
-	f *data.FilterRepo,
 	logger log.Logger) *http.Server {
 	c := cf.Server
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
 		),
-		http.Filter(
-			f.NewFilter(whiteList, blackList),
-			f.DeleteCache()),
 	}
 
 	if c.Http.Network != "" {

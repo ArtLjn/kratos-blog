@@ -102,9 +102,6 @@ func (c *commRepo) GetIp(ip string) string {
 }
 
 func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentRequest) *comment.CreateCommentReply {
-	user := c.data.role.QueryUserMsg(ctx)
-	name := user.U.Data[0]
-	email := user.U.Data[1]
 	words := c.CheckWords(req.Comment)
 	if len(words) != 0 {
 		return &comment.CreateCommentReply{
@@ -121,8 +118,8 @@ func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentReq
 		Comment:     req.Comment,
 		CommentAddr: ipAddr,
 		CommentTime: time.Now().Format("2006-01-02 15:04"),
-		Name:        name,
-		Email:       email,
+		Name:        req.GetName(),
+		Email:       req.GetEmail(),
 	}
 	err := c.data.pf.CreateFunc(commentBean, &Comment{})
 	if err != nil {
@@ -151,7 +148,7 @@ func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardReque
 
 	currentComment := originComment
 	if len(currentComment.RewardName) != 0 {
-		c.P(&currentComment, ctx, req.RewardContent, ipAddr, req.RewardId)
+		c.P(&currentComment, req.RewardContent, ipAddr, req.RewardId, req.GetName(), req.GetEmail())
 		currentComment.ID = 0
 		err := c.data.pf.CreateFunc(currentComment, &Comment{})
 		if err != nil {
@@ -159,7 +156,7 @@ func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardReque
 			return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.TALK_FAIL}
 		}
 	} else {
-		c.P(&originComment, ctx, req.RewardContent, ipAddr, req.RewardId)
+		c.P(&originComment, req.RewardContent, ipAddr, req.RewardId, req.GetName(), req.GetEmail())
 		var data map[string]interface{}
 		c.data.pf.ParseJSONToStruct(originComment, &data)
 		err := c.data.pf.UpdateFunc(Comment{}, map[string]interface{}{
@@ -174,9 +171,8 @@ func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardReque
 	return &comment.CreateRewardReply{Code: vo.SUCCESS_REQUEST, Result: vo.TALK_SUCCESS}
 }
 
-func (c *commRepo) P(com *Comment, ctx context.Context, data ...string) {
-	user := c.data.role.QueryUserMsg(ctx)
-	name, email := user.U.Data[0], user.U.Data[1]
+func (c *commRepo) P(com *Comment, data ...string) {
+	name, email := data[3], data[4]
 	if len(name) == 0 || len(email) == 0 {
 		name = "访客"
 		email = "example@qq.com"

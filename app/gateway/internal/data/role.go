@@ -1,4 +1,4 @@
-package role
+package data
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/pkg/jwt"
+	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
 	h "net/http"
 	"strings"
@@ -16,11 +17,13 @@ import (
 
 const Token = "token"
 
+var CTX = context.Background()
+
 // RoleSwitch
 const (
-	Admin   = "admin"
-	User    = "user"
-	Visitor = "visitor"
+	Admin   = server.Admin
+	User    = server.User
+	Visitor = server.Visitor
 )
 
 type Role struct {
@@ -29,24 +32,28 @@ type Role struct {
 	log *log.Helper
 }
 
-func NewRole(rdb *redis.Client, uc user.UserClient, logger *log.Helper) *Role {
-	return &Role{rdb: rdb, uc: uc, log: logger}
+func NewRole(rdb *redis.Client, uc user.UserClient, logger log.Logger) *Role {
+	l := log.NewHelper(log.With(logger, "module", "data"))
+	return &Role{rdb: rdb, uc: uc, log: l}
 }
 
 type PermissionStrategy interface {
 	CheckPermission() bool
 	GetRole() PermissionStrategy
 }
+
 type Permission struct {
 	U    *user.GetUserReply
 	Role string
 }
 
-// TODO 上下文token无法传递
-
 // QueryUserMsg :dev query user information
 func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
-	token := ctx.Value("token").(string)
+	req, ok := http.RequestFromServerContext(ctx)
+	if !ok {
+		panic(errors.New("ctx false"))
+	}
+	token := req.Header.Get(Token)
 
 	grantVisitorRole := func() *Permission {
 		visit := make([]string, 4)

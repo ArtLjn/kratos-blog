@@ -11,6 +11,7 @@ import (
 	tag2 "kratos-blog/api/v1/tag"
 	user2 "kratos-blog/api/v1/user"
 	"kratos-blog/app/gateway/internal/conf"
+	"kratos-blog/app/gateway/internal/data"
 	"kratos-blog/app/gateway/internal/service"
 )
 
@@ -21,7 +22,10 @@ func NewHTTPServer(cf *conf.Bootstrap,
 	comment *service.CommentService,
 	blog *service.BlogService,
 	tag *service.TagService,
-	friend *service.FriendService) *http.Server {
+	friend *service.FriendService,
+	// 过滤器
+	filter *data.FilterRepo,
+) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
@@ -46,6 +50,14 @@ func NewHTTPServer(cf *conf.Bootstrap,
 
 	user2.RegisterUserHTTPServer(srv, user)
 	comment2.RegisterCommentHTTPServer(srv, comment)
+	//// 添加指定过滤器
+	//newOpt := opts
+	//newOpt = append(newOpt,
+	//	http.Filter(
+	//		filter.FilterPermission(data.WhiteList, data.BlackList),
+	//		filter.DeleteCache()))
+	//bSrv := http.NewServer(newOpt...)
+
 	blog2.RegisterBlogHTTPServer(srv, blog)
 	tag2.RegisterTagHTTPServer(srv, tag)
 	friend2.RegisterFriendHTTPServer(srv, friend)

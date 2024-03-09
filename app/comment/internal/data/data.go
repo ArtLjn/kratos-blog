@@ -18,7 +18,6 @@ import (
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/comment/internal/conf"
 	"kratos-blog/pkg/model"
-	"kratos-blog/pkg/role"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -30,21 +29,19 @@ var ProviderSet = wire.NewSet(NewData, NewRegistrar, NewDiscovery)
 
 // Data .
 type Data struct {
-	log  *log.Helper
-	uc   comment.CommentClient
-	db   *gorm.DB
-	rdb  *redis.Client
-	pf   model.PublicFunc
-	c    *conf.Bootstrap
-	role *role.Role
+	log *log.Helper
+	uc  comment.CommentClient
+	db  *gorm.DB
+	rdb *redis.Client
+	pf  model.PublicFunc
+	c   *conf.Bootstrap
 }
 
 // NewData .
 func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
 	pf := model.NewOFunc(l, db)
-	role := role.NewRole(rdb, uc, l)
-	return &Data{log: l, db: db, rdb: rdb, pf: pf, c: c, role: role}, nil
+	return &Data{log: l, db: db, rdb: rdb, pf: pf, c: c}, nil
 }
 
 // NewRegistrar add consul

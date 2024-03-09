@@ -19,7 +19,6 @@ import (
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/blog/internal/conf"
 	"kratos-blog/pkg/model"
-	"kratos-blog/pkg/role"
 	"sync"
 	"time"
 )
@@ -33,21 +32,19 @@ var (
 
 // Data .
 type Data struct {
-	log  *log.Helper
-	uc   user.UserClient
-	db   *gorm.DB
-	rdb  *redis.Client
-	pf   model.PublicFunc
-	role *role.Role
-	c    *conf.Bootstrap
+	log *log.Helper
+	uc  user.UserClient
+	db  *gorm.DB
+	rdb *redis.Client
+	pf  model.PublicFunc
+	c   *conf.Bootstrap
 }
 
 // NewData .
 func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
 	pf := model.NewOFunc(l, db)
-	role := role.NewRole(rdb, uc, l)
-	return &Data{log: l, uc: uc, db: db, rdb: rdb, pf: pf, role: role, c: c}, nil
+	return &Data{log: l, uc: uc, db: db, rdb: rdb, pf: pf, c: c}, nil
 }
 
 // NewRegistrar add consul

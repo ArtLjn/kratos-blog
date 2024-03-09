@@ -6,7 +6,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	pb "kratos-blog/api/v1/user"
 	"kratos-blog/pkg/jwt"
-	"kratos-blog/pkg/role"
+	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
 )
 
@@ -54,7 +54,7 @@ func (s *UserService) verifyToken(ctx *context.Context) bool {
 	if !ok {
 		s.log.Log(log.LevelError, "parse context failed")
 	}
-	token := res.Header.Get(role.Token)
+	token := res.Header.Get(server.Token)
 	username := jwt.GetLoginName(token)
 	if len(username) != 0 {
 		return true

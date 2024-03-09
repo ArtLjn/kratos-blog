@@ -13,7 +13,7 @@ import (
 	"kratos-blog/app/user/internal/biz"
 	"kratos-blog/pkg/jwt"
 	"kratos-blog/pkg/model"
-	"kratos-blog/pkg/role"
+	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
 	"strconv"
 	"sync"
@@ -163,7 +163,7 @@ func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func()
 		user.UUID = uuid.New().String()
 		user.Black = false
 		user.Password = MD5(user.Password)
-		user.Role = role.User
+		user.Role = server.User
 		return user
 	}
 }
@@ -214,7 +214,7 @@ func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 	var list []string
 	if request.Name == u.data.c.Admin.Username {
 		f := make([]string, 3)
-		f = append(f, u.data.c.Admin.Username, role.Admin)
+		f = append(f, u.data.c.Admin.Username, server.Admin)
 		list = append([]string{}, f...)
 		return list
 	}

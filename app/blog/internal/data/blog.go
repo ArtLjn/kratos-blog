@@ -8,6 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/app/blog/internal/biz"
+	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
 	"strconv"
 	"sync"
@@ -15,13 +16,13 @@ import (
 )
 
 const (
-	AdminNotes  string = "adminNotes"
-	Notes       string = "notes"
-	TableName   string = "BlogVisits"
-	Comment     string = "gateway"
-	Appear      string = "appear"
-	CacheBlog   string = "cacheBlog"
-	SuggestBlog string = "suggestBlog"
+	AdminNotes  = server.AdminNotes
+	Notes       = server.Notes
+	TableName   = server.TableName
+	Comment     = server.Comment
+	Appear      = server.Appear
+	CacheBlog   = server.CacheBlog
+	SuggestBlog = server.SuggestBlog
 )
 
 type blogRepo struct {
@@ -34,24 +35,6 @@ func NewBlogRepo(data *Data, logger log.Logger) biz.BlogRepo {
 		data: data,
 		log:  log.NewHelper(logger),
 	}
-}
-
-type Blog struct {
-	ID         int    `json:"id" gorm:"primary_key;auto_increment"`
-	Title      string `json:"title"`
-	Preface    string `json:"preface"`
-	Photo      string `json:"photo"`
-	Tag        string `json:"tag"`
-	CreateTime string `gorm:"column:createTime" json:"createTime"`
-	UpdateTime string `gorm:"column:updateTime" json:"updateTime"`
-	Visits     uint64 `json:"visits"`
-	Content    string `json:"content"`
-	Appear     bool   `json:"appear"`
-	Comment    bool   `json:"gateway"`
-}
-
-func (b Blog) TableName() string {
-	return "person_table"
 }
 
 // CreateBlog :dev
@@ -132,13 +115,11 @@ func (r *blogRepo) createBlogFromRequest(request *blog.CreateBlogRequest) func()
 // GetByTagName :dev search blog posts based on tags
 func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogRequest) (string,
 	[]*blog.BlogData, error) {
-	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
-	r.log.Log(log.LevelInfo, role)
 	var (
 		blogs []*blog.BlogData
 		err   error
 	)
-	if role {
+	if request.GetPermission().GetAdmin() {
 		admin := AdminRoleFactory{r: r, req: request}
 		blogs, err = admin.QueryTag()
 	} else {
@@ -154,12 +135,11 @@ func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogReques
 // ListBlog :dev query all blog posts based on permissions
 func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) (string,
 	[]*blog.BlogData, error) {
-	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
 	var (
 		blogs []*blog.BlogData
 		err   error
 	)
-	if role {
+	if request.GetPermission().GetAdmin() {
 		admin := AdminRoleFactory{r: r, reb: request}
 		blogs, err = admin.QueryListBlog()
 	} else {
@@ -175,8 +155,6 @@ func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) 
 // QueryBlogById :dev more blog post ID query blog posts
 func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDRequest) (msg string,
 	da blog.BlogData, e error) {
-	role := r.data.role.QueryUserMsg(ctx).GetRole().CheckPermission()
-	r.log.Log(log.LevelInfo, role)
 	var b Blog
 	if err := r.data.db.Where("id = ?", request.Id).First(&b).Error; err != nil {
 		r.log.Errorf("query error %s", err)
@@ -186,7 +164,7 @@ func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDReq
 		return vo.JSON_ERROR, blog.BlogData{}, err
 	}
 
-	if !b.Appear && !role {
+	if !b.Appear && !request.GetPermission().GetAdmin() {
 		return vo.FORBIDDEN_ACCESS, blog.BlogData{}, nil
 	}
 	strID := strconv.Itoa(int(request.Id))
@@ -452,4 +430,22 @@ func (r *blogRepo) setCacheList(key string, o []interface{}) {
 		}
 		r.log.Log(log.LevelInfo, "Successfully pushed value to Redis list", i)
 	}
+}
+
+type Blog struct {
+	ID         int    `json:"id" gorm:"primary_key;auto_increment"`
+	Title      string `json:"title"`
+	Preface    string `json:"preface"`
+	Photo      string `json:"photo"`
+	Tag        string `json:"tag"`
+	CreateTime string `gorm:"column:createTime" json:"createTime"`
+	UpdateTime string `gorm:"column:updateTime" json:"updateTime"`
+	Visits     uint64 `json:"visits"`
+	Content    string `json:"content"`
+	Appear     bool   `json:"appear"`
+	Comment    bool   `json:"gateway"`
+}
+
+func (b Blog) TableName() string {
+	return "person_table"
 }

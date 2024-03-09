@@ -148,13 +148,16 @@ message DeleteBlogReply {
 
 message GetBlogRequest {
 	string tag = 1;
+	optional Permission permission = 2;
 }
 message GetBlogReply {
 	CommonReply common = 1;
 	repeated BlogData List = 2;
 }
 
-message ListBlogRequest {}
+message ListBlogRequest {
+	optional Permission permission = 1;
+}
 message ListBlogReply {
 	CommonReply common = 1;
 	repeated BlogData List = 2;
@@ -184,6 +187,7 @@ message UpdateOnlyReply {
 
 message GetBlogIDRequest {
 	int64 id = 1;
+	optional Permission permission = 2;
 }
 message GetBlogIDReply {
 	CommonReply common = 1;
@@ -208,4 +212,8 @@ message SearchAllSuggest {}
 message SearchAllReply {
 	CommonReply common = 1;
 	repeated string data = 2;
+}
+
+message Permission {
+	bool Admin = 1;
 }

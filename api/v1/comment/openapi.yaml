@@ -102,6 +102,10 @@ components:
                     type: string
                 commentAddr:
                     type: string
+                name:
+                    type: string
+                email:
+                    type: string
         CreateRewardReply:
             type: object
             properties:
@@ -119,6 +123,10 @@ components:
                 articleId:
                     type: string
                 rewardAddr:
+                    type: string
+                name:
+                    type: string
+                email:
                     type: string
         ExtractParentCommentsReply:
             type: object

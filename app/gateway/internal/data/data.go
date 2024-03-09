@@ -11,6 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/selector/wrr"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	consulAPI "github.com/hashicorp/consul/api"
+	"github.com/redis/go-redis/v9"
 	grpcx "google.golang.org/grpc"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/api/v1/comment"
@@ -30,14 +31,27 @@ var ProviderSet = wire.NewSet(NewData, NewRegistrar, NewDiscovery)
 
 // Data .
 type Data struct {
-	log *log.Helper
-	c   *conf.Bootstrap
+	log  *log.Helper
+	c    *conf.Bootstrap
+	uc   user.UserClient
+	rdb  *redis.Client
+	role *Role
 }
 
 // NewData .
-func NewData(c *conf.Bootstrap, logger log.Logger) (*Data, error) {
+func NewData(c *conf.Bootstrap, logger log.Logger, uc user.UserClient, rdb *redis.Client, role *Role) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
-	return &Data{log: l, c: c}, nil
+	return &Data{log: l, c: c, rdb: rdb, uc: uc, role: role}, nil
+}
+
+func NewRDB(conf *conf.Data) *redis.Client {
+	return redis.NewClient(
+		&redis.Options{
+			Addr:     conf.Redis.Addr,
+			DB:       int(conf.Redis.Db),
+			Password: conf.Redis.Password,
+		},
+	)
 }
 
 // NewRegistrar add consul

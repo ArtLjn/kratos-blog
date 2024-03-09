@@ -159,6 +159,11 @@ paths:
             tags:
                 - Blog
             operationId: Blog_ListBlog
+            parameters:
+                - name: permission.Admin
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -195,6 +200,11 @@ paths:
             tags:
                 - Blog
             operationId: Blog_GetCacheBlog
+            parameters:
+                - name: permission.Admin
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -219,6 +229,10 @@ paths:
                   required: true
                   schema:
                     type: string
+                - name: permission.Admin
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
@@ -243,6 +257,10 @@ paths:
                   required: true
                   schema:
                     type: string
+                - name: permission.Admin
+                  in: query
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK
