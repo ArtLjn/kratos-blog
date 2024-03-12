@@ -17,19 +17,12 @@
 </template>
 <script>
 import newFooter from './util/newFooter.vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faHome, fas,faL } from '@fortawesome/free-solid-svg-icons';
-import { library } from '@fortawesome/fontawesome-svg-core';
 import comments from '../comments/comments.vue';
-import { onMounted, reactive, ref } from 'vue';
-import axios from 'axios';
-library.add(faHome, fas,faL);
+import { onMounted, reactive } from 'vue';
 export default{
-    name:"message",
     components:{
         newFooter,
         comments,
-        FontAwesomeIcon,
     },
     setup() {
         onMounted(()=> {
@@ -51,9 +44,8 @@ export default{
     min-height: 180px;
     height: auto;
     border-radius: 10px;
-    margin: 6px auto 20px auto;
+    margin: 320px auto 20px auto;
     animation: slide-in 1s;
-    margin-top: 320px;
     position: relative;
     vertical-align: bottom;
     border: none;

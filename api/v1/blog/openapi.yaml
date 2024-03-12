@@ -479,19 +479,19 @@ components:
             properties:
                 common:
                     $ref: '#/components/schemas/CommonReply'
-                data:
+                List:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/BlogData'
         SearchAllReply:
             type: object
             properties:
                 common:
                     $ref: '#/components/schemas/CommonReply'
-                data:
+                List:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/BlogData'
         Status:
             type: object
             properties:

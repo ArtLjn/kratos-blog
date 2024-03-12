@@ -41,14 +41,6 @@
               ></el-switch>
             </div>
             <el-input v-model="md.photo" class="input" style="width:300px;" placeholder="输入图片链接"></el-input>
-            <el-button type="danger" style="float:right;margin-right:10px;" @click="AIDia = true">AI发文</el-button>
-            <el-dialog v-model="AIDia" title="AI发文"
-            :lock-scroll="false"
-            >
-             <el-input placeholder="请输入您的发文主题" v-model="mes
-             "></el-input><br>
-             <el-button @click="SendApi" type="info" style="float:right;">发送</el-button><br>
-            </el-dialog>
             <v-md-editor
             :include-level="[1,2,3,4]"
             v-model="md.content"
@@ -70,8 +62,9 @@
   import { ElMessage, ElMessageBox } from "element-plus";
   import { useRoute } from "vue-router";
   import axios from 'axios';
-  import {uploadFile} from "@/components/api/blog";
-  import {GetAllTag, SendMessage} from "@/components/api/tag";
+  import {setCacheBlog, uploadFile} from "@/components/api/blog";
+  import {GetAllTag} from "@/components/api/tag";
+  import {SUCCESS_REQUEST} from "@/components/api/status";
   library.add(fas);
   
   export default {
@@ -82,13 +75,14 @@
     setup() {
       const getTagList = ref([]);
       const route = useRoute();
-      const md = reactive({
-        title: "",
-        preface: "",
-        content: "Hello Markdown",
-        photo:'',
-        tag:'',
-        comment:''
+      let md = reactive({
+        data:{
+          title: "",
+          preface: "",
+          content: "Hello Markdown",
+          photo:'',
+          tag:'',
+        }
       });
       const status = ref(['0','1'])
       const SaveTemporarily = () =>{
@@ -97,13 +91,17 @@
           'Warning',
           {
             confirmButtonText:'OK',
-            cancelButtonText:'Canel',
+            cancelButtonText:'Cancel',
             type:'warning',
           }
         )
-        .then(() => {
-          localStorage.removeItem("缓存笔记");
-          localStorage.setItem("缓存笔记",JSON.stringify(md))
+        .then(async () => {
+          const res = await setCacheBlog(md)
+          if (res.common.code == SUCCESS_REQUEST) {
+            ElMessage.success("缓存成功")
+          } else {
+            ElMessage.warning("缓存失败")
+          }
         })
         .catch((error) => {
           console.log(error)
@@ -112,13 +110,7 @@
       const continueEdit = () => {
         const data = localStorage.getItem("缓存笔记");
         const parsedData = JSON.parse(data);
-        md.title = parsedData.title;
-        md.preface = parsedData.preface;
-        md.content = parsedData.content;
-        md.file = parsedData.file;
-        md.tag = parsedData.tag;
-        md.comment = parsedData.comment;
-        md.photo = parsedData.photo;
+        md.data = parsedData
       }
       const save = () => {
         localStorage.removeItem("缓存笔记")
@@ -191,15 +183,7 @@
         md.photo = route.query.photo || "";
         getTag();
       });
-      const AIDia = ref(false);
-      const mes = ref('')
-      const SendApi =()=> {
-        SendMessage(mes.value).then((res) => {
-          if (res.status === 200) {
-            md.content = res.data.result
-          }
-        })
-      }
+
       return {
         md,
         saveOrUpdate,
@@ -209,14 +193,11 @@
         SaveTemporarily,
         continueEdit,
         status,
-        AIDia,
-        mes,
-        SendApi
       };
     },
   };
   </script>
-  
+
   
   <style scoped>
   @import url("../../assets/css/main.css");

@@ -1,0 +1,22 @@
+server:
+  http:
+    addr: 0.0.0.0:8002
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9002
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    source: root:123456@tcp(127.0.0.1:3306)/test
+  redis:
+    addr: 127.0.0.1:6379
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    db: 0
+    password:
+api:
+  ip: https://api.oioweb.cn/api/ip/ipaddress?ip=
+service:
+  user:
+    endpoint: discovery:///user.service

@@ -8,6 +8,7 @@ import (
 	blog2 "kratos-blog/api/v1/blog"
 	comment2 "kratos-blog/api/v1/comment"
 	friend2 "kratos-blog/api/v1/friend"
+	photo2 "kratos-blog/api/v1/photo"
 	tag2 "kratos-blog/api/v1/tag"
 	user2 "kratos-blog/api/v1/user"
 	"kratos-blog/app/gateway/internal/conf"
@@ -23,6 +24,7 @@ func NewHTTPServer(cf *conf.Bootstrap,
 	blog *service.BlogService,
 	tag *service.TagService,
 	friend *service.FriendService,
+	photo *service.PhotoService,
 	// 过滤器
 	filter *data.FilterRepo,
 ) *http.Server {
@@ -30,6 +32,10 @@ func NewHTTPServer(cf *conf.Bootstrap,
 		http.Middleware(
 			recovery.Recovery(),
 		),
+		http.Filter(
+			filter.FilterPermission(cf.Path.GetWhite(), cf.Path.GetBlack()),
+			filter.DeleteCache(),
+			filter.AllowDomainsMiddleware(*cf.GetDomain())),
 	}
 	c := cf.Server
 	if c.Http.Network != "" {
@@ -50,16 +56,9 @@ func NewHTTPServer(cf *conf.Bootstrap,
 
 	user2.RegisterUserHTTPServer(srv, user)
 	comment2.RegisterCommentHTTPServer(srv, comment)
-	//// 添加指定过滤器
-	//newOpt := opts
-	//newOpt = append(newOpt,
-	//	http.Filter(
-	//		filter.FilterPermission(data.WhiteList, data.BlackList),
-	//		filter.DeleteCache()))
-	//bSrv := http.NewServer(newOpt...)
-
 	blog2.RegisterBlogHTTPServer(srv, blog)
 	tag2.RegisterTagHTTPServer(srv, tag)
 	friend2.RegisterFriendHTTPServer(srv, friend)
+	photo2.RegisterPhotoHTTPServer(srv, photo)
 	return srv
 }

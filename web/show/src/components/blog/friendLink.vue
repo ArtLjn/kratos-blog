@@ -20,24 +20,23 @@
             </div>
         </el-card>
         <comments style="margin-left:auto;margin-right:auto;"></comments>
-        <newFooter style="footer"></newFooter>
+        <newFooter></newFooter>
     </div>
 </template>
 <script>
 import comments from '../comments/comments.vue';
 import newFooter from './util/newFooter.vue';
 import { onMounted, reactive, ref } from 'vue';
-import {getAllFriend} from '../../api/friendFunc'
+import {getAllFriend} from '@/api/friendFunc'
 export default{
-    name:"friendLink",
     components:{
-        newFooter,
-        comments,
+      newFooter,
+      comments,
     },
     setup() {
         const Friends = ref([]);
         getAllFriend().then((res) => {
-            Friends.value = res.list;
+            Friends.value = res.data;
         })
         const RandomPhoto = reactive({
             photo:''
@@ -71,7 +70,7 @@ export default{
     height: auto;
     min-height: 300px;
     border: none;
-    background-color:rgb(181, 180, 180,0);
+    background-color:rgb(181, 180, 180,0.05);
 }
 @media screen and (max-width: 600px) {
     .card-dd{
@@ -99,31 +98,9 @@ export default{
 }
 .link{
     text-align: center;
-    margin-top: 30px;
-    margin: auto;
+    margin: 30px auto auto auto;
     display: flex;
     position: relative;
-}
-.toggle {
-    margin-bottom: 20px;
-    border: 1px solid #f0f0f0;
-    border-top-width: 1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-    border-top-style: solid;
-    border-right-style: solid;
-    border-bottom-style: solid;
-    border-left-style: solid;
-    border-top-color: rgb(240, 240, 240);
-    border-right-color: rgb(240, 240, 240);
-    border-bottom-color: rgb(240, 240, 240);
-    border-left-color: rgb(240, 240, 240);
-    border-image-source: initial;
-    border-image-slice: initial;
-    border-image-width: initial;
-    border-image-outset: initial;
-    border-image-repeat: initial;
 }
 .toggle > .toggle-button {
     padding: 6px 15px;

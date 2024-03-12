@@ -16,6 +16,7 @@ import (
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/api/v1/comment"
 	"kratos-blog/api/v1/friend"
+	"kratos-blog/api/v1/photo"
 	"kratos-blog/api/v1/tag"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/gateway/internal/conf"
@@ -115,4 +116,7 @@ func NewTagServiceClient(rr registry.Discovery) tag.TagClient {
 }
 func NewFriendServiceClient(rr registry.Discovery) friend.FriendClient {
 	return friend.NewFriendClient(NewGrpcServiceClient(server.BlogService, rr))
+}
+func NewPhotoServiceClient(rr registry.Discovery) photo.PhotoClient {
+	return photo.NewPhotoClient(NewGrpcServiceClient(server.BlogService, rr))
 }

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/registry"
 	"kratos-blog/app/gateway/internal/conf"
 	"kratos-blog/pkg/server"
@@ -77,6 +79,8 @@ func main() {
 	if err := c.Scan(&rc); err != nil {
 		panic(err)
 	}
+	listenConfigChange(c, "domain", &bc)
+
 	app, cleanup, err := wireApp(&bc, &rc, logger)
 	if err != nil {
 		panic(err)
@@ -87,4 +91,40 @@ func main() {
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
+}
+
+func listenConfigChange(c config.Config, serverName string,
+	change *conf.Bootstrap) {
+	if err := c.Watch(serverName, func(key string, value config.Value) {
+		fmt.Printf("config changed: %s = %v\n", key, value)
+		var confC map[string]interface{}
+		value.Scan(&confC)
+		change.Domain.Open = confC["open"].(bool)
+		list := confC["origin"].([]interface{})
+		ParseJSONToStruct(list, &change.Domain.Origin)
+	}); err != nil {
+		log.Error(err)
+	}
+}
+
+func ParseJSONToList(jsonStr string, list *[]interface{}) bool {
+	if len(jsonStr) == 0 {
+		return false
+	}
+	var memoryList []interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &memoryList); err != nil {
+		fmt.Errorf("error parsing JSON: %s", err)
+		return false
+	}
+	*list = memoryList
+	return true
+}
+
+func ParseJSONToStruct(jsonStr interface{}, resultStruct interface{}) error {
+	f, _ := json.Marshal(jsonStr)
+	err := json.Unmarshal(f, resultStruct)
+	if err != nil {
+		return fmt.Errorf("error parsing JSON: %s", err)
+	}
+	return nil
 }

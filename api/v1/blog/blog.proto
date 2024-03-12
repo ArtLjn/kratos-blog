@@ -165,7 +165,7 @@ message ListBlogReply {
 
 message ListCacheReply {
 	CommonReply common = 1;
-	repeated string data = 2;
+	repeated BlogData List = 2;
 }
 
 message GetBlogByTitleRequest {
@@ -195,7 +195,7 @@ message GetBlogIDReply {
 }
 
 message DeleteCacheBlogRequest {
-	string key = 1;
+	int64 key = 1;
 }
 message DeleteCacheBlogReply {
 	CommonReply common = 1;
@@ -211,7 +211,7 @@ message SuggestBlogReply {
 message SearchAllSuggest {}
 message SearchAllReply {
 	CommonReply common = 1;
-	repeated string data = 2;
+	repeated BlogData List = 2;
 }
 
 message Permission {

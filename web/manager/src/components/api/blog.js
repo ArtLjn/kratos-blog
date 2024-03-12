@@ -13,7 +13,7 @@ export const uploadFile = (event) => {
     const header = {
         'Content-Type': 'multipart/form-data'
     }
-    return req('post','/api/upload',formData,true,header)
+    return req('post','/util/upload',formData,true,header)
 }
 
 //删除博客文章api
@@ -24,4 +24,13 @@ export const DeleteBlog = (id,key) => {
 
 export const SearchBlog = (val) => {
     return req('get',`/api/searchBlog/${val}`)
+}
+
+export const GetBlogById = (id) => {
+    return req('get',`/api/getId/${id}`)
+}
+
+// 添加草稿笔记
+export const setCacheBlog = (data) => {
+    return req('post','/api/cacheBlog',data)
 }

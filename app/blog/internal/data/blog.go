@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/app/blog/internal/biz"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -236,9 +234,7 @@ func (r *blogRepo) UpdateOnly(ctx context.Context, request *blog.UpdateOnlyReque
 }
 
 func (r *blogRepo) CacheBlog(ctx context.Context, request *blog.CreateBlogRequest) *blog.CreateBlogReply {
-	blogID := fmt.Sprintf("%s-%s", time.Now().Format("2006-01-02 15:04"), *request.Data.Title)
-	data, _ := json.Marshal(&request.Data)
-	r.setHashField(CacheBlog, blogID, string(data))
+	r.setCacheList(CacheBlog, []interface{}{request.Data})
 	return &blog.CreateBlogReply{
 		Common: &blog.CommonReply{
 			Code:   200,
@@ -248,46 +244,18 @@ func (r *blogRepo) CacheBlog(ctx context.Context, request *blog.CreateBlogReques
 }
 
 func (r *blogRepo) GetCacheBlog(ctx context.Context) *blog.ListCacheReply {
-	data, err := r.data.rdb.HGetAll(CTX, CacheBlog).Result()
-	if err != nil {
-		r.log.Log(log.LevelError, err)
-	}
-
-	var (
-		list []string
-		wg   sync.WaitGroup
-	)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for key, val := range data {
-			newMap := map[string]interface{}{
-				key: val,
-			}
-			f, _ := json.Marshal(&newMap)
-
-			mu.Lock()
-			list = append(list, string(f))
-			mu.Unlock()
-		}
-	}()
-
-	wg.Wait()
-
 	return &blog.ListCacheReply{
 		Common: &blog.CommonReply{
 			Code:   200,
 			Result: vo.QUERY_SUCCESS,
 		},
-		Data: list,
+		List: r.restoreList(CacheBlog),
 	}
 }
 
 func (r *blogRepo) DeleteCacheBlog(ctx context.Context,
 	request *blog.DeleteCacheBlogRequest) *blog.DeleteCacheBlogReply {
-	_, err := r.data.rdb.HDel(CTX, CacheBlog, request.Key).Result()
-	if err != nil {
+	if !r.delListItem(CacheBlog, request.GetKey()) {
 		return &blog.DeleteCacheBlogReply{
 			Common: &blog.CommonReply{
 				Code:   500,
@@ -308,9 +276,7 @@ func (r *blogRepo) AddSuggestBlog(ctx context.Context, request *blog.SuggestBlog
 	if err != nil {
 		r.log.Log(log.LevelError, err)
 	}
-	body, _ := json.Marshal(&data)
-
-	r.setHashField(SuggestBlog, strconv.Itoa(int(request.Id)), string(body))
+	r.setCacheList(SuggestBlog, []interface{}{data})
 	return &blog.SuggestBlogReply{
 		Common: &blog.CommonReply{
 			Code:   vo.SUCCESS_REQUEST,
@@ -320,8 +286,7 @@ func (r *blogRepo) AddSuggestBlog(ctx context.Context, request *blog.SuggestBlog
 }
 
 func (r *blogRepo) DeleteSuggestBlog(ctx context.Context, request *blog.SuggestBlogRequest) *blog.SuggestBlogReply {
-	_, err := r.data.rdb.HDel(CTX, SuggestBlog, strconv.Itoa(int(request.Id))).Result()
-	if err != nil {
+	if !r.delListItem(SuggestBlog, request.Id) {
 		return &blog.SuggestBlogReply{
 			Common: &blog.CommonReply{
 				Code:   500,
@@ -338,34 +303,8 @@ func (r *blogRepo) DeleteSuggestBlog(ctx context.Context, request *blog.SuggestB
 }
 
 func (r *blogRepo) GetAllSuggestBlog(ctx context.Context, request *blog.SearchAllSuggest) *blog.SearchAllReply {
-	data, err := r.data.rdb.HGetAll(ctx, SuggestBlog).Result()
-	if err != nil {
-		r.log.Log(log.LevelError, err)
-	}
-	var (
-		list []string
-		wg   sync.WaitGroup
-	)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for key, val := range data {
-			newMap := map[string]interface{}{
-				key: val,
-			}
-			f, _ := json.Marshal(&newMap)
-
-			mu.Lock()
-			list = append(list, string(f))
-			mu.Unlock()
-		}
-	}()
-
-	wg.Wait()
-
 	return &blog.SearchAllReply{Common: &blog.CommonReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS},
-		Data: list}
+		List: r.restoreList(SuggestBlog)}
 }
 
 // ***************** Redis Util *********************** //
@@ -430,6 +369,20 @@ func (r *blogRepo) setCacheList(key string, o []interface{}) {
 		}
 		r.log.Log(log.LevelInfo, "Successfully pushed value to Redis list", i)
 	}
+}
+
+func (r *blogRepo) delListItem(key string, index int64) bool {
+	val, err := r.data.rdb.LIndex(CTX, key, index).Result()
+	if err != nil {
+		r.log.Log(log.LevelError, err)
+		return false
+	}
+	removed, e := r.data.rdb.LRem(CTX, key, index, val).Result()
+	if e != nil {
+		r.log.Log(log.LevelError, removed, e)
+		return false
+	}
+	return true
 }
 
 type Blog struct {

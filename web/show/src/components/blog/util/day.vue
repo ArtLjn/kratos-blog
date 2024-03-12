@@ -7,7 +7,6 @@ import { onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
 
 export default {
-  name: 'day',
   setup() {
     const chartDom = ref(null);
     let myChart;

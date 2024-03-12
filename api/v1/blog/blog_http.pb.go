@@ -5,6 +5,7 @@
 // source: blog.proto
 
 package blog
+
 import (
 	context "context"
 	http "github.com/go-kratos/kratos/v2/transport/http"

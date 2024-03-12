@@ -1,14 +1,6 @@
 import axios from "axios";
 
 
-const baseURL = '/api'
-
-export const instance = axios.create(
-    {
-        baseURL,
-        timeout: 1000
-    }
-)
 export const req = (method,url,data = null,isHeader = true,header = null) => {
     let king = null;
     const token = localStorage.getItem("token")

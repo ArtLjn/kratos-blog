@@ -11,7 +11,7 @@
             <div class="all-tag">
                 <div v-for="tag in tags" :key="tag.id" class="tags">
                     <div class="tag" :style="`background-color: rgb(${Math.floor(Math.random() * 256)},
-                     ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`" @click="getTagName(tag.tag_name)">{{ tag.tag_name }}</div>
+                     ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.7)`" @click="getTagName(tag.tagName)">{{ tag.tagName }}</div>
                 </div>
             </div>
         </el-card>         
@@ -32,44 +32,28 @@
     </div>
 </template>
 <script>
-import axios from 'axios';
 import newFooter from './util/newFooter.vue';
 import { onMounted, reactive, ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import {GetTag, GetTagByName} from "@/api/tag";
 export default{
-    name:"tag",
     components:{
         newFooter
     },
     setup() {
         const tags = ref([])
         const Blogs = ref([]);
-        const getTag = () => {
-            axios
-                .get("/api/getAllTag")
-                .then((response) => {
-                    tags.value = response.data.list
-                })
-        }
+
+        GetTag().then((res) => {
+          tags.value = res.data;
+        })
         const getTagName = (tag) => {
-            axios
-                .get(`/api/getTagName/${tag}`,
-                {
-                    headers:{
-                        token:localStorage.getItem("token")
-                    }
-                })
-                .then((response) => {
-                    Blogs.value = response.data.list
-                })
-                .catch((error) => {
-                    console.log(error)
-                    ElMessage.error(error.response.data)
-                })
+          GetTagByName(tag).then((res) => {
+            Blogs.value = res.List;
+          })
         }
 
         onMounted(() => {
-            getTag();
+            GetTag();
             window.scrollTo(0,0);
         })
         const RandomPhoto = reactive({

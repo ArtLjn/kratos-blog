@@ -5,7 +5,7 @@
         <div>
           <div style="float:left;">
             <el-form inline style="float:left" @submit.prevent="queryData()">
-              <el-form-item label="标题">
+              <el-form-item >
                 <el-input v-model="query"  placeholder="输入标题进行查询"></el-input>
               </el-form-item>
               <el-form-item>
@@ -25,9 +25,7 @@
           </div>
         </div>
         <div class="table-container">
-          <el-table :data="Blogs" class="custom-table" height="650" stripe :lazy="true" show-summary	
-          border
-          >
+          <el-table :data="Blogs" class="custom-table"  stripe :lazy="true" border>
             <el-table-column type="selection" label="序号" width="80" >
               <template #default="{ row }">
                 <el-checkbox v-model="row.selected" @change="handlePush(row.id)"></el-checkbox>
@@ -39,31 +37,12 @@
                 <router-link :to="`/main/watch/${row.id}`" class="link"><h1>{{ row.title }}</h1></router-link></el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column label="评论" width="100">
-              <template #default="{ row }">
-                <span>{{row.comment}}</span> 
-              </template>
-            </el-table-column>
-            <el-table-column label="时间" width="120">
-              <template #default="{ row }">
-                <span>{{ row.create_time }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="标签" width="150">
-              <template #default="{row}">
-                <h1>{{row.tag}}</h1>
-              </template>
-            </el-table-column>
-            <el-table-column label="浏览量" width="100">
-              <template #default="{row}">
-                <h1>{{row.visits}}</h1>
-              </template>
-            </el-table-column>
-            <el-table-column label="浏览权限" width="100">
-              <template #default="{row}">
-                <h1>{{row.appear}}</h1>
-              </template>
-            </el-table-column>
+            <el-table-column label="评论" width="100" prop="comment"></el-table-column>
+            <el-table-column label="时间" width="120" prop="createTime"></el-table-column>
+            <el-table-column label="标签" width="150" prop="tag"></el-table-column>
+            <el-table-column label="浏览量" width="100" prop="visits"></el-table-column>
+            <el-table-column label="浏览权限" width="100" prop="appear"></el-table-column>
+            <el-table-column label="最近一次更新时间" width="150" prop="updateTime"></el-table-column>
             <el-table-column label="操作" width="300">
               <template #default="{row}">
                 <el-button @click="handelNote(row.id)">编辑</el-button>
@@ -90,15 +69,10 @@
               @confirm="sendChangeAppear(row.id,1)"
               @cancel="sendChangeAppear(row.id,2)"
             >
-              <template #reference>
-                <el-button type="primary">访问</el-button>
-              </template>
+            <template #reference>
+              <el-button type="primary">访问</el-button>
+            </template>
             </el-popconfirm>
-              </template>
-            </el-table-column>
-            <el-table-column label="最近一次更新时间" width="150">
-              <template #default="{row}">
-                  <h1>{{row.update_time}}</h1>
               </template>
             </el-table-column>
           </el-table>
@@ -141,10 +115,13 @@
   import login from '../authentication/login.vue';
   import {DeleteBlog, GetAllBlog, SearchBlog, updateAllBlogCommentStatus} from "@/components/api/blog";
   import {safeMath} from "@/components/api/util";
+  import {SUCCESS_REQUEST} from "@/components/api/status";
 
   export default {
+    // eslint-disable-next-line vue/multi-word-component-names
     name: 'Blog',
     components: {
+      // eslint-disable-next-line vue/no-unused-components
       login
     },
     setup() {//分页
@@ -161,10 +138,10 @@
       //
       const Blogs = ref([]);
       const router = useRouter();
-      const getAllBlog = () => {
+      const getAllBlog =  () => {
         GetAllBlog().then((res) => {
-          if (res.status === 200) {
-            Blogs.value = res.list;
+           if (res.common.code === SUCCESS_REQUEST) {
+            Blogs.value = res.List;
           }
         })
       };

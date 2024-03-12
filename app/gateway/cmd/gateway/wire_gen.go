@@ -34,12 +34,14 @@ func wireApp(confData *conf.Bootstrap,registry *conf.Registry, logger log.Logger
 	friendClient := data.NewFriendServiceClient(discovery)
 	friendService := service.NewFriendService(friendClient,logger)
 	dataData, err := data.NewData(confData,logger,userClient,rdb,role)
+	photoClinet := data.NewPhotoServiceClient(discovery)
+	photoService := service.NewPhotoService(photoClinet,logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	filterRepo := data.NewFilterRepo(dataData,logger)
 	httpServer := server.NewHTTPServer(confData	, logger,userService,
-		commentService,blogService,tagService,friendService,filterRepo)
+		commentService,blogService,tagService,friendService,photoService,filterRepo)
 	app := newApp(logger, httpServer,r)
 	return app, func() {
 	}, nil

@@ -39,7 +39,10 @@ func wireApp(conf *conf.Bootstrap,registry *conf.Registry,logger log.Logger) (*k
 	friendRepo := data.NewFriendRepo(dataData,logger)
 	friendUseCase := biz.NewFriendUseCase(friendRepo,logger)
 	friendService := service.NewFriendService(friendUseCase)
-	grpcServer := server.NewGRPCServer(conf.Server, blogService,friendService,tagService, logger)
+	photoRepo := data.NewPhotoRepo(dataData,logger)
+	photoUseCase := biz.NewPhotoUseCase(photoRepo,logger)
+	photoService := service.NewPhotoService(photoUseCase)
+	grpcServer := server.NewGRPCServer(conf.Server, blogService,friendService,tagService,photoService, logger)
 	httpServer := server.NewHTTPServer(conf, blogService,friendService,tagService, logger)
 	app := newApp(logger, grpcServer, httpServer,r)
 	return app, func() {

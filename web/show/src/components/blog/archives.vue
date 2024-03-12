@@ -16,11 +16,11 @@
                 <button class="button2">阅读更多</button>
               </router-link>
             </div>
-            <div class="time">{{item.create_time}}</div>
+            <div class="time">{{item.createTime}}</div>
           </el-timeline-item>
         </el-timeline>
       </div>
-      <div class="shouji">
+      <div class="phone">
         <div v-for="item in displayedItems" :key="item.id" style="display:flex;" :timestamp="item.createTime" center hide-timestamp>
           <div class="blog">
             <router-link :to="`/watch/${item.id}`" class="top">
@@ -29,7 +29,7 @@
               <div class="preface2">{{item.preface}}</div>
               <button class="button2">阅读更多</button>
             </router-link>
-            <div class="time">{{item.create_time}}</div>
+            <div class="time">{{item.createTime}}</div>
           </div>
         </div>
       </div>
@@ -47,6 +47,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { getAllBlog } from '@/api/blogFunc';
 
 export default {
+  // eslint-disable-next-line vue/multi-word-component-names
   name: "archives",
   components: {
     newFooter
@@ -54,7 +55,7 @@ export default {
   setup() {
     const Blogs = ref([]);
     getAllBlog().then(data => {
-            Blogs.value = data.list;
+        Blogs.value = data.List;
     })
     const RandomPhoto = reactive({
       photo: ''
@@ -120,7 +121,7 @@ export default {
   font-size: 20px;
   margin-top: 10px;
 }
-.shouji{
+.phone{
   display: none;
 }
 @media screen and (max-width: 600px) {
@@ -131,7 +132,7 @@ export default {
     width: 100%;
     margin-right: 10px;
   }
-  .shouji{
+  .phone{
     display: block;
   }
   .time-dd{

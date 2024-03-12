@@ -32,69 +32,64 @@
     </div>
 </template>
 <script>
-import axios from 'axios';
 import newFooter from './util/newFooter.vue';
 import { onMounted, reactive, ref } from 'vue';
-import {getAllphoto} from '@/api/photoFunc'
+import {getAllPhoto} from '@/api/photoFunc'
 export default{
-    name:"photo",
     components:{
         newFooter
     },
     setup() {
-        const PhotoList = ref([]);
-        const photoUrl = ref([]);
-        getAllphoto().then((res) => {
-            PhotoList.value = res.list
-            console.log(PhotoList.value)
-            PhotoList.value.map((item) => {
-                photoUrl.value.push(item.photo);
-            })
+      const PhotoList = ref([]);
+      const photoUrl = ref([]);
+      getAllPhoto().then((res) => {
+        PhotoList.value = res.data
+        res.data.forEach(val => {
+          photoUrl.value.push(val.photo)
         })
-        const RandomPhoto = reactive({
-            photo:''
-        });
+      })
+      const RandomPhoto = reactive({
+          photo:''
+      });
 
-        RandomPhoto.photo = JSON.parse(sessionStorage.getItem("bingUrl"));
-        // console.logs(RandomPhoto.photo)
-        const showImageViewer = ref(false);
-        const handleImageHide = () => {
-          showImageViewer.value = false
-        }
-        const selectedIndex = ref(0)
-        const handelEventPhoto = () => {
-            const index = photoUrl.value.indexOf(event.target.src); // 获取点击的图片在photoUrl列表中的索引值
-            // console.logs(index); // 输出索引值
-            selectedIndex.value = index
-            showImageViewer.value = true;
-            
-        }
+      RandomPhoto.photo = JSON.parse(sessionStorage.getItem("bingUrl"));
+      const showImageViewer = ref(false);
+      const handleImageHide = () => {
+        showImageViewer.value = false
+      }
+      const selectedIndex = ref(0)
+      const handelEventPhoto = () => {
+          const index = photoUrl.value.indexOf(event.target.src); // 获取点击的图片在photoUrl列表中的索引值
+          // console.logs(index); // 输出索引值
+          selectedIndex.value = index
+          showImageViewer.value = true;
 
-        onMounted(() => {
-            getAllphoto();
-            window.scrollTo(0,0);
-        })
-        return{
-            PhotoList,
-            RandomPhoto,
-            photoUrl,
-            handleImageHide,
-            showImageViewer,
-            handelEventPhoto,
-            selectedIndex,
-        }
+      }
+
+      onMounted(() => {
+          getAllPhoto();
+          window.scrollTo(0,0);
+      })
+      return{
+          PhotoList,
+          RandomPhoto,
+          photoUrl,
+          handleImageHide,
+          showImageViewer,
+          handelEventPhoto,
+          selectedIndex,
+      }
     }
 }
 </script>
 <style scoped>
 .card-dd{
-    margin: 0px auto 20px auto;
+    margin: 320px auto 20px auto;
     min-height: 400px;
     border-radius: 10px;
     width: calc(68%);
     min-width:68%;
     height: auto;
-    margin-top:320px;
     position: relative;
     vertical-align: bottom;
     background-color: rgb(135, 109, 109,0);

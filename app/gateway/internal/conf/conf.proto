@@ -9,6 +9,8 @@ message Bootstrap {
   Server server = 1;
   Data data = 2;
   Upload upload = 3;
+  Path path = 4;
+  Domain domain = 5;
 }
 
 message Server {
@@ -50,4 +52,14 @@ message Upload {
   string domain = 2;
   string maxsize = 3;
   string uri = 4;
+}
+
+message Path {
+  repeated string white = 1;
+  repeated string black = 2;
+}
+
+message Domain {
+  repeated string origin = 1;
+  bool open = 2;
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // ProviderSet is server providers.
-var ProviderSet = wire.NewSet(NewHTTPServer)
+var ProviderSet = wire.NewSet(NewHTTPServer, NewGinRouter)
 
 // NewGinRouter :dev 工具类方法接口
 func NewGinRouter(c *conf.Bootstrap, router *gin.Engine) {

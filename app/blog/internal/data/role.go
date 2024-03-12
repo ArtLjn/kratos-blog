@@ -66,13 +66,15 @@ func (r *blogRepo) parse(m interface{}, blogs *[]*blog.BlogData) {
 
 func (a *AdminRoleFactory) QueryListBlog() ([]*blog.BlogData, error) {
 	var blogs []*blog.BlogData
+	var b []Blog
+
 	if exists, _ := a.r.data.rdb.Exists(CTX, AdminNotes).Result(); exists == 1 {
 		return a.r.restoreList(AdminNotes), nil
 	}
-	res, err := a.r.data.pf.QueryFunc(Blog{}, nil, true)
-	a.r.parse(res, &blogs)
+	a.r.data.db.Model(Blog{}).Order("createTime desc").Find(&b)
+	a.r.parse(b, &blogs)
 	a.r.setCacheList(AdminNotes, a.r.parseList(blogs))
-	if err != nil || res == nil {
+	if len(blogs) == 0 {
 		a.r.log.Info(vo.QUERY_EMPTY)
 		return nil, errors.New(vo.QUERY_EMPTY)
 	}
@@ -81,13 +83,14 @@ func (a *AdminRoleFactory) QueryListBlog() ([]*blog.BlogData, error) {
 
 func (a *UserOrVisitFactory) QueryListBlog() ([]*blog.BlogData, error) {
 	var blogs []*blog.BlogData
+	var b []Blog
 	if exists, _ := a.r.data.rdb.Exists(CTX, Notes).Result(); exists == 1 {
 		return a.r.restoreList(Notes), nil
 	}
-	res, err := a.r.data.pf.QueryFunc(Blog{}, map[string]interface{}{"appear": true}, true)
-	a.r.parse(res, &blogs)
+	a.r.data.db.Model(Blog{}).Order("createTime desc").Where("appear = ?", true).Find(&b)
+	a.r.parse(b, &blogs)
 	a.r.setCacheList(Notes, a.r.parseList(blogs))
-	if err != nil || res == nil {
+	if len(blogs) == 0 {
 		a.r.log.Info(vo.QUERY_EMPTY)
 		return nil, errors.New(vo.QUERY_EMPTY)
 	}

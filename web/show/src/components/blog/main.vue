@@ -40,11 +40,6 @@
           </router-link>
         </div>
         <div class="lh">
-          <router-link to="/talk" class="link">
-            <font-awesome-icon :icon="['fas', 'wand-magic-sparkles']" /> 说说
-          </router-link>
-        </div>
-        <div class="lh">
           <router-link to="/friendlink" class="link">
             <font-awesome-icon :icon="['fas', 'address-card']" /> 友链
           </router-link>
@@ -83,9 +78,6 @@
         </router-link>
         <router-link to="/photo" class="link">
           <font-awesome-icon :icon="['fas', 'image']" /> 相册
-        </router-link>
-        <router-link to="/talk" class="link">
-          <font-awesome-icon :icon="['fas', 'wand-magic-sparkles']" /> 说说
         </router-link>
         <router-link to="/friendlink" class="link">
           <font-awesome-icon :icon="['fas', 'address-card']" /> 友链

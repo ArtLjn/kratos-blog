@@ -11,7 +11,7 @@
     </div>
     <form  v-if="replyIndex === null" @submit.prevent="saveComment">
       <textarea class="textarea-field" placeholder="好言一句三冬暖 恶语伤人六月寒" v-model="addComment.comment"  @keydown.enter.prevent></textarea>
-      <div class="buyd" @click="clickShowEmjio">(っ◔◡◔)っ</div>
+      <div class="expression" @click="clickShowEmjio">(っ◔◡◔)っ</div>
       <div class="button-group">
         <el-button class="submit-button" @click="saveComment" :disabled="isCountingDown">
           {{ isCountingDown ? '发表评论 (' + countdown + ')' : '发表评论' }}
@@ -19,7 +19,7 @@
       </div>
     </form>
     <Picker :data="emojiIndex" set="twitter" @select="showEmoji" v-if="hideEmoji" class="a"/>
-    <div class="pinglun">
+    <div class="comment">
       <span v-if="commentList.length === 0" class="com">来评论吧~</span>
       <span class="comment-title" v-if="commentList.length > 0">评论</span>
       <div class="comment-list">
@@ -54,7 +54,7 @@
           <div v-if="replyIndex === index">
             <form class="reply-form" @submit.prevent="saveReward(comment.id)">
               <textarea class="textarea-field" placeholder="好言一句三冬暖 恶语伤人六月寒" v-model="RewardData.reward_content"  @keydown.enter.prevent></textarea>
-              <div style="float:left;" @click="clickShowEmjio2" class="buyd">(っ◔◡◔)っ</div>
+              <div style="float:left;" @click="clickShowEmjio2" class="expression">(っ◔◡◔)っ</div>
               <div class="button-group">
                 <el-button class="submit-button" @click="saveReward(comment.id)" :disabled="isCountingDown">
                   {{ isCountingDown ? '发表评论 (' + countdown + ')' : '发表评论' }}
@@ -466,10 +466,10 @@ export default {
   position: absolute;
   z-index: 2;
 }
-.buyd{
+.expression{
   float:left;margin:15px;
 }
-.pinglun{
+.comment{
   position: relative;
 }
 </style>

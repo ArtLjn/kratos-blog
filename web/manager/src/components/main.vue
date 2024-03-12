@@ -23,28 +23,12 @@
             <router-link class="link" to="/main/friendManager">
               <font-awesome-icon :icon="['fas', 'address-card']" /> 友链</router-link>
           </div>
-          <div class="ddd">
-            <router-link class="link" to="/main/talkManager">
-              <font-awesome-icon :icon="['fas', 'dumpster-fire']" />  一言</router-link>
-          </div>
         </div>
       </el-aside>
       <el-container>
         <el-header class="header">
-          <font-awesome-icon :icon="['fas', 'bars']" @click="drawer = true"  class="daohang"></font-awesome-icon>
-          <el-dropdown size="large" style="margin-right:50px;display:flex;justify-content: flex-end;">
-            <h1 style="color:rgb(228, 210, 210);font-size:30px;">
-              <font-awesome-icon :icon="['fas', 'bars']" />
-            </h1>
-            <template #dropdown>
-              <el-dropdown-menu style="width:100px;display:flex;flex-direction: column;align-items: center;            ">
-                <el-dropdown-item class="mnd">
-                  <router-link to="/login" style="color:black;" class="link" @click="deleteAuth">退出</router-link>
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
           <div class="logout">
+            <router-link to="/login" style="color:black;" class="link" @click="logout">退出</router-link>
           </div>
         </el-header>
         <el-main class="main">
@@ -64,13 +48,13 @@ import { ref } from 'vue';
 export default{
     name:"main",
     setup() {
-      const deleteAuth = () => {
-          localStorage.clear("authData");
-      }
       const drawer = ref(false);
+      const logout = () => {
+        localStorage.clear()
+      }
       return{
-        deleteAuth ,
-        drawer
+        drawer,
+        logout
       }
     }
 }

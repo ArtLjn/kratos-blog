@@ -1,6 +1,6 @@
 <template>
-    <div class="zhuan">
-        <h1 class="zhuanye">专业技能</h1>
+    <div class="skill">
+        <h1 class="expertise">专业技能</h1>
       <div ref="chartRef" style="height: 380px"></div>
     </div>
   </template>
@@ -10,7 +10,6 @@
   import * as echarts from 'echarts';
   
   export default {
-    name:"zhuanTu",
     setup() {
       const chartRef = ref(null);
   
@@ -71,7 +70,7 @@
   };
   </script>
 <style scoped>
-.zhuanye{
+.expertise{
     text-align: center;
 }
 </style>

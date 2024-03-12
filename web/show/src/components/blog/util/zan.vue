@@ -11,7 +11,6 @@
   import { ref } from 'vue';
   
   export default {
-    name:"zan",
     setup() {
       // 使用 ref 创建响应式数据
       const likeCount = ref(0);

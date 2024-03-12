@@ -62,18 +62,11 @@ const routes = [
             },
             {
                 path:"/friendlink",
-                component:()=>import(/* webpackChunkName:"frinedLink" */'./components/blog/frinedLink.vue'),
+                component:()=>import(/* webpackChunkName:"frinedLink" */'./components/blog/friendLink.vue'),
                 meta:{
                     title:'友链 | 红豆南墙 | 个人博客'
                 }
             },
-            {
-                path:"/talk",
-                component:()=>import(/* webpackChunkName:"frinedLink" */'./components/comments/Talk.vue'),
-                meta:{
-                    title:'说说 | 红豆南墙 | 个人博客'
-                }
-            }
         ]
     },
     {

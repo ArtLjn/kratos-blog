@@ -70,7 +70,7 @@ message LoginRequest {
 }
 message LoginReply {
 	CommonReply common = 1;
-	repeated string Data = 2;
+	repeated string data = 2;
 }
 
 message SendEmailRequest {

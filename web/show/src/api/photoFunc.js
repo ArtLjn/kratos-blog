@@ -1,3 +1,3 @@
 import {req} from './axiosFunc'
 //获取所有照片
-export const getAllphoto = () => {return req('get','/api/getAllPhoto',null);}
+export const getAllPhoto = () => {return req('get','/api/getAllPhoto',null);}

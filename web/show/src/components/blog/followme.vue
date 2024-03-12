@@ -4,7 +4,7 @@
                 <span class="main-title">关于我</span>
             </el-main>
             <div class="follow">
-                <img src="../../assets/image/touxiang.jpg" class="photo"/>
+                <img src="../../assets/image/avatar.jpg" class="photo"/>
                 <el-card class="card-dd">
                     <div style="float:left;" class="tag"><span class="bq" style="background-color:rgb(22, 14, 53);color:white;padding:2px;
                         font-size:14px;border-top-left-radius: 5px;border-bottom-left-radius:5px;">
@@ -14,7 +14,7 @@
                           </div>
                    <div class="bottom-title">红豆南墙</div>
                    <div style="width:80%;margin:auto;">
-                    <p class="jshao">我是红豆南墙，一个对生活充满好奇心和热情的人。
+                    <p class="introduce">我是红豆南墙，一个对生活充满好奇心和热情的人。
 
                         我一直对探索新事物和挑战自己充满激情。通过我的博客，我希望与大家分享我的思考和经历，以及对各种各样话题的见解。
                         
@@ -27,10 +27,10 @@
                         感谢大家阅读我的博客，并期待与你们的交流和互动！谢谢！</p>
                    </div>
                    <div class="tu">
-                        <zhuanTu class="zt"/>
+                        <skill class="zt"/>
                         <bingTu class="bt"/>
                    </div>
-                   <Niandu class="niandu"/>
+                   <contribute class="contribute"/>
                 </el-card>
             </div>
         <newFooter class="footer"></newFooter>
@@ -39,15 +39,16 @@
 <script>
 import bingTu from './util/bingTu.vue'
 import newFooter from './util/newFooter.vue'
-import zhuanTu from './util/zhuanTu.vue'
+import skill from './util/skill.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { getAllBlog } from '@/api/blogFunc'
+import contribute from "@/components/blog/util/contribute.vue";
 export default{
-    name:"followme",
     components:{
         newFooter,
         bingTu,
-        zhuanTu,
+        skill,
+        contribute
     },
     setup() {
         const image = reactive({
@@ -58,9 +59,9 @@ export default{
             window.scrollTo(0,0);
         })
         const Blogs = ref([]);
-        const blogCount = ref('')
+        const blogCount = ref(0)
         getAllBlog().then(data => {
-            Blogs.value = data.list;
+            Blogs.value = data.List;
             blogCount.value = Blogs.value.length;
         })
       return{
@@ -103,7 +104,7 @@ export default{
     font-size: 30px;
 }
 
-.jshao{
+.introduce{
     font-size: 16px;
     text-indent: 10px;
     letter-spacing: 5px;

@@ -24,11 +24,11 @@ import {uploadFile} from "@/components/api/blog";
 export default{
     name:"addPhoto",
     setup() {
-        const data = reactive({
-            title:'',
-            position:'',
-            photo:""
-        })
+    const data = reactive({
+        title:'',
+        position:'',
+        photo:""
+    })
     const file2 = ref('')
     const handleMainPhoto = (event) => {
         uploadFile(event).then((res) => {

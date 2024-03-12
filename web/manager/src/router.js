@@ -1,55 +1,43 @@
 import { createWebHistory,createRouter } from "vue-router";
-import Blog from './components/BlogManager/Blog.vue'
-import edit from './components/edit/edit.vue'
-import main from './components/main.vue'
-import watch from './components/BlogManager/watch.vue'
-import login from './components/authentication/login.vue'
-import bloPhoto from './components/BlogManager/blogPhoto.vue'
-import TagManager from './components/BlogManager/TagManager.vue'
-import FriendManager from './components/BlogManager/FriendManager.vue'
+
 const routes = [
     {
         path:"/login",
-        component:login
+        component:() => import(/* webpackChunkName:"login" */'./components/authentication/login.vue'),
     },
     {
         path:"/",
-        component:main,
         redirect:"/login",
     },
     {
         path:"/main",
-        component:main,
+        component:() => import(/* webpackChunkName:"main" */'./components/main.vue'),
         redirect:'/main/blog',
         children:[
             {
                 path:"blog",
-                component:Blog
+                component:() => import(/* webpackChunkName:"blog" */'./components/BlogManager/Blog.vue'),
             },
             {
                 path:"edit",
-                component:edit
+                component:() => import(/* webpackChunkName:"edit" */'./components/edit/edit.vue'),
             },
             {
                 path:`watch/:id`,
                 name:"watch",
-                component:watch
+                component:() => import(/* webpackChunkName:"watch" */'./components/BlogManager/watch.vue'),
             },
             {
                 path:"photo",
-                component:bloPhoto
+                component:() => import(/* webpackChunkName:"photo" */'./components/BlogManager/blogPhoto.vue'),
             },
             {
                 path:"tagManager",
-                component:TagManager
+                component:() => import(/* webpackChunkName:"tagManager" */'./components/BlogManager/TagManager.vue'),
             },
             {
                 path:'friendManager',
-                component:FriendManager
-            },
-            {
-                path:"talkManager",
-                component:()=>import(/* webpackChunkName:"frinedLink" */'./components/edit/TalkManager.vue'),
+                component:() => import(/* webpackChunkName:"friendManager" */'./components/BlogManager/FriendManager.vue'),
             },
         ]
     }

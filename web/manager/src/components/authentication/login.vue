@@ -18,9 +18,10 @@
   
   <script>
   import { onMounted,ref } from 'vue';
-  import {login, token} from "@/components/api/auth";
+  import {login} from "@/components/api/auth";
 
   export default {
+    // eslint-disable-next-line vue/multi-word-component-names
     name: 'Login',
     setup() {
       const loginForm = ref({
@@ -28,7 +29,7 @@
         password: ''
       });
       onMounted(() => {
-        token()
+        login(loginForm)
       });
 
       const logins = () => {

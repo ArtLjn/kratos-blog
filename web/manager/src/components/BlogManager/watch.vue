@@ -27,22 +27,22 @@
       </div>
   </template>
   
-  <script>
-  import axios from 'axios';
+<script>
   import { useRoute } from 'vue-router';
   import { onMounted, reactive, ref } from 'vue';
-import { ElMessage } from 'element-plus';
-  
+  import { ElMessage } from 'element-plus';
+  import {GetBlogById} from "@/components/api/blog";
+
   export default {
     name: 'watch',
     setup() {
-      const getData = reactive({
+      let getData = reactive({
         title: '',
         content: '',
         preface: '',
         updateTime: '',
         createTime: '',
-        tag:''
+        tag: ''
       });
       const route = useRoute();
       const id = route.params.id;
@@ -54,35 +54,24 @@ import { ElMessage } from 'element-plus';
       const regex = /!\[.*?\]\((.*?)\)/g;
 
       const imageList = ref([])
-
       const showImageViewer = ref(false);
 
       const selectedIndex = ref(0)
 
-      const getId = () => {
-        axios.get(`/api/getId/${id}`,{
-              headers:{
-                token:localStorage.getItem("token")
-              }
-          }).then((response) => {
-          const data = response.data.data;
-          getData.title = data.title;
-          getData.content = data.content;
-          getData.preface = data.preface;
-          getData.updateTime = data.update_time;
-          getData.createTime = data.create_time;
-          getData.tag = data.tag;
-
-          let match;
-          const extractedImages = [];
-          while ((match = regex.exec(getData.content)) !== null) {
-            extractedImages.push(match[1]);
+      const getId = async () => {
+        const res = await GetBlogById(id);
+        Object.keys(getData).forEach(key => {
+          if (res.data.hasOwnProperty(key)) {
+            getData[key] = res.data[key];
           }
-
-          // 将解析的图片地址添加到 imageList
-          imageList.value = extractedImages;
-          console.log(imageList.value);
         });
+        let match;
+        const extractedImages = [];
+        while ((match = regex.exec(getData.content)) !== null) {
+          extractedImages.push(match[1]);
+        }
+        // 将解析的图片地址添加到 imageList
+        imageList.value = extractedImages;
       };
   
       const handleImageClick = () => {
@@ -104,13 +93,8 @@ import { ElMessage } from 'element-plus';
       };
     },
   };
-  </script>
+</script>
 <style scoped>
-.main{
-    width: 100%;
-    height: 350px;
-    z-index: 0;
-}
 .card{
     margin: 0px auto auto auto;
     min-height: 400px;
@@ -120,14 +104,5 @@ import { ElMessage } from 'element-plus';
 }
 .hd{
     margin-right: 20px;
-}
-.orgin-title{
-    font-size: 45px;
-    font-weight: bold;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 100px;
 }
 </style>

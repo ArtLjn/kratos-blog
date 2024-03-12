@@ -70,19 +70,15 @@
   </template>
   
   <script>  
-  import axios from 'axios';
   import { onMounted, ref } from 'vue';
   import { ElMessage } from 'element-plus';
-  import { useRouter } from 'vue-router';
+  import {Login, Register, SendEmail, UpdatePassword} from "@/api/auth";
    
   export default {
     name: 'LoginComponent',
     setup() {
       const currentTimestamp = () =>{
         return Date.parse(new Date()); //获取当前时间戳
-      }
-      const getLockTimeStamp = () => { 
-        return currentTimestamp() + 60 * 1000; //获取60秒后的时间戳
       }
 
       const content = ref('发送验证码')
@@ -102,65 +98,20 @@
       const code = ref('')
       const emailSent = ref(false);
       onMounted(() => {
-        token(); //token验证
-      });
-  
-      const token = () => {
-        const storedToken = localStorage.getItem('token');
-        if (storedToken) {
-          axios.get('/api/token', {
-            headers: {
-              auth: storedToken
-            }
-          })
-            .then(response => {
-              console.log(response.data);
-            })
-            .catch(error => {
-              console.log(error);
-            });
+        if (localStorage.getItem("token")) {
+          login()
         }
-      };
+      });
       
-      const router = useRouter();
       const login = () => {
-        axios.post('/api/login', loginForm.value)
-          .then(response => {
-            console.log(response.data);
-            const token = response.data.data;
-            localStorage.setItem("token", token);
-            // 登录成功后保存用户认证信息
-            ElMessage.success("登录成功")
-            const authData = { isLoggedIn: true, userData: {} };
-            localStorage.setItem('authData', JSON.stringify(authData));
-            router.go(0);
-          })
-          .catch(error => {
-            console.log(error);
-            ElMessage.error(error.response.data.error);
-          });
+          Login(loginForm.value)
       };
-  
   
       const register = () => {
-        if (!emailSent.value ) {
-          return;
-        }
-        axios.post(`/api/register/${code.value}`, registerForm.value)
-          .then(response => {
-              ElMessage({
-                type:"success",
-                message:response.data.result,
-              })
-          })
-          .catch(error => {
-            console.log(error)
-            ElMessage.error(error.response.data.error);
-          });
+        Register(registerForm.value,code.value)
       };
       
       const sendEmail = () => {
-        const lockTime = getLockTimeStamp();
         if (registerForm.value.email) {
           if (!lockClick.value) return
           lockClick.value = false
@@ -182,38 +133,11 @@
           })
           return;
         }
+        SendEmail(registerForm.value.email)
+      };
 
-        axios.get(`/api/sendEmail/${registerForm.value.email}`)
-          .then(response => {
-            console.log(response.data);
-            emailSent.value = true;
-            ElMessage({
-              message: response.data.result,
-              type: "success",
-            })
-          })
-          .catch(error => {
-            console.log(error);
-            ElMessage({
-              message: "发送失败",
-              type: "error",
-            })
-          });
-      }; 
       const UpdateUser = () => {
-          axios
-              .post(`/api/updatePassword/${code.value}`,registerForm.value) 
-              .then((response) => {
-                if (response.data.status === 200) {
-                  ElMessage({type:"success",message:"更改成功"})
-                } else {
-                  ElMessage.error({type:"error",message:response.data.error})
-                }
-              })
-              .catch(error => {
-                console.log(error)
-                ElMessage.error(error.response.data.error);
-              })
+        UpdatePassword(registerForm.value,code.value)
       }
       const handleResetForm = () => {
       const resetFormElement = document.getElementById('resetForm');

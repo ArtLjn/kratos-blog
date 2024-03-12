@@ -249,7 +249,7 @@ components:
             properties:
                 common:
                     $ref: '#/components/schemas/CommonReply'
-                Data:
+                data:
                     type: array
                     items:
                         type: string

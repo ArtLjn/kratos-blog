@@ -25,8 +25,8 @@ func (s *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	return s.uc.CreateUser(ctx, req)
 }
 func (s *UserService) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
-	if s.verifyToken(&ctx) {
-		return &pb.LoginReply{Common: &pb.CommonReply{Code: vo.SUCCESS_REQUEST, Result: vo.LOGIN_SUCCESS}}, nil
+	if ok, token := s.verifyToken(&ctx); ok {
+		return &pb.LoginReply{Common: &pb.CommonReply{Code: vo.SUCCESS_REQUEST, Result: vo.LOGIN_SUCCESS}, Data: []string{token}}, nil
 	}
 	return s.uc.LoginUser(ctx, req)
 }
@@ -43,13 +43,13 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 	return s.uc.GetUser(ctx, req)
 }
 func (s *UserService) AdminLogin(ctx context.Context, req *pb.AdminLoginRequest) (*pb.AdminLoginReply, error) {
-	if s.verifyToken(&ctx) {
-		return &pb.AdminLoginReply{Common: &pb.CommonReply{Code: vo.SUCCESS_REQUEST, Result: vo.LOGIN_SUCCESS}}, nil
+	if ok, token := s.verifyToken(&ctx); ok {
+		return &pb.AdminLoginReply{Common: &pb.CommonReply{Code: vo.SUCCESS_REQUEST, Result: vo.LOGIN_SUCCESS}, Data: []string{token}}, nil
 	}
 	return s.uc.AdminLogin(ctx, req)
 }
 
-func (s *UserService) verifyToken(ctx *context.Context) bool {
+func (s *UserService) verifyToken(ctx *context.Context) (bool, string) {
 	res, ok := http.RequestFromServerContext(*ctx)
 	if !ok {
 		s.log.Log(log.LevelError, "parse context failed")
@@ -57,7 +57,7 @@ func (s *UserService) verifyToken(ctx *context.Context) bool {
 	token := res.Header.Get(server.Token)
 	username := jwt.GetLoginName(token)
 	if len(username) != 0 {
-		return true
+		return true, token
 	}
-	return false
+	return false, ""
 }
