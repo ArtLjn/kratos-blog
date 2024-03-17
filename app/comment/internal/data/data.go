@@ -14,7 +14,6 @@ import (
 	grpcx "google.golang.org/grpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"kratos-blog/api/v1/comment"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/comment/internal/conf"
 	"kratos-blog/pkg/model"
@@ -30,7 +29,6 @@ var ProviderSet = wire.NewSet(NewData, NewRegistrar, NewDiscovery)
 // Data .
 type Data struct {
 	log *log.Helper
-	uc  comment.CommentClient
 	db  *gorm.DB
 	rdb *redis.Client
 	pf  model.PublicFunc
@@ -38,7 +36,7 @@ type Data struct {
 }
 
 // NewData .
-func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
+func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
 	pf := model.NewOFunc(l, db)
 	return &Data{log: l, db: db, rdb: rdb, pf: pf, c: c}, nil
@@ -82,8 +80,7 @@ func NewDB(conf *conf.Data) *gorm.DB {
 }
 
 func InitDB(db *gorm.DB) {
-	if err := db.AutoMigrate(
-		&Comment{}); err != nil {
+	if err := db.AutoMigrate(); err != nil {
 		panic(err)
 	}
 }

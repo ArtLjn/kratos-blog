@@ -30,17 +30,11 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /api/addReward/{rewardId}:
+    /api/addReward:
         post:
             tags:
                 - Comment
             operationId: Comment_AddReward
-            parameters:
-                - name: rewardId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
             requestBody:
                 content:
                     application/json:
@@ -86,6 +80,25 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        CommentSubResult:
+            type: object
+            properties:
+                id:
+                    type: string
+                parentId:
+                    type: string
+                articleId:
+                    type: string
+                comment:
+                    type: string
+                commentTime:
+                    type: string
+                name:
+                    type: string
+                email:
+                    type: string
+                commentAddr:
+                    type: string
         CreateCommentReply:
             type: object
             properties:
@@ -116,13 +129,13 @@ components:
         CreateRewardRequest:
             type: object
             properties:
-                rewardId:
+                parentId:
                     type: string
-                rewardContent:
+                comment:
                     type: string
                 articleId:
                     type: string
-                rewardAddr:
+                commentAddr:
                     type: string
                 name:
                     type: string
@@ -138,7 +151,28 @@ components:
                 list:
                     type: array
                     items:
-                        type: string
+                        $ref: '#/components/schemas/ExtractResult'
+        ExtractResult:
+            type: object
+            properties:
+                id:
+                    type: string
+                articleId:
+                    type: string
+                comment:
+                    type: string
+                commentTime:
+                    type: string
+                name:
+                    type: string
+                email:
+                    type: string
+                commentAddr:
+                    type: string
+                child:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/CommentSubResult'
         GoogleProtobufAny:
             type: object
             properties:

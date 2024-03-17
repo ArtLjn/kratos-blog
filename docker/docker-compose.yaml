@@ -4,6 +4,8 @@ services:
     image: blog:v1
     container_name: hongDou_blog
     restart: always
+    volumes:
+      - "./log:/usr/local/hongDou/log"
     ports:
       - "8080:8080"
     depends_on:
@@ -13,6 +15,7 @@ services:
   nginx:
     image: nginx
     container_name: front_nginx
+    restart: always
     volumes:
       - "./show:/usr/local/blog/show"
       - "./manager:/usr/local/blog/manager"
@@ -25,6 +28,7 @@ services:
   mysql:
     image: mysql:5.7
     container_name: hongDou_mysql
+    restart: always
     ports:
       - "23306:3306"
     environment:
@@ -34,6 +38,7 @@ services:
       - "./hongDou.sql:/docker-entrypoint-initdb.d/hongDou.sql"
   redis:
     image: redis:5.0.14
+    restart: always
     container_name: hongDou_redis
     ports:
       - "26379:6379"
@@ -41,6 +46,7 @@ services:
       - "redis-server --requirepass 123456"
   consul:
     image: consul:1.7.3
+    restart: always
     container_name: hongDou_consul
     ports:
       - "8500:8500"

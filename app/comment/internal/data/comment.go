@@ -13,8 +13,8 @@ import (
 	"kratos-blog/pkg/vo"
 	"net/http"
 	"regexp"
-	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -24,26 +24,7 @@ type commRepo struct {
 	data          *Data
 	log           *log.Helper
 	sensitiveList []string
-}
-
-type Comment struct {
-	ID            int    `json:"id" gorm:"primaryKey"`
-	OriginID      string `json:"origin_id"`
-	ArticleID     string `json:"article_id"`
-	Comment       string `json:"comment"`
-	CommentTime   string `json:"comment_time"`
-	Name          string `json:"name"`
-	Email         string `json:"email"`
-	RewardName    string `json:"reward_name"`
-	RewardTime    string `json:"reward_time"`
-	RewardContent string `json:"reward_content"`
-	RewardEmail   string `json:"reward_email"`
-	CommentAddr   string `json:"comment_addr"`
-	RewardAddr    string `json:"reward_addr"`
-}
-
-func (c *Comment) TableName() string {
-	return "comment"
+	mu            sync.Mutex
 }
 
 func NewCommRepo(data *Data, logger log.Logger, sensitiveList []string) biz.CommRepo {
@@ -113,15 +94,12 @@ func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentReq
 	if len(ipAddr) == 0 {
 		return &comment.CreateCommentReply{Code: vo.BAD_REQUEST, Result: vo.IPADDR_ERROR}
 	}
-	commentBean := Comment{
-		ArticleID:   req.ArticleId,
-		Comment:     req.Comment,
-		CommentAddr: ipAddr,
-		CommentTime: time.Now().Format("2006-01-02 15:04"),
-		Name:        req.GetName(),
-		Email:       req.GetEmail(),
-	}
-	err := c.data.pf.CreateFunc(commentBean, &Comment{})
+
+	var commentParent bean.CommentParent
+	c.data.pf.ParseJSONToStruct(*req, &commentParent)
+	commentParent.CommentAddr = ipAddr
+	commentParent.CommentTime = time.Now().Format("2006-01-02 15:04")
+	err := c.data.pf.CreateFunc(commentParent, &bean.CommentParent{})
 	if err != nil {
 		c.log.Log(log.LevelError, err)
 		return &comment.CreateCommentReply{
@@ -133,109 +111,129 @@ func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentReq
 }
 
 func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardRequest) *comment.CreateRewardReply {
-	if words := c.CheckWords(req.RewardContent); len(words) != 0 {
+	if words := c.CheckWords(req.Comment); len(words) != 0 {
 		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.TALK_ERROR}
 	}
-	ipAddr := c.GetIp(req.RewardAddr)
+	ipAddr := c.GetIp(req.CommentAddr)
 	if len(ipAddr) == 0 {
 		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.IPADDR_ERROR}
 	}
-
-	originComment := c.QueryCommentCond(map[string]interface{}{"id": req.RewardId, "article_id": req.ArticleId})
-	if len(originComment.ArticleID) == 0 {
-		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.REQUEST_FAIL}
-	}
-
-	currentComment := originComment
-	if len(currentComment.RewardName) != 0 {
-		c.P(&currentComment, req.RewardContent, ipAddr, req.RewardId, req.GetName(), req.GetEmail())
-		currentComment.ID = 0
-		err := c.data.pf.CreateFunc(currentComment, &Comment{})
+	var commentSubTwo bean.CommentSubTwo
+	c.data.pf.ParseJSONToStruct(*req, &commentSubTwo)
+	commentSubTwo.CommentTime = time.Now().Format("2006-01-02 15:04")
+	commentSubTwo.CommentAddr = ipAddr
+	err := c.data.pf.CreateFunc(commentSubTwo, &bean.CommentSubTwo{})
+	if err != nil {
 		if err != nil {
 			c.log.Log(log.LevelError, err)
-			return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.TALK_FAIL}
-		}
-	} else {
-		c.P(&originComment, req.RewardContent, ipAddr, req.RewardId, req.GetName(), req.GetEmail())
-		var data map[string]interface{}
-		c.data.pf.ParseJSONToStruct(originComment, &data)
-		err := c.data.pf.UpdateFunc(Comment{}, map[string]interface{}{
-			"id": req.RewardId,
-		}, data, false)
-		if err != nil {
-			c.log.Log(log.LevelError, err)
-			return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.TALK_FAIL}
+			return &comment.CreateRewardReply{
+				Code:   vo.BAD_REQUEST,
+				Result: vo.INSERT_ERROR,
+			}
 		}
 	}
 
 	return &comment.CreateRewardReply{Code: vo.SUCCESS_REQUEST, Result: vo.TALK_SUCCESS}
 }
 
-func (c *commRepo) P(com *Comment, data ...string) {
-	name, email := data[3], data[4]
-	if len(name) == 0 || len(email) == 0 {
-		name = "访客"
-		email = "example@qq.com"
-	}
-	com.RewardName = name
-	com.RewardContent = data[0]
-	com.RewardEmail = email
-	com.RewardAddr = data[1]
-	com.RewardTime = time.Now().Format("2006-01-02 15:04")
-	com.OriginID = data[2]
-}
-
-func (c *commRepo) QueryCommentCond(cond map[string]interface{}) Comment {
-	originComment, err := c.data.pf.QueryFunc(Comment{}, cond, false)
-	comment := Comment{}
-	empty := comment
-	if err != nil {
-		c.log.Log(log.LevelError, err)
-		return empty
-	}
-	c.data.pf.ParseJSONToStruct(originComment, &comment)
-	return comment
-}
-
 func (c *commRepo) ExtractParentComments(ctx context.Context,
 
 	req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply {
-	body, err := c.data.pf.QueryFunc(Comment{}, map[string]interface{}{"article_id": req.Id}, true)
+	commentParent, err := c.data.pf.QueryFunc(bean.CommentParent{},
+		map[string]interface{}{"article_id": req.Id}, true)
+	var parents []bean.CommentParent
+	err = c.data.pf.ParseJSONToStruct(commentParent, &parents)
 	if err != nil {
 		c.log.Log(log.LevelError, err)
 		return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
 	}
-	var (
-		comments []Comment
-		cmo      bean.CommentBean
-		child    bean.ChildComment
-	)
-	c.data.pf.ParseJSONToStruct(body, &comments)
-
-	commentSet := make(map[string][]bean.CommentBean)
-	for _, comment := range comments {
-		c.data.pf.ParseJSONToStruct(comment, &cmo)
-		cmo.ID = strconv.Itoa(comment.ID)
-		if len(comment.OriginID) != 0 {
-			c.data.pf.ParseJSONToStruct(comment, &child)
-			if _, ok := commentSet[comment.OriginID]; !ok {
-				cmo.ChildComments = append(cmo.ChildComments, []bean.ChildComment{child}...)
-				commentSet[comment.OriginID] = append(commentSet[comment.OriginID], cmo)
-			} else {
-				for index, parentComment := range commentSet[comment.OriginID] {
-					if parentComment.ID == comment.OriginID {
-						commentSet[comment.OriginID][index].ChildComments =
-							append(commentSet[comment.OriginID][index].ChildComments, child)
-						break
-					}
-				}
-			}
-		} else {
-			commentSet[strconv.Itoa(comment.ID)] = append(commentSet[strconv.Itoa(comment.ID)], cmo)
+	var mapList []*comment.ExtractResult
+	for i := 0; i < len(parents); i++ {
+		c.mu.Lock()
+		parent := parents[i]
+		sub, err := c.data.pf.QueryFunc(bean.CommentSubTwo{}, map[string]interface{}{
+			"article_id": req.Id,
+			"parent_id":  parent.ID,
+		}, true)
+		if err != nil {
+			continue
 		}
+		var mp comment.ExtractResult
+		var child []*comment.CommentSubResult
+		c.data.pf.ParseJSONToStruct(parent, &mp)
+		c.data.pf.ParseJSONToStruct(sub, &child)
+		mp.Child = child
+		mapList = append(mapList, &mp)
+		c.mu.Unlock()
 	}
-	byteRes, _ := json.Marshal(commentSet)
-	strBody := string(byteRes)
-	return &comment.ExtractParentCommentsReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS,
-		List: []string{strBody}}
+	return &comment.ExtractParentCommentsReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS, List: mapList}
 }
+
+//func (c *commRepo) P(com *Comment, data ...string) {
+//	name, email := data[3], data[4]
+//	if len(name) == 0 || len(email) == 0 {
+//		name = "访客"
+//		email = "example@qq.com"
+//	}
+//	com.RewardName = name
+//	com.RewardContent = data[0]
+//	com.RewardEmail = email
+//	com.RewardAddr = data[1]
+//	com.RewardTime = time.Now().Format("2006-01-02 15:04")
+//	com.OriginID = data[2]
+//}
+//
+//func (c *commRepo) QueryCommentCond(cond map[string]interface{}) Comment {
+//	originComment, err := c.data.pf.QueryFunc(Comment{}, cond, false)
+//	comment := Comment{}
+//	empty := comment
+//	if err != nil {
+//		c.log.Log(log.LevelError, err)
+//		return empty
+//	}
+//	c.data.pf.ParseJSONToStruct(originComment, &comment)
+//	return comment
+//}
+
+//func (c *commRepo) ExtractParentComments(ctx context.Context,
+
+//req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply {
+//body, err := c.data.pf.QueryFunc(Comment{}, map[string]interface{}{"article_id": req.Id}, true)
+//if err != nil {
+//	c.log.Log(log.LevelError, err)
+//	return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
+//}
+//var (
+//	comments []Comment
+//	cmo      bean.CommentBean
+//	child    bean.ChildComment
+//)
+//c.data.pf.ParseJSONToStruct(body, &comments)
+//
+//commentSet := make(map[string][]bean.CommentBean)
+//for _, comment := range comments {
+//	c.data.pf.ParseJSONToStruct(comment, &cmo)
+//	cmo.ID = strconv.Itoa(comment.ID)
+//	if len(comment.OriginID) != 0 {
+//		c.data.pf.ParseJSONToStruct(comment, &child)
+//		if _, ok := commentSet[comment.OriginID]; !ok {
+//			cmo.ChildComments = append(cmo.ChildComments, []bean.ChildComment{child}...)
+//			commentSet[comment.OriginID] = append(commentSet[comment.OriginID], cmo)
+//		} else {
+//			for index, parentComment := range commentSet[comment.OriginID] {
+//				if parentComment.ID == comment.OriginID {
+//					commentSet[comment.OriginID][index].ChildComments =
+//						append(commentSet[comment.OriginID][index].ChildComments, child)
+//					break
+//				}
+//			}
+//		}
+//	} else {
+//		commentSet[strconv.Itoa(comment.ID)] = append(commentSet[strconv.Itoa(comment.ID)], cmo)
+//	}
+//}
+//byteRes, _ := json.Marshal(commentSet)
+//strBody := string(byteRes)
+//	return &comment.ExtractParentCommentsReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS,
+//		List: []string{}}
+//}

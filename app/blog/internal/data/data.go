@@ -80,7 +80,7 @@ func NewDB(conf *conf.Data) *gorm.DB {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	InitDB(db)
+	//InitDB(db)
 	return db
 }
 

@@ -18,31 +18,31 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confData *conf.Bootstrap,registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
 	r := data.NewRegistrar(registry)
 	rdb := data.NewRDB(confData.Data)
 	discovery := data.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery)
 	role := data.NewRole(rdb, userClient, logger)
-	userService := service.NewUserService(logger,userClient)
+	userService := service.NewUserService(logger, userClient)
 	commentClient := data.NewCommentServiceClient(discovery)
-	commentService := service.NewCommentService(logger,commentClient)
+	commentService := service.NewCommentService(logger, commentClient, role)
 	blogClient := data.NewBlogServiceClient(discovery)
-	blogService := service.NewBlogService(logger,blogClient,role)
+	blogService := service.NewBlogService(logger, blogClient, role)
 	tagClient := data.NewTagServiceClient(discovery)
-	tagService := service.NewTagService(logger,tagClient)
+	tagService := service.NewTagService(logger, tagClient)
 	friendClient := data.NewFriendServiceClient(discovery)
-	friendService := service.NewFriendService(friendClient,logger)
-	dataData, err := data.NewData(confData,logger,userClient,rdb,role)
+	friendService := service.NewFriendService(friendClient, logger)
+	dataData, err := data.NewData(confData, logger, userClient, rdb, role)
 	photoClinet := data.NewPhotoServiceClient(discovery)
-	photoService := service.NewPhotoService(photoClinet,logger)
+	photoService := service.NewPhotoService(photoClinet, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	filterRepo := data.NewFilterRepo(dataData,logger)
-	httpServer := server.NewHTTPServer(confData	, logger,userService,
-		commentService,blogService,tagService,friendService,photoService,filterRepo)
-	app := newApp(logger, httpServer,r)
+	filterRepo := data.NewFilterRepo(dataData, logger)
+	httpServer := server.NewHTTPServer(confData, logger, userService,
+		commentService, blogService, tagService, friendService, photoService, filterRepo)
+	app := newApp(logger, httpServer, r)
 	return app, func() {
 	}, nil
 }

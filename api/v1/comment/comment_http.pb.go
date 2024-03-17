@@ -32,7 +32,7 @@ type CommentHTTPServer interface {
 func RegisterCommentHTTPServer(s *http.Server, srv CommentHTTPServer) {
 	r := s.Route("/")
 	r.POST("/api/addComment", _Comment_AddComment0_HTTP_Handler(srv))
-	r.POST("/api/addReward/{reward_id}", _Comment_AddReward0_HTTP_Handler(srv))
+	r.POST("/api/addReward", _Comment_AddReward0_HTTP_Handler(srv))
 	r.GET("/api/getComment/{id}", _Comment_ExtractParentComments0_HTTP_Handler(srv))
 }
 
@@ -65,9 +65,6 @@ func _Comment_AddReward0_HTTP_Handler(srv CommentHTTPServer) func(ctx http.Conte
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationCommentAddReward)
@@ -134,7 +131,7 @@ func (c *CommentHTTPClientImpl) AddComment(ctx context.Context, in *CreateCommen
 
 func (c *CommentHTTPClientImpl) AddReward(ctx context.Context, in *CreateRewardRequest, opts ...http.CallOption) (*CreateRewardReply, error) {
 	var out CreateRewardReply
-	pattern := "/api/addReward/{reward_id}"
+	pattern := "/api/addReward"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationCommentAddReward))
 	opts = append(opts, http.PathTemplate(pattern))

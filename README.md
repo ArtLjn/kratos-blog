@@ -8,13 +8,14 @@
 
 ## 项目结构 🧐
 
-| 子项目名 | 项目路径                                                                                       |
-|------|--------------------------------------------------------------------------------------------|
-| 博文服务 | [/kratos-blog/app/blog](https://gitee.com/morning-ljn/kratos-blog/tree/dev/app/blog)       |
-| 评论服务 | [/kratos-blog/app/comment](https://gitee.com/morning-ljn/kratos-blog/tree/dev/app/comment) |
-| 用户服务 | [/kratos-blog/app/user](https://gitee.com/morning-ljn/kratos-blog/tree/dev/app/user)       |
-| 管理前台 | [/kratos-blog/web/manager](https://gitee.com/morning-ljn/kratos-blog/web/manager)          |
-| 展现前台 | [/kratos-blog/web/show](https://gitee.com/morning-ljn/kratos-blog/web/show)                |
+| 子项目名 | 项目路径                                      |
+|------|-------------------------------------------|
+| 博文服务 | [/kratos-blog/app/blog](./app/blog)       |
+| 评论服务 | [/kratos-blog/app/comment](./app/comment) |
+| 用户服务 | [/kratos-blog/app/user](./app/user)       |
+| 服务网关 | [/kratos-blog/app/gateway](./app/gateway) |
+| 管理前台 | [/kratos-blog/web/manager](./web/manager) |
+| 展现前台 | [/kratos-blog/web/show](./web/show)       |
 
 ## 功能特点
 
