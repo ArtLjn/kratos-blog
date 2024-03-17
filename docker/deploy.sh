@@ -41,25 +41,27 @@ fi
 
 
 function Build_Docker_image() {
+    # 检查镜像是否存在
     image_ids=$(docker images -q $docker_image_name)
-    if [ -n $image_ids ]; then
+
+    if [ -n "$image_ids" ] && [ "$image_ids" != '' ]; then
         echo -e "\033[32m
         ==========================================
-        docker:v1镜像已存在是否要重新构建:(y/n)
+        '$docker_image_name' '$image_ids' 镜像已存在，是否要重新构建:(y/n)
         ==========================================
         \033[0m"
         read h
-        if [ $h == "y" ];then
-          docker image rm -f $docker_image_name
-          docker build -t $docker_image_name -f Dockerfile ../
+        if [ "$h" == "y" ]; then
+            docker image rm -f $docker_image_name
+            docker build -t $docker_image_name  .
         fi
     else
         echo -e "\033[32m
         ==========================================
-        开始构建docker:v1镜像
+        开始构建'$docker_image_name'镜像
         ==========================================
         \033[0m"
-        docker build -t $docker_image_name -f Dockerfile ../
+        docker build -t $docker_image_name  .
     fi
 }
 
@@ -71,20 +73,20 @@ function Build_Docker_Compose() {
     \033[0m"
     read x
     if [ "$x" = "y" ]; then
-        docker-compose down --rmi all
+#        docker-compose down --rmi all
+      # 假设 container_list 是一个包含容器名称的数组
+      for i in "${container_list[@]}"; do
+          # 检查容器是否存在，正确地捕获grep命令的输出状态
+          if docker ps -a --format '{{.Names}}' | grep -q "$i"; then
+              docker stop "$i"
+              docker rm -f "$i"
+          fi
+      done
     fi
 
-    # 假设 container_list 是一个包含容器名称的数组
-    for i in "${container_list[@]}"; do
-        # 检查容器是否存在，正确地捕获grep命令的输出状态
-        if [ "$(docker inspect "$i" 2> /dev/null | grep '"Name": "/'"$i"'")" != ""']; then
-            docker stop "$i"
-            docker rm -f "$i"
-        fi
-    done
-
     docker-compose build --no-cache myblog
-    docker-compose -f ../docker-compose.yaml up
+    docker-compose  up
+
 }
 
 Build_Docker_image

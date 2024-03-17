@@ -5,18 +5,18 @@ server:
 data:
   database:
     driver: mysql
-    source: root:123456@tcp(127.0.0.1:3306)/test
+    source: root:123456@tcp(192.168.72.129:23306)/test
   redis:
-    addr: 127.0.0.1:6379
+    addr: 10.23.248.210:26379
     read_timeout: 0.2s
     write_timeout: 0.2s
     db: 0
-    password:
+    password: 123456
 upload:
   # 上传路径
-  path: E:\HongDou-Go-Blog\kratos-blog\pkg\upload\file
+  path: /usr/local/hongDou/img
   # 代理域名
-  domain: http://localhost:8080
+  domain: http://localhost:8080/util/img
   # 最大内存
   maxsize: 3 MB
   # Bing 每日随机图片获取接口

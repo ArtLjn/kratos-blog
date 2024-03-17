@@ -32,7 +32,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "E:\\HongDou-Go-Blog\\kratos-blog\\app\\gateway\\configs", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", server.GateWayConfPath, "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, hs *http.Server, r registry.Registrar) *kratos.App {

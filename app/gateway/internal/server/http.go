@@ -33,7 +33,7 @@ func NewHTTPServer(cf *conf.Bootstrap,
 			recovery.Recovery(),
 		),
 		http.Filter(
-			//filter.FilterPermission(cf.Path.GetWhite(), cf.Path.GetBlack()),
+			filter.FilterPermission(cf.Path.GetWhite(), cf.Path.GetBlack()),
 			filter.DeleteCache(),
 			filter.AllowDomainsMiddleware(*cf.GetDomain()),
 		),

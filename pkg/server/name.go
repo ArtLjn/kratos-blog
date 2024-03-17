@@ -24,3 +24,22 @@ const (
 	User    = "user"
 	Visitor = "visitor"
 )
+
+// ConfigPath
+
+var (
+	//BlogConfPath    = "/usr/local/hongDou/blog/configs"
+	//CommentConfPath = "/usr/local/hongDou/comment/configs"
+	//UserConfPath    = "/usr/local/hongDuo/user/configs"
+	//GateWayConfPath = "/usr/local/hongDou/gateway/configs"
+
+	BlogConfPath    = "configs"
+	CommentConfPath = "/usr/local/hongDou/comment/configs"
+	UserConfPath    = "/usr/local/hongDuo/user/configs"
+	GateWayConfPath = "/usr/local/hongDou/gateway/configs"
+
+	//BlogConfPath    = "app/blog/configs"
+	//CommentConfPath = "app/comment/configs"
+	//UserConfPath    = "app/user/configs"
+	//GateWayConfPath = "app/gateway/configs"
+)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
@@ -32,7 +33,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "E:\\HongDou-Go-Blog\\kratos-blog\\app\\blog\\configs", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", server.BlogConfPath, "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Registrar) *kratos.App {
@@ -44,7 +45,8 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
-			//hs, // 开启 HTTP
+			// 开启 HTTP
+			hs,
 		),
 		kratos.Registrar(r),
 	)
@@ -61,6 +63,7 @@ func main() {
 		"trace.id", tracing.TraceID(),
 		"span.id", tracing.SpanID(),
 	)
+	fmt.Println(flagconf)
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),

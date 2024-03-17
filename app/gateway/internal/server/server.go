@@ -5,6 +5,7 @@ import (
 	"github.com/google/wire"
 	"kratos-blog/app/gateway/internal/conf"
 	"kratos-blog/pkg/upload"
+	"net/http"
 )
 
 // ProviderSet is server providers.
@@ -21,4 +22,6 @@ func NewGinRouter(c *conf.Bootstrap, router *gin.Engine) {
 	utilGroup := router.Group("/util")
 	utilGroup.POST("/upload", po.GinUploadImg)
 	utilGroup.GET("/getBingPhoto", po.GetBingPhoto)
+	utilGroup.StaticFS("/img", http.Dir("pkg/upload/file/"))
+
 }

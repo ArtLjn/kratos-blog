@@ -210,6 +210,7 @@ func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) 
 }
 
 func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
+	u.log.Log(log.LevelDebug, request.Name)
 	var data User
 	var list []string
 	if request.Name == u.data.c.Admin.Username {

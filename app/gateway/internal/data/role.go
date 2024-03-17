@@ -106,6 +106,10 @@ func (r *Permission) GetRole() PermissionStrategy {
 	return r
 }
 
+/**
+ * @dev FilterPermission
+ */
+
 func (r *Role) FilterPermission(whiteList, blackList []string) http.FilterFunc {
 	return func(handler h.Handler) h.Handler {
 		return h.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -132,10 +136,7 @@ func (r *Role) FilterPermission(whiteList, blackList []string) http.FilterFunc {
 			}
 
 			m := &Permission{U: res}
-			if !m.GetRole().CheckPermission() {
-				r.WritePermissionError(w)
-				return
-			}
+			log.Info(m)
 			handler.ServeHTTP(w, req)
 		})
 	}
