@@ -25,7 +25,7 @@ services:
       - "23306:3306"
     environment:
       - "MYSQL_DATABASE=hongDou"
-      - "MYSQL_ROOT_PASSWORD=320324liu"
+      - "MYSQL_ROOT_PASSWORD=123456"
     volumes:
       - "./hongDou/sql/blog.sql:/docker-entrypoint-initdb.d/blog.sql"
   redis:
