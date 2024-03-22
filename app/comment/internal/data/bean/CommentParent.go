@@ -8,12 +8,12 @@ package bean
 
 type CommentParent struct {
 	ID          int    `json:"id" gorm:"primaryKey"`
-	ArticleID   int    `json:"article_id" gorm:"article_id"`
+	ArticleID   string `json:"article_id" gorm:"column:article_id"`
 	Comment     string `json:"comment"`
 	CommentTime string `json:"comment_time"`
 	Name        string `json:"name"`
 	Email       string `json:"email"`
-	CommentAddr string `json:"comment_addr" gorm:"comment_addr"`
+	CommentAddr string `json:"comment_addr" gorm:"column:comment_addr"`
 }
 
 func (c *CommentParent) TableName() string {

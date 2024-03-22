@@ -46,7 +46,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 		kratos.Server(
 			gs,
 			// 开启 HTTP
-			hs,
+			//hs,
 		),
 		kratos.Registrar(r),
 	)

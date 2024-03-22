@@ -25,7 +25,7 @@
           </div>
         </div>
         <div class="table-container">
-          <el-table :data="Blogs" class="custom-table"  stripe :lazy="true" border>
+          <el-table :data="Blogs" class="custom-table"  stripe :lazy="true" border height="400">
             <el-table-column type="selection" label="序号" width="80" >
               <template #default="{ row }">
                 <el-checkbox v-model="row.selected" @change="handlePush(row.id)"></el-checkbox>
@@ -113,7 +113,7 @@
   import { ElMessage } from 'element-plus';
   import { useRouter } from 'vue-router';
   import login from '../authentication/login.vue';
-  import {DeleteBlog, GetAllBlog, SearchBlog, updateAllBlogCommentStatus} from "@/components/api/blog";
+  import {DeleteBlog, GetAllBlog, SearchBlog, updateBlogOnly} from "@/components/api/blog";
   import {safeMath} from "@/components/api/util";
   import {SUCCESS_REQUEST} from "@/components/api/status";
 
@@ -123,6 +123,24 @@
     components: {
       // eslint-disable-next-line vue/no-unused-components
       login
+    },
+    data() {
+      return{
+        updateOnlyForm:{
+          raw:Comment,
+          id:0,
+          res:false
+        }
+      }
+    },
+    methods:{
+        setCommentStatus() {
+          updateBlogOnly().then((res) => {
+            if (res.code === 200) {
+
+            }
+           })
+        }
     },
     setup() {//分页
       const itemsPerPage = 10;

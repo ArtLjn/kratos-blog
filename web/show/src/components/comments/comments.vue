@@ -29,31 +29,31 @@
               <img :src="`http://q2.qlogo.cn/headimg_dl?dst_uin=${comment.email}&spec=1`" class="photo"/>
               <span class="comment-name">{{ comment.name }}</span>
             </div>
-            <span class="comment-time">{{ comment.comment_time }}</span>
+            <span class="comment-time">{{ comment.commentTime }}</span>
             <span class="comment-addr">
-              <font-awesome-icon :icon="['fas', 'location-dot']" style="color: #495a79;" /> {{comment.c_ip_addr}}</span>
+              <font-awesome-icon :icon="['fas', 'location-dot']" style="color: #495a79;" /> {{comment.commentAddr}}</span>
             <span v-if="replyIndex !== index" @click="replyIndex = index" class="reply-button">回复</span>
           </div>   
           <div class="comment-body">
             <div>{{ comment.comment }}</div>
           </div>
 
-            <div v-if="comment.child_comments" >
-              <div v-for="(reward,index) in comment.child_comments" :key="index" style="margin-left:35px;">
+            <div v-if="comment.child" >
+              <div v-for="(reward,index) in comment.child" :key="index" style="margin-left:35px;">
                 <div style="display:flex;">
-                <img :src="`http://q2.qlogo.cn/headimg_dl?dst_uin=${reward.reward_email}&spec=1`" class="photo"/>
-                <span class="comment-name">{{reward.reward_name}}</span></div>
-                <span class="comment-time">{{reward.reward_time}}</span>
+                <img :src="`http://q2.qlogo.cn/headimg_dl?dst_uin=${reward.email}&spec=1`" class="photo"/>
+                <span class="comment-name">{{reward.name}}</span></div>
+                <span class="comment-time">{{reward.commentTime}}</span>
                 <span class="comment-addr">
-                  <font-awesome-icon :icon="['fas', 'location-dot']" style="color: #495a79;" /> {{reward.r_ip_addr}}</span>
+                  <font-awesome-icon :icon="['fas', 'location-dot']" style="color: #495a79;" /> {{reward.commentAddr}}</span>
                 <div class="comment-body">
-                  <span>{{reward.reward_content}}</span>
+                  <span>{{reward.comment}}</span>
                 </div>
             </div>
           </div>
           <div v-if="replyIndex === index">
             <form class="reply-form" @submit.prevent="saveReward(comment.id)">
-              <textarea class="textarea-field" placeholder="好言一句三冬暖 恶语伤人六月寒" v-model="RewardData.reward_content"  @keydown.enter.prevent></textarea>
+              <textarea class="textarea-field" placeholder="好言一句三冬暖 恶语伤人六月寒" v-model="RewardData.comment"  @keydown.enter.prevent></textarea>
               <div style="float:left;" @click="clickShowEmjio2" class="expression">(っ◔◡◔)っ</div>
               <div class="button-group">
                 <el-button class="submit-button" @click="saveReward(comment.id)" :disabled="isCountingDown">
@@ -72,14 +72,14 @@
 
 <script>
 import { onMounted, reactive, ref } from 'vue';
-import axios from 'axios';
 import { ElMessage} from 'element-plus';
 import { useRoute } from 'vue-router';
 import data from "emoji-mart-vue-fast/data/all.json";
 import "emoji-mart-vue-fast/css/emoji-mart.css";
 import { Picker, EmojiIndex } from "emoji-mart-vue-fast/src";
 import { getIp } from '@/assets/js/ip';
-import {getComment} from "@/api/commentFunc";
+import {AddComment, AddReward, checkPath, getComment, validComment} from "@/api/commentFunc";
+import {SUCCESS_REQUEST} from "@/api/status";
 
 export default {
   props: {
@@ -90,12 +90,11 @@ export default {
   },
   setup(props) {
     const emojiIndex = new EmojiIndex(data);
-    const token = localStorage.getItem("token");
     const showEmoji = (emoji) => {
       addComment.comment += emoji.native;
     }
     const showEmoji2 = (emoji) => {
-      RewardData.reward_content += emoji.native;
+      RewardData.comment += emoji.native;
     }
     const hideEmoji = ref(false);
     const clickShowEmjio = () => {
@@ -112,125 +111,94 @@ export default {
       comment_addr:""
     });
     const RewardData = reactive({
-        reward_addr:"",
-        reward_content: '',
-        article_id: 'message'
-      })
+        comment_addr:"",
+        comment: '',
+        article_id: 'message',
+        parent_id:0,
+    })
     const replyIndex = ref(null);
 
 
-/*
-评论接口
-*/ 
+    /*
+    评论接口
+    */
     /*请求禁用*/
     const initialCountdown = 5; // 倒计时初始值
     const countdown = ref(initialCountdown); // 倒计时时间，单位为秒
     const isCountingDown = ref(false); // 按钮状态
     const loading = ref(false); // 加载状态，默认为false
+    const startCountdown = () => {
+      let timer = setInterval(() => {
+        countdown.value--;
+        if (countdown.value === 0) {
+          clearInterval(timer);
+          isCountingDown.value = false;
+        }
+      }, 1000);
+    };
+
     const saveComment = () => {
-      if (!addComment.comment) {
-        ElMessage.warning('请填写完整');
-        return;
-      } else if (token == null || token === '') {
-        ElMessage.info("登录之后才能评论哦🥰")
+      if (!validComment(addComment)) {
         return;
       } else if (props.message) {
         addComment.article_id = props.message;
-      }
-      switch (route.path) {
-        case "/friendlink":
-          addComment.article_id = "friendlink";
-          break
-        case "/talk" :
-          addComment.article_id = "talk";
-          break
-        case "/message":
-          addComment.article_id = "message";
-          break
+      } else {
+        checkPath(route.path, addComment);
       }
       if (!isCountingDown.value) {
         countdown.value = initialCountdown; // 重置倒计时为初始值
         isCountingDown.value = true;
         loading.value = true; // 显示加载状态
-        let timer = setInterval(() => {
-          countdown.value--;
-          if (countdown.value === 0) {
-            clearInterval(timer);
-            isCountingDown.value = false;
-          }
-        }, 1000);
+
+        startCountdown(); // 开始倒计时
+
         addComment.comment_addr = Ip.value;
-        axios
-          .post('/api/addComment', addComment,{
-            headers:{
-              token: token
-            }
-          })
-          .then(() => {
+        AddComment(addComment).then((res) => {
+          if (res.code === SUCCESS_REQUEST) {
             ElMessage.success('评论成功');
             Object.keys(addComment).forEach(key => {
               addComment[key] = null;
             });
             const userAgent = window.navigator.userAgent;
-            console.log(userAgent)
+            console.log(userAgent);
             getAllComment();
             loading.value = false; // 取消加载状态
-          }).catch((error) => {
-              ElMessage.error(error.response.data.error)
+          } else {
+            ElMessage.error(res.result);
             loading.value = false; // 取消加载状态
-          })
-        }
+          }
+        });
+      }
     };
     const saveReward = (id) => {
-      if (!RewardData.reward_content) {
-        ElMessage.warning('请填写完整');
-        return;
-      } else if (token == null || token === '') {
-        ElMessage.info("登录之后才能评论哦🥰")
+      RewardData.parent_id = id;
+      if (!validComment(RewardData)) {
         return;
       } else if (props.message) {
           RewardData.article_id = props.message;
-      }
-      switch (route.path) {
-        case "/friendlink":
-          RewardData.article_id = "friendlink";
-          break
-        case "/talk" :
-          RewardData.article_id = "talk";
-          break
-        case "/message":
-          RewardData.article_id = "message";
-          break
+      } else {
+        checkPath(route.path,RewardData)
       }
       if (!isCountingDown.value) {
         countdown.value = initialCountdown; // 重置倒计时为初始值
         isCountingDown.value = true;
-        let timer = setInterval(() => {
-          countdown.value--;
-          if (countdown.value === 0) {
-            clearInterval(timer);
-            isCountingDown.value = false;
-          }
-        }, 1000);
-        RewardData.reward_addr = Ip.value;
-       axios
-        .post(`/api/addReward/${id}`,RewardData,{
-          headers:{
-              token: token
-            }
-        })
-        .then((response)=> {
-          if (response.data.status === 200) {
+        loading.value = true; // 显示加载状态
+
+        startCountdown(); // 开始倒计时
+
+        RewardData.comment_addr = Ip.value;
+        AddReward(RewardData).then((res) => {
+          if (res.code == SUCCESS_REQUEST) {
             ElMessage.success("回复成功")
             Object.keys(RewardData).forEach(key => {
               RewardData[key] = null;
             })
             getAllComment();
+            loading.value = false; // 取消加载状态
           } else {
-            ElMessage.error(response.data.error)
+            ElMessage.error(res.result);
+            loading.value = false; // 取消加载状态
           }
-        }).catch((error) => {
-            console.log(error)
         })
       }
     }
@@ -240,8 +208,8 @@ export default {
 
     const GetComment = (path) => {
       getComment(path).then((res) => {
-        if (res.status === 200) {
-          ForList(res.data);
+        if (res.code === SUCCESS_REQUEST) {
+          commentList.value = res.list
         }
       })
     }
@@ -264,12 +232,6 @@ export default {
           // 如果没有匹配到任何情况，可以在这里添加默认操作。
       }
     };
-    const ForList = (dc) => {
-      commentList.value = []
-      for (const k in dc) {
-        commentList.value.push(dc[k][0])
-      }
-    }
     const cancelReply = () => {
       replyIndex.value = null;
     };

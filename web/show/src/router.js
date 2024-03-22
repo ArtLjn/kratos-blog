@@ -80,10 +80,6 @@ const routes = [
         path:'/:pathMatch(.*)*',
         redirect:'/404'
     },
-    {
-        path:"/test",
-        component:()=>import(/* webpackChunkName:"test" */'./components/blog/test.vue'),
-    },
 ]
 const router = createRouter({
     history:createWebHistory(),

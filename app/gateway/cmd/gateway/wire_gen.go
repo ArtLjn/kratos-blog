@@ -41,7 +41,8 @@ func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logge
 	}
 	filterRepo := data.NewFilterRepo(dataData, logger)
 	httpServer := server.NewHTTPServer(confData, logger, userService,
-		commentService, blogService, tagService, friendService, photoService, filterRepo)
+		commentService, blogService, tagService, friendService, photoService,
+		filterRepo)
 	app := newApp(logger, httpServer, r)
 	return app, func() {
 	}, nil

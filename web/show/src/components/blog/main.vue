@@ -193,7 +193,7 @@ export default {
    
     const Blogs = ref([]);
     getAllBlog().then((res) => {
-      Blogs.value = res.list;
+      Blogs.value = res.List;
     })
     onMounted(() => {
       window.addEventListener('scroll', scrollPosition)

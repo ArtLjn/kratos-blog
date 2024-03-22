@@ -6,14 +6,16 @@ WORKDIR /usr/local/hongDou
 RUN chmod +x ./blog/blog \
     ./comment/comment \
     ./user/user \
-    ./gateway/gateway
+    ./gateway/gateway \
+    ./start_all.sh \
+    ./tool/tool
 
 # 指定对外开放的端口
 EXPOSE 8080
+EXPOSE 9000
+EXPOSE 9001
+EXPOSE 9002
+EXPOSE 8099
 
-# 拷贝启动脚本
-COPY ./script/start_all.sh .
-RUN chmod +x start_all.sh
-
-# 在容器启动时运行启动脚本
+## 在容器启动时运行启动脚本
 CMD ["./start_all.sh"]

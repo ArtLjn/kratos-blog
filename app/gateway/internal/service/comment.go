@@ -7,6 +7,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	pb "kratos-blog/api/v1/comment"
 	"kratos-blog/app/gateway/internal/data"
+	"kratos-blog/pkg/vo"
 )
 
 type CommentService struct {
@@ -23,12 +24,18 @@ func NewCommentService(logger log.Logger, uc pb.CommentClient, role *data.Role) 
 
 func (s *CommentService) AddComment(ctx context.Context, req *pb.CreateCommentRequest) (*pb.CreateCommentReply, error) {
 	res := s.role.QueryUserMsg(ctx)
+	if len(res.U.Data[0]) == 0 || len(res.U.Data[1]) == 0 {
+		return &pb.CreateCommentReply{Code: vo.PERMISSION_REQUEST, Result: vo.PERMISSION_ERROR}, nil
+	}
 	req.Name = &res.U.Data[0]
 	req.Email = &res.U.Data[1]
 	return s.uc.AddComment(ctx, req)
 }
 func (s *CommentService) AddReward(ctx context.Context, req *pb.CreateRewardRequest) (*pb.CreateRewardReply, error) {
 	res := s.role.QueryUserMsg(ctx)
+	if len(res.U.Data[0]) == 0 || len(res.U.Data[1]) == 0 {
+		return &pb.CreateRewardReply{Code: vo.PERMISSION_REQUEST, Result: vo.PERMISSION_ERROR}, nil
+	}
 	req.Name = &res.U.Data[0]
 	req.Email = &res.U.Data[1]
 	return s.uc.AddReward(ctx, req)

@@ -7,7 +7,6 @@
 package main
 
 import (
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/app/blog/internal/biz"
@@ -20,31 +19,29 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(conf *conf.Bootstrap,registry *conf.Registry,logger log.Logger) (*kratos.App, func(), error) {
-	discovery := data.NewDiscovery(registry)
-	userClient := data.NewGrpcServiceClient(conf.Service,discovery)
+func wireApp(conf *conf.Bootstrap, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
 	r := data.NewRegistrar(registry)
 	db := data.NewDB(conf.Data)
 	rdb := data.NewRDB(conf.Data)
-	dataData, err := data.NewData(conf,logger,db,rdb,userClient)
+	dataData, err := data.NewData(conf, logger, db, rdb)
 	if err != nil {
 		return nil, nil, err
 	}
 	blogRepo := data.NewBlogRepo(dataData, logger)
 	blogUsecase := biz.NewBlogUseCase(blogRepo, logger)
 	blogService := service.NewBlogService(blogUsecase)
-	tagRepo := data.NewTagRepo(dataData,logger)
-	tagUseCase := biz.NewTagUseCase(tagRepo,logger)
+	tagRepo := data.NewTagRepo(dataData, logger)
+	tagUseCase := biz.NewTagUseCase(tagRepo, logger)
 	tagService := service.NewTagService(tagUseCase)
-	friendRepo := data.NewFriendRepo(dataData,logger)
-	friendUseCase := biz.NewFriendUseCase(friendRepo,logger)
+	friendRepo := data.NewFriendRepo(dataData, logger)
+	friendUseCase := biz.NewFriendUseCase(friendRepo, logger)
 	friendService := service.NewFriendService(friendUseCase)
-	photoRepo := data.NewPhotoRepo(dataData,logger)
-	photoUseCase := biz.NewPhotoUseCase(photoRepo,logger)
+	photoRepo := data.NewPhotoRepo(dataData, logger)
+	photoUseCase := biz.NewPhotoUseCase(photoRepo, logger)
 	photoService := service.NewPhotoService(photoUseCase)
-	grpcServer := server.NewGRPCServer(conf.Server, blogService,friendService,tagService,photoService, logger)
-	httpServer := server.NewHTTPServer(conf, blogService,friendService,tagService, logger)
-	app := newApp(logger, grpcServer, httpServer,r)
+	grpcServer := server.NewGRPCServer(conf.Server, blogService, friendService, tagService, photoService, logger)
+	httpServer := server.NewHTTPServer(conf, blogService, friendService, tagService, logger)
+	app := newApp(logger, grpcServer, httpServer, r)
 	return app, func() {
 	}, nil
 }

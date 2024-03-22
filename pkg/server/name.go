@@ -28,18 +28,25 @@ const (
 // ConfigPath
 
 var (
-	//BlogConfPath    = "/usr/local/hongDou/blog/configs"
-	//CommentConfPath = "/usr/local/hongDou/comment/configs"
-	//UserConfPath    = "/usr/local/hongDuo/user/configs"
-	//GateWayConfPath = "/usr/local/hongDou/gateway/configs"
-
-	BlogConfPath    = "configs"
-	CommentConfPath = "/usr/local/hongDou/comment/configs"
-	UserConfPath    = "/usr/local/hongDuo/user/configs"
-	GateWayConfPath = "/usr/local/hongDou/gateway/configs"
+	//BlogConfPath    = "blog/configs"
+	//CommentConfPath = "comment/configs"
+	//UserConfPath    = "user/configs"
+	//GateWayConfPath = "gateway/configs"
 
 	//BlogConfPath    = "app/blog/configs"
 	//CommentConfPath = "app/comment/configs"
-	//UserConfPath    = "app/user/configs"
+	//UserConfPath    = "/app/user/configs"
 	//GateWayConfPath = "app/gateway/configs"
+	//
+	BlogConfPath    = "../../configs"
+	CommentConfPath = "../../configs"
+	UserConfPath    = "../../configs"
+	GateWayConfPath = "../../configs"
+)
+
+// logPath
+
+var (
+// GatewayLogPath = "gateway/log"
+// GatewayLogPath = "log"
 )

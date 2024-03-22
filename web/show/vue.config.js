@@ -8,19 +8,19 @@ module.exports = defineConfig({
     port:8033,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080/api',
+        target: 'http://8.218.92.69:8080/api',
         // ws: true,
         changeOrigin: true, //是否跨域
         pathRewrite: {
           '^/api': ''
         }
       },
-      '/util':{
-        target: 'http://localhost:8080/util',
+      '/tool':{
+        target: 'http://8.218.92.69:8099/tool',
         // ws: true,
         changeOrigin: true, //是否跨域
         pathRewrite: {
-          '^/util': ''
+          '^/tool': ''
         }
       }
     },

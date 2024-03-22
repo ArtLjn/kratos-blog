@@ -133,6 +133,7 @@ func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogReques
 // ListBlog :dev query all blog posts based on permissions
 func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) (string,
 	[]*blog.BlogData, error) {
+	r.log.Info("日志记录")
 	var (
 		blogs []*blog.BlogData
 		err   error
@@ -396,7 +397,7 @@ type Blog struct {
 	Visits     uint64 `json:"visits"`
 	Content    string `json:"content"`
 	Appear     bool   `json:"appear"`
-	Comment    bool   `json:"gateway"`
+	Comment    bool   `json:"comment"`
 }
 
 func (b Blog) TableName() string {

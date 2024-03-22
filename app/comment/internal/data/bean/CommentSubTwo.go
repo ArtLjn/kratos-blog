@@ -12,13 +12,13 @@ package bean
 
 type CommentSubTwo struct {
 	ID          int    `json:"id" gorm:"primaryKey"`
-	ParentID    int    `json:"parent_id" gorm:"parent_id"`
+	ParentID    int    `json:"parent_id" gorm:"column:parent_id"`
 	Comment     string `json:"comment"`
 	CommentTime string `json:"comment_time"`
 	Name        string `json:"name"`
 	Email       string `json:"email"`
-	CommentAddr string `json:"comment_addr" gorm:"comment_addr"`
-	ArticleID   int    `json:"article_id"`
+	CommentAddr string `json:"comment_addr" gorm:"column:comment_addr"`
+	ArticleID   string `json:"article_id"`
 }
 
 func (c *CommentSubTwo) TableName() string {

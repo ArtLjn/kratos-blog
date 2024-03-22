@@ -27,8 +27,8 @@
                 <el-option
                 v-for="item in getTagList"
                 :key="item.id"
-                :label="item.tag_name"
-                :value="item.tag_name"
+                :label="item.tagName"
+                :value="item.tagName"
               />
               </el-select>
               <el-switch v-model="md.comment"
@@ -60,7 +60,7 @@
   import { fas } from "@fortawesome/free-solid-svg-icons";
   import { library } from "@fortawesome/fontawesome-svg-core";
   import { ElMessage, ElMessageBox } from "element-plus";
-  import { useRoute } from "vue-router";
+  import {useRoute} from "vue-router";
   import axios from 'axios';
   import {setCacheBlog, uploadFile} from "@/components/api/blog";
   import {GetAllTag} from "@/components/api/tag";
@@ -68,9 +68,29 @@
   library.add(fas);
   
   export default {
-    name: "edit",
     components: {
       FontAwesomeIcon,
+    },
+    beforeRouteLeave (to, from, next) {
+      if (this.md.title || this.md.preface) {
+        const confirmMessage = "您有未保存的内容，确定要离开吗？"
+        if (confirm(confirmMessage)) {
+          next()
+        } else {
+          next(false)
+        }
+      } else {
+        next()
+      }
+    },
+    beforeUnmount() {
+      alert("sss")
+      window.addEventListener('beforeunload', this.handleBeforeUnload);
+    },
+    methods:{
+      handleBeforeUnload(event) {
+        event.preventDefault();
+      }
     },
     setup() {
       const getTagList = ref([]);
@@ -155,23 +175,23 @@
 
       const handleUploadImage = (event) => {
         uploadFile(event).then((res) => {
-          if (res.status === 200) {
+          if (res.code === 200) {
             ElMessage.success("上传成功");
-            md.content += "\n![Description](" + res.result + ")";
+            md.content += "\n![Description](" + res.data + ")";
           }
         })
      };
      const handleMainPhoto = (event) => {
         uploadFile(event).then((res) => {
-          if (res.status === 200) {
-            md.photo = res.result;
+          if (res.code === 200) {
+            md.photo = res.data;
             ElMessage.success("上传成功")
           }
         })
      }
      const getTag = () => {
         GetAllTag().then((res) => {
-          getTagList.value = res.list;
+          getTagList.value = res.data;
         })
       }
       onMounted(() => {
@@ -182,6 +202,7 @@
         md.comment = route.query.comment || "";
         md.photo = route.query.photo || "";
         getTag();
+
       });
 
       return {

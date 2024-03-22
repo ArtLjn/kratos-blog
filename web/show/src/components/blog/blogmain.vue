@@ -80,7 +80,8 @@
                 </div>
             </div>
           </div> 
-          <el-pagination  :total="Blogs.length" @current-change="handleCurrentChange" pager-count="3"	 layout="prev, pager, next"
+          <el-pagination  :total="Blogs.length" @current-change="handleCurrentChange" pager-count="3"
+                          layout="prev, pager, next"
           background class="page" >
         </el-pagination>
       </div>
@@ -106,10 +107,8 @@
       newFooter
     },
     setup() {
-      // TODO 分页错误
-      const itemsPerPage = 12;
+      const itemsPerPage = 9;
       const currentPage = ref(1);
-      const blogColumns = ref(3);
       const Blogs = ref([]);
       const SuggestList = ref([]);
       const poetry = reactive({
@@ -160,7 +159,6 @@
         }
       }
       return {
-        blogColumns,
         Blogs,
         displayedItems,
         RandomPhoto,

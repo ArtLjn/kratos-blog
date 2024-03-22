@@ -14,6 +14,14 @@ module.exports = defineConfig({
         pathRewrite: {
           '^/api': ''
         }
+      },
+      '/util':{
+        target: 'http://localhost:8080/util',
+        // ws: true,
+        changeOrigin: true, //是否跨域
+        pathRewrite: {
+          '^/util': ''
+        }
       }
     },
     historyApiFallback: true //增加这个选项

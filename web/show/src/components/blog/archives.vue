@@ -63,7 +63,6 @@ export default {
 
     RandomPhoto.photo = JSON.parse(sessionStorage.getItem("bingUrl"));
 
-    const sortedBlogs = ref([]);
     onMounted(() => {
       window.scrollTo(0,0);
     });
@@ -83,7 +82,6 @@ export default {
       window.scrollTo(0,0);
     }
     return {
-      sortedBlogs,
       RandomPhoto,
       displayedItems,
       handleCurrentChange,

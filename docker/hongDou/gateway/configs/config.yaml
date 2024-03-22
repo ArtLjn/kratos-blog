@@ -5,23 +5,13 @@ server:
 data:
   database:
     driver: mysql
-    source: root:123456@tcp(192.168.72.129:23306)/test
+    source: root:320324liu@tcp(8.218.92.69:23306)/hongDou
   redis:
-    addr: 10.23.248.210:26379
+    addr: 8.218.92.69:26379
     read_timeout: 0.2s
     write_timeout: 0.2s
     db: 0
-    password: 123456
-upload:
-  # 上传路径
-  path: /usr/local/hongDou/img
-  # 代理域名
-  domain: http://localhost:8080/util/img
-  # 最大内存
-  maxsize: 3 MB
-  # Bing 每日随机图片获取接口
-  uri: "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1"
-# 配置黑白名单, 白名单不需要传递Token,黑名单特殊接口需要传递Token
+    password: "123456"
 path:
   # 配置白名单
   white:
@@ -38,7 +28,7 @@ path:
 domain:
   # 允许访问源
   origin:
-    - "http://localhost:8033"
-    - "http://localhost:8030"
+    - "https://lllcnm.cn"
+    - "https://edit.lllcnm.cn"
   # 是否开启过滤器
-  open: false
+  open: true

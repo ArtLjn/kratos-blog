@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/registry"
-	"kratos-blog/app/gateway/internal/conf"
-	"kratos-blog/pkg/server"
-	"os"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"kratos-blog/app/gateway/internal/conf"
+	"kratos-blog/pkg/server"
+	"os"
 
 	_ "go.uber.org/automaxprocs"
 )
@@ -36,6 +35,7 @@ func init() {
 }
 
 func newApp(logger log.Logger, hs *http.Server, r registry.Registrar) *kratos.App {
+
 	return kratos.New(
 		kratos.ID(id+"-gateway"),
 		kratos.Name(Name),
@@ -51,6 +51,12 @@ func newApp(logger log.Logger, hs *http.Server, r registry.Registrar) *kratos.Ap
 
 func main() {
 	flag.Parse()
+	//logFileName := fmt.Sprintf("%s%s", time.Now().Format("2006-01-02"), "-gateway.log")
+	//logPath := filepath.Join(server.GatewayLogPath, logFileName)
+	//f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	//if err != nil {
+	//	return
+	//}
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,

@@ -89,6 +89,46 @@ type BlogPhoto struct {
 	Position string `json:"position"`
 }
 
+type RemoteTag struct {
+	ID      int    `json:"id" gorm:"primary_key;auto_increment"`
+	TagName string `json:"tag_name" gorm:"column:tag_name"`
+}
+
+type LocalTag struct {
+	ID      int    `json:"id" gorm:"primary_key;auto_increment"`
+	TagName string `json:"tagName" gorm:"column:tagName"`
+}
+
+func GetAllTag() []RemoteTag {
+	db := newDB(remoteSource)
+	var tags []RemoteTag
+	if err := db.Table("tag").Find(&tags).Error; err != nil {
+		panic(err)
+	}
+	return tags
+}
+
+func UpdateTag() {
+	db := newDB(localSource)
+	remoteTag := GetAllTag()
+	mx.Add(1)
+	go func() {
+		defer mx.Done()
+		for _, tag := range remoteTag {
+			wg.Lock()
+			var t LocalTag
+			t.ID = tag.ID
+			t.TagName = tag.TagName
+			if err := db.Table("tag").Create(&t).Error; err != nil {
+				fmt.Println(err)
+				continue
+			}
+			wg.Unlock()
+		}
+	}()
+	mx.Wait()
+}
 func TestCreateBlog(t *testing.T) {
-	UpdateLocalBlogData()
+	//UpdateLocalBlogData()
+	UpdateTag()
 }

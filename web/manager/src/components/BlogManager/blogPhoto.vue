@@ -9,7 +9,7 @@
     :z-index="9999"
     :initial-index="selectedIndex"
     ></el-image-viewer>
-    <el-table :data="BlogPhoto" class="table" border>
+    <el-table :data="BlogPhoto" class="table" border :lazy="true" stripe height="600">
         <el-table-column type="selection" label="序号" width="80" >
             <template #default="{ row }">
               <el-checkbox v-model="row.selected" @change="handlePush(row.id)"></el-checkbox>
@@ -20,18 +20,12 @@
                 <el-image :src="`${row.photo}`" class="img" style="width:130px;" @click="handelEventPhoto"/>
             </template>
         </el-table-column>
-        <el-table-column  label="标题">
-            <template #default="{row}">
-                <span>{{row.title}}</span>
-            </template>
-        </el-table-column>
-        <el-table-column label="时间">
-            <template #default="{row}">
-                <span>{{row.date}}</span>
-            </template>
-        </el-table-column>
-        <el-table-column label="操作" #default="{row}">
-            <span @click="delteBlogPhoto(row.id)" class="handel">删除</span>
+        <el-table-column  label="标题" prop="title"></el-table-column>
+        <el-table-column label="时间" prop="date"></el-table-column>
+        <el-table-column fixed="right" label="操作">
+          <template #default="{row}">
+            <el-button  @click="delteBlogPhoto(row.id)" type="danger" round>删除</el-button>
+          </template>
         </el-table-column>
     </el-table>
 </div>
@@ -52,7 +46,7 @@ export default{
         const photoUrl = ref([])
         const getAllphoto =()=> {
           GetAllPhoto().then((res) => {
-            BlogPhoto.value = res.list
+            BlogPhoto.value = res.data
             BlogPhoto.value.map((item) => {
               photoUrl.value.push(item.photo);
             })

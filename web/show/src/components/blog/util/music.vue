@@ -9,7 +9,6 @@
   <script>
   import { ref, onMounted } from 'vue';
   export default {
-    name: 'music',
     setup() {
       const currentTrack = ref('');
   
@@ -18,7 +17,6 @@
           .then((response) => response.json())
           .then((data) => {
             const url = data.data.url;
-            console.log(url)
             playMusic(url);
           });
       };
@@ -37,9 +35,9 @@
       const audioElement = ref(null); // 创建ref
   
       onMounted(() => {
-        const audioPlayer = audioElement.value; // 在组件渲染后再获取音频元素
-        audioPlayer.addEventListener('ended', nextTrack);
-        getRandomMusic();
+        // const audioPlayer = audioElement.value; // 在组件渲染后再获取音频元素
+        // audioPlayer.addEventListener('ended', nextTrack);
+        // getRandomMusic();
       });
   
       return {

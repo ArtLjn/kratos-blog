@@ -8,17 +8,13 @@
             <el-button type="primary" @click="addTag">确认</el-button>
         </div>
     </el-dialog>
-    <el-table :data="tags" class="table" border style="margin-top:20px;">
+    <el-table :data="tags" class="table" border style="margin-top:20px;" :lazy="true"  stripe height="300">
         <el-table-column type="selection" label="序号" width="80" >
             <template #default="{ row }">
               <el-checkbox v-model="row.selected" @change="handlePush(row.id)"></el-checkbox>
             </template>
           </el-table-column>
-        <el-table-column label="标签">
-            <template #default="{row}">
-                <span>{{row.tag_name}}</span>
-            </template>
-        </el-table-column>
+        <el-table-column label="标签" prop="tagName"></el-table-column>
         <el-table-column label="操作">
             <template #default="{row}">
                 <el-button type="danger" plain @click="deleteTag(row.id)">删除</el-button>
@@ -31,6 +27,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus';
 import {AddTag, DeleteTag, GetAllTag} from "@/components/api/tag";
 import {safeMath} from "@/components/api/util";
+import {SUCCESS_REQUEST} from "@/components/api/status";
 export default{
     name:"tagManager",
     setup() {
@@ -40,7 +37,7 @@ export default{
         })
         const getTag = () => {
           GetAllTag().then((res) => {
-            tags.value = res.list;
+            tags.value = res.data;
           })
         }
         const addTag = () => {
@@ -49,7 +46,7 @@ export default{
                 return;
             }
             AddTag(tagForm).then((res) => {
-              if (res.status === 200) {
+              if (res.common.code === SUCCESS_REQUEST) {
                 ElMessage.success("添加成功")
                 tagForm.tag = null;
                 getTag();

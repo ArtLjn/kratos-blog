@@ -33,7 +33,6 @@ var (
 // Data .
 type Data struct {
 	log *log.Helper
-	uc  user.UserClient
 	db  *gorm.DB
 	rdb *redis.Client
 	pf  model.PublicFunc
@@ -41,10 +40,10 @@ type Data struct {
 }
 
 // NewData .
-func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client, uc user.UserClient) (*Data, error) {
+func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client) (*Data, error) {
 	l := log.NewHelper(log.With(logger, "module", "data"))
 	pf := model.NewOFunc(l, db)
-	return &Data{log: l, uc: uc, db: db, rdb: rdb, pf: pf, c: c}, nil
+	return &Data{log: l, db: db, rdb: rdb, pf: pf, c: c}, nil
 }
 
 // NewRegistrar add consul

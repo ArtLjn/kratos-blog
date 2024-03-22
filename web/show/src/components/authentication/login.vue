@@ -1,5 +1,5 @@
 <template>
-    <form v-if="!showRegisterForm && !showResertForm" class="form" @submit.prevent="login">
+    <form v-if="!showRegisterForm && !showResetForm" class="form" @submit.prevent="login">
       <h1>登录</h1>
       <div class="input-box">
         <label for="username">Username:</label>
@@ -10,7 +10,7 @@
       </div>
       <button type="submit">Log In</button>
       <button type="button" @click="showRegisterForm = true">Register</button>
-      <button type="button" @click="showResertForm = true,showRegisterForm = false,handleResetForm" 
+      <button type="button" @click="showResetForm = true,showRegisterForm = false,handleResetForm"
       style="background-color:rgb(239, 239, 248);">忘记密码？</button><br>
     </form>
     
@@ -42,7 +42,7 @@
     </form>
 
 
-    <form v-if="showResertForm" class="form" @submit.prevent="UpdateUser"  id="resetForm">
+    <form v-if="showResetForm" class="form" @submit.prevent="UpdateUser"  id="resetForm">
       <h1>重置</h1>
       <div class="input-box">
         <label for="username">Username:</label>
@@ -64,8 +64,8 @@
             :plain="true">{{content}}</el-button>
         </div>
       </div>
-      <button type="submit" >Resert</button>
-      <button type="button" @click="showResertForm = false">Cancel</button>
+      <button type="submit" >Reset</button>
+      <button type="button" @click="showResetForm = false">Cancel</button>
     </form>
   </template>
   
@@ -77,15 +77,12 @@
   export default {
     name: 'LoginComponent',
     setup() {
-      const currentTimestamp = () =>{
-        return Date.parse(new Date()); //获取当前时间戳
-      }
 
       const content = ref('发送验证码')
-      const totalTime = ref('');
+      const totalTime = ref(60);
       const lockClick = ref(true);
       const showRegisterForm = ref(false);
-      const showResertForm = ref(false);
+      const showResetForm = ref(false);
       const loginForm = ref({
         name: '',
         pass: ''
@@ -117,7 +114,7 @@
           lockClick.value = false
           content.value = totalTime.value + 's后重新发送'
           let clock = window.setInterval(() => {
-            totalTime.value = currentTimestamp();
+            totalTime.value--;
             content.value = totalTime.value + 's后重新发送'
             if (totalTime.value < 0) {
               window.clearInterval(clock)
@@ -156,7 +153,7 @@
         register,
         sendEmail,
         handleResetForm,
-        showResertForm,
+        showResetForm,
         UpdateUser,
         code
       };

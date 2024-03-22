@@ -56,7 +56,7 @@
                 <Tipping/>
               </div>
           </el-card>
-         <comments style="margin-left:auto;margin-right:auto;" class="comments"></comments>
+         <comments :message="id" style="margin-left:auto;margin-right:auto;" class="comments"></comments>
          <newFooter></newFooter>
         </div>
     </div>
