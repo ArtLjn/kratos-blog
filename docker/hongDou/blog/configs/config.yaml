@@ -8,9 +8,9 @@ server:
 data:
   database:
     driver: mysql
-    source: root:320324liu@tcp(8.218.92.69:23306)/hongDou
+    source: root:123456@tcp(localhost:23306)/hongDou
   redis:
-    addr: 8.218.92.69:26379
+    addr: localhost:26379
     read_timeout: 0.2s
     write_timeout: 0.2s
     db: 0
