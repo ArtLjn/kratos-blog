@@ -15,12 +15,12 @@ module.exports = defineConfig({
           '^/api': ''
         }
       },
-      '/util':{
-        target: 'http://localhost:8080/util',
+      '/tool':{
+        target: 'http://localhost:8080/tool',
         // ws: true,
         changeOrigin: true, //是否跨域
         pathRewrite: {
-          '^/util': ''
+          '^/tool': ''
         }
       }
     },

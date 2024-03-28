@@ -7,8 +7,11 @@
 package main
 
 import (
+	"context"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	//"github.com/robfig/cron/v3"
+	"kratos-blog/api/v1/blog"
 	"kratos-blog/app/gateway/internal/conf"
 	"kratos-blog/app/gateway/internal/data"
 	"kratos-blog/app/gateway/internal/server"
@@ -28,6 +31,7 @@ func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logge
 	commentClient := data.NewCommentServiceClient(discovery)
 	commentService := service.NewCommentService(logger, commentClient, role)
 	blogClient := data.NewBlogServiceClient(discovery)
+	Cron(blogClient)
 	blogService := service.NewBlogService(logger, blogClient, role)
 	tagClient := data.NewTagServiceClient(discovery)
 	tagService := service.NewTagService(logger, tagClient)
@@ -46,4 +50,13 @@ func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logge
 	app := newApp(logger, httpServer, r)
 	return app, func() {
 	}, nil
+}
+
+// Cron 定时任务
+func Cron(cli blog.BlogClient)  {
+	//c := cron.New()
+	//c.AddFunc("0 0 * * *", func() {
+		go cli.UpdateBlogVisit(context.Background(),&blog.UpdateBlogVisitRq{})
+	//})
+	//c.Start()
 }

@@ -18,6 +18,7 @@ import (
 	h2 "net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -99,7 +100,7 @@ func GetBingPhoto(ctx *gin.Context) {
 }
 
 // BingPhoto :dev 获取bing每日图片接口
-func BingPhoto(uri *string) error {
+func BingPhoto(uri chan string) error {
 	body, err := util.Request(h2.MethodGet, u.Url, nil)
 	if err != nil {
 		return err
@@ -125,7 +126,8 @@ func BingPhoto(uri *string) error {
 			return ue
 		}
 		getLastIndex(&u.Domain)
-		*uri = fmt.Sprintf("%s%s", u.Domain, newImgName)
+		uri <- fmt.Sprintf("%s%s", u.Domain, newImgName)
+		close(uri)
 		return nil
 	}
 	return fmt.Errorf("The image URI parsing failed \n")
@@ -188,21 +190,22 @@ func ParseSize(sizeStr string) (int64, error) {
 	// Remove any potential spaces from the string.
 	sizeStr = strings.TrimSpace(sizeStr)
 
-	// Split the number and the unit.
-	parts := strings.Split(sizeStr, " ")
-	if len(parts) != 2 {
+	// Use regular expression to match the number and unit.
+	re := regexp.MustCompile(`^(\d+)([A-Za-z]+)$`)
+	matches := re.FindStringSubmatch(sizeStr)
+	if len(matches) != 3 {
 		return 0, fmt.Errorf("invalid size format: %s", sizeStr)
 	}
 
 	// Parse the number as an int64.
-	size, err := strconv.ParseInt(parts[0], 10, 64)
+	size, err := strconv.ParseInt(matches[1], 10, 64)
 	if err != nil {
 		return 0, err
 	}
 
 	// Convert the unit to bytes.
 	var bytes int64
-	switch strings.ToUpper(parts[1]) {
+	switch strings.ToUpper(matches[2]) {
 	case "B":
 		bytes = size
 	case "KB":
@@ -212,7 +215,7 @@ func ParseSize(sizeStr string) (int64, error) {
 	case "GB":
 		bytes = size * 1024 * 1024 * 1024
 	default:
-		return 0, fmt.Errorf("unsupported size unit: %s", parts[1])
+		return 0, fmt.Errorf("unsupported size unit: %s", matches[2])
 	}
 
 	return bytes, nil

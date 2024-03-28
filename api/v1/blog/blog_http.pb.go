@@ -58,7 +58,7 @@ func RegisterBlogHTTPServer(s *http.Server, srv BlogHTTPServer) {
 	r.POST("/api/addBlog", _Blog_CreateBlog0_HTTP_Handler(srv))
 	r.PUT("/api/updateBlog/{id}", _Blog_UpdateBlog0_HTTP_Handler(srv))
 	r.PUT("/api/updateIndividual", _Blog_UpdateIndividualFields0_HTTP_Handler(srv))
-	r.DELETE("/api/deleteBlog/{id}/{key}", _Blog_DeleteBlog0_HTTP_Handler(srv))
+	r.DELETE("/api/deleteBlog/{id}", _Blog_DeleteBlog0_HTTP_Handler(srv))
 	r.GET("/api/getTagName/{tag}", _Blog_GetBlogByTag0_HTTP_Handler(srv))
 	r.GET("/api/getAllBlog", _Blog_ListBlog0_HTTP_Handler(srv))
 	r.GET("/api/getId/{id}", _Blog_GetBlogByID0_HTTP_Handler(srv))
@@ -460,7 +460,7 @@ func (c *BlogHTTPClientImpl) CreateBlog(ctx context.Context, in *CreateBlogReque
 
 func (c *BlogHTTPClientImpl) DeleteBlog(ctx context.Context, in *DeleteBlogRequest, opts ...http.CallOption) (*DeleteBlogReply, error) {
 	var out DeleteBlogReply
-	pattern := "/api/deleteBlog/{id}/{key}"
+	pattern := "/api/deleteBlog/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationBlogDeleteBlog))
 	opts = append(opts, http.PathTemplate(pattern))

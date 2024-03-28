@@ -16,8 +16,6 @@ data:
 path:
   # 配置白名单 不需要传递token接口
   white:
-    - "/util/upload"
-    - "/util/getBingPhoto"
     - "/api/login"
     - "/api/register"
     - "/api/admin"

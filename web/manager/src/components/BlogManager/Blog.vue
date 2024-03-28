@@ -46,7 +46,7 @@
             <el-table-column label="操作" width="300">
               <template #default="{row}">
                 <el-button @click="handelNote(row.id)">编辑</el-button>
-                <el-button @click="delteBlog(row.id)" type="danger">删除</el-button>
+                <el-button @click="removeBlog(row.id)" type="danger">删除</el-button>
                 <el-popconfirm
                 confirm-button-text='允许'
                 cancel-button-text='禁止'
@@ -80,7 +80,7 @@
     </div>
        <div>
             <div style="margin-bottom:20px;">
-              <el-select placeholder="选择文章" v-model="adviseblogId.blogId" filterable>
+              <el-select placeholder="选择文章" v-model="suggestBlogForm.id" filterable>
                 <el-option v-for="item in Blogs" 
                 :key="item.id" :label="item.title"
                 :value="item.id">
@@ -93,7 +93,7 @@
             <el-table :data="SuggestForm" class="custom-table" border style="width:600px;">
               <el-table-column label="标题" width="400">
                 <template #default="{ row }">
-                  <router-link :to="`/main/watch/${row.blogId}`" class="link">{{ row.blog_title }}</router-link>
+                  <router-link :to="`/main/watch/${row.id}`" class="link">{{ row.title }}</router-link>
                 </template>
               </el-table-column>
               <el-table-column width="200" label="操作">
@@ -113,8 +113,15 @@
   import { ElMessage } from 'element-plus';
   import { useRouter } from 'vue-router';
   import login from '../authentication/login.vue';
-  import {DeleteBlog, GetAllBlog, SearchBlog, updateBlogOnly} from "@/components/api/blog";
-  import {safeMath} from "@/components/api/util";
+  import {
+    addSuggestBlog,
+    DeleteBlog,
+    GetAllBlog,
+    getAllSuggestBlog,
+    GetBlogById,
+    SearchBlog,
+    updateBlogOnly
+  } from "@/components/api/blog";
   import {SUCCESS_REQUEST} from "@/components/api/status";
 
   export default {
@@ -133,15 +140,6 @@
         }
       }
     },
-    methods:{
-        setCommentStatus() {
-          updateBlogOnly().then((res) => {
-            if (res.code === 200) {
-
-            }
-           })
-        }
-    },
     setup() {//分页
       const itemsPerPage = 10;
       const currentPage = ref(1);
@@ -153,7 +151,6 @@
       const handleCurrentChange = (page) => {
         currentPage.value = page;
       };
-      //
       const Blogs = ref([]);
       const router = useRouter();
       const getAllBlog =  () => {
@@ -173,20 +170,18 @@
           Blogs.value = res.list;
         })
       }
-      const adviseblogId = ref({
-        blogId:""
+      const suggestBlogForm = ref({
+        id:""
       })
   
-      const delteBlog = (id) => {
-        safeMath().then((key) => {
-          DeleteBlog(id,key).then((res) => {
-            if (res.status === 200) {
+      const removeBlog = (id) => {
+          DeleteBlog(id).then((res) => {
+            if (res.common.code === SUCCESS_REQUEST) {
               getAllBlog();
               ElMessage.success('删除成功');
             } else {
               ElMessage.error(res.error)
             }
-          })
         })
       }; 
       
@@ -203,79 +198,59 @@
 
       const deleteSomeBlog = () => {
         selectedRows.value.forEach(row => {
-          safeMath().then((key) => {
-            DeleteBlog(row,key).then((res) => {
+            DeleteBlog(row).then((res) => {
               console.log(res)
             })
-          })
         })
       }
       const handelNote = (id) => {
-            axios
-            .get(`/api/getId/${id}`,{
-              headers:{
-                token:localStorage.getItem("token")
-              }
-            })
-            .then((response) => {
-              const data = response.data.data;
-              const query = {
-                id: id,
-                title: data.title,
-                content: data.content,
-                preface: data.preface,
-                tag:data.tag,
-                comment:data.comment,
-                photo:data.photo
-              };
-              router.push({
-                path: '/main/edit',
-                query: query
-              });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
+        GetBlogById(id).then((response) => {
+          const data = response.data.data;
+          const query = {
+            id: id,
+            title: data.title,
+            content: data.content,
+            preface: data.preface,
+            tag:data.tag,
+            comment:data.comment,
+            photo:data.photo
+          };
+          router.push({
+            path: '/main/edit',
+            query: query
+          });
+        })
       };
       onMounted(() => {
         getAllBlog();
-        getAllSugget();
+        searchAllSuggest();
       });
       const SuggestForm = ref([]);
       const addBlogForSuggest = () => {
-        if(!adviseblogId.value.blogId) {
-          ElMessage.warning("no");
-          return;
-        }
-        axios
-          .post(`/api/addSuggest/${adviseblogId.value.blogId}`)
-          .then((res) => {
-            if (res.data.status === 200) {
-              adviseblogId.value.blogId = null;
-              ElMessage.success("ok");
-              getAllSugget();
-            }
-          })
-          .catch((error) => {
-            console.log(error)
-            ElMessage.warning("捕获错误")
-          })
+        addSuggestBlog(suggestBlogForm.value).then((res) => {
+          if (res.common.code == SUCCESS_REQUEST) {
+            ElMessage.success("添加成功")
+            searchAllSuggest();
+          } else {
+            ElMessage.error(res.common.result)
+          }
+        })
       }
-      const getAllSugget = () => {
-        axios
-          .get("/api/getAllSuggest")
-          .then((response) => {
-            SuggestForm.value = response.data.list;
-            sessionStorage.setItem("suggests",JSON.stringify(SuggestForm.value))
-            console.log(SuggestForm.value)
-          }).catch((error) => {ElMessage.error("捕获异常"),console.log(error)})
+      const searchAllSuggest = () => {
+        getAllSuggestBlog().then((res) => {
+          if (res.common.code == SUCCESS_REQUEST) {
+            SuggestForm.value = res.List
+          } else {
+            ElMessage.error(res.common.result)
+          }
+        })
       }
       const deleteSuggest = (id) => {
             axios
             .delete(`/api/deleteSuggest/${id}`)
             .then(() => {
               ElMessage.success("ok")
-              getAllSugget();
+              searchAllSuggest();
             })
             .catch((error) => {console.log(error)})
       }
@@ -329,12 +304,12 @@
       
       return {
         Blogs,
-        delteBlog,
+        removeBlog,
         handelNote,
         selectedRows,
         handlePush,
         deleteSomeBlog,
-        adviseblogId,
+        suggestBlogForm,
         addBlogForSuggest,
         SuggestForm,
         deleteSuggest,

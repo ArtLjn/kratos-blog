@@ -35,7 +35,9 @@ func UpdatePhoto() {
 		Current.mu.Lock()
 		defer Current.mu.Unlock()
 		Current.lastUpdateTime = time.Now()
-		BingPhoto(&Current.Url)
+		c := make(chan string, 1)
+		BingPhoto(c)
+		Current.Url = <-c
 		log.Println(Current)
 	}()
 }

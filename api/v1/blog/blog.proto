@@ -26,7 +26,7 @@ service Blog {
 	};
 	rpc DeleteBlog (DeleteBlogRequest) returns (DeleteBlogReply) {
 		option(google.api.http) = {
-			delete:"/api/deleteBlog/{id}/{key}",
+			delete:"/api/deleteBlog/{id}",
 		};
 	};
 	rpc GetBlogByTag (GetBlogRequest) returns (GetBlogReply) {
@@ -94,6 +94,8 @@ service Blog {
 			get:"/api/getAllSuggest",
 		};
 	}
+
+	rpc UpdateBlogVisit(UpdateBlogVisitRq) returns (UpdateBlogVisitRq) {}
 }
 
 message BlogData {
@@ -140,7 +142,6 @@ message UpdateIndividualFieldsReply {
 
 message DeleteBlogRequest {
 	int64 id = 1;
-	string key = 2;
 }
 message DeleteBlogReply {
 	CommonReply common = 1;
@@ -217,3 +218,5 @@ message SearchAllReply {
 message Permission {
 	bool Admin = 1;
 }
+
+message UpdateBlogVisitRq {}

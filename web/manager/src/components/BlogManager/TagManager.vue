@@ -1,13 +1,6 @@
 <template>
-    <el-button @click="tagHandle = true" type="success" plain>新增标签</el-button>
+    <el-button @click="addTag" type="success" plain>新增标签</el-button>
     <el-button @click="deleteSomeTag" type="danger" plain>批量删除</el-button>
-    <el-dialog title="新增标签" v-model="tagHandle">
-        <el-input label="标签名" v-model="tagForm.tag_name"></el-input>
-        <div style="margin-top:20px;">
-            <el-button @click="tagHandle = false">取消</el-button>
-            <el-button type="primary" @click="addTag">确认</el-button>
-        </div>
-    </el-dialog>
     <el-table :data="tags" class="table" border style="margin-top:20px;" :lazy="true"  stripe height="300">
         <el-table-column type="selection" label="序号" width="80" >
             <template #default="{ row }">
@@ -26,44 +19,28 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus';
 import {AddTag, DeleteTag, GetAllTag} from "@/components/api/tag";
-import {safeMath} from "@/components/api/util";
-import {SUCCESS_REQUEST} from "@/components/api/status";
 export default{
     name:"tagManager",
     setup() {
         const tags = ref([]);
-        const tagForm = reactive({
-            tag_name:''
-        })
         const getTag = () => {
           GetAllTag().then((res) => {
             tags.value = res.data;
           })
         }
         const addTag = () => {
-            if(!tagForm.tag_name){
-                ElMessage.warning("不为空");
-                return;
-            }
-            AddTag(tagForm).then((res) => {
-              if (res.common.code === SUCCESS_REQUEST) {
-                ElMessage.success("添加成功")
-                tagForm.tag = null;
-                getTag();
-              }
-            })
+            AddTag();
+            getTag();
         }
 
         const deleteTag = (id) => {
-          safeMath().then((r) => {
-            DeleteTag(id,r).then((res) => {
+            DeleteTag(id).then((res) => {
               if (res.status === 200) {
                 ElMessage.success("删除成功")
                 getTag()
               } else {
                 ElMessage.error(res.error)
               }
-            })
           })
         }
         const selectedRows = ref([]);
@@ -82,15 +59,12 @@ export default{
                 deleteTag(row)
             })
         }
-        const tagHandle = ref(false);
 
         onMounted(() => {
             getTag();
         })
         return{
             tags,
-            tagHandle,
-            tagForm,
             addTag,
             deleteTag,
             selectedRows,

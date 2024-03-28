@@ -62,14 +62,9 @@ func (r *blogRepo) UpdateBlog(ctx context.Context, request *blog.UpdateBlogReque
 }
 
 func (r *blogRepo) DeleteBlog(ctx context.Context, request *blog.DeleteBlogRequest) (string, error) {
-	cacheKey, _ := r.data.rdb.Get(context.Background(), "privateKey").Result()
-	if request.Key == cacheKey {
-		if err := r.data.db.Where("id = ?", request.Id).Delete(&Blog{}).Error; err != nil {
-			r.log.Log(log.LevelError, err)
-			return vo.DELETE_ERROR, err
-		}
-	} else {
-		return vo.KEY_ERROR, errors.New(vo.KEY_ERROR)
+	if err := r.data.db.Where("id = ?", request.Id).Delete(&Blog{}).Error; err != nil {
+		r.log.Log(log.LevelError, err)
+		return vo.DELETE_ERROR, err
 	}
 	return vo.DELETE_SUCCESS, nil
 }

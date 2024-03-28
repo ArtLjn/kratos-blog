@@ -6,40 +6,71 @@
             <font-awesome-icon
               :icon="['fas', 'floppy-disk']"
               style="margin:16px 20px auto 10px;float:right;height:30px;"
-              @click="saveOrUpdate"
+              @click="saveDialog = true"
             ></font-awesome-icon>
+            <el-button @click="saveDialog = true">Click</el-button>
+
+            <el-dialog
+            title="保存文章"
+            v-model="saveDialog"
+            width="40%">
+              <el-form>
+                <el-form-item label="文章标签">
+                  <el-select v-model="md.tag" clearable placeholder="选择标签" style="float:right;margin-right:10px;">
+                    <el-option
+                        v-for="item in getTagList"
+                        :key="item.id"
+                        :label="item.tagName"
+                        :value="item.tagName"
+                    />
+                  </el-select>
+                  <el-button type="primary" @click="addTag" plain>添加标签</el-button>
+                </el-form-item>
+
+                <el-form-item label="开启评论">
+                  <el-switch v-model="md.comment"
+                             inline-prompt
+                             active-text="open"
+                             inactive-text="off"
+                             active-value="1"
+                             inactive-value="0"
+                             inactive-color="green"
+                  ></el-switch>
+                </el-form-item>
+                <el-form-item label="添加封面">
+                  <el-upload
+                      class="upload-demo"
+                      drag
+                      multiple
+                      style="width:200px"
+                      :on-success="handleMainPhoto"
+                  >
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">添加文章封面</div>
+                  </el-upload>
+                </el-form-item>
+              </el-form>
+            </el-dialog>
+
               <el-tooltip content="暂时保存" placement="top">
                 <font-awesome-icon 
                 style="margin:16px 20px auto 10px;float:right;height:30px;"
                 :icon="['fas', 'cloud-arrow-up']" 
                 @click="SaveTemporarily"/>
              </el-tooltip>
+
              <el-tooltip content="继续编辑" placement="top">
               <font-awesome-icon :icon="['fas', 'pen-to-square']"
               style="margin:16px 20px auto 10px;float:right;height:30px;"
               @click="continueEdit"
               />
              </el-tooltip>
+
             <input placeholder="导语" class="input" style="border:none;" v-model="md.preface">
             <div style="margin-bottom:20px;">
-              <input type="file" @change="handleMainPhoto"  ref="fileInput">
-              <el-select v-model="md.tag" clearable placeholder="选择标签" style="float:right;margin-right:10px;">
-                <el-option
-                v-for="item in getTagList"
-                :key="item.id"
-                :label="item.tagName"
-                :value="item.tagName"
-              />
-              </el-select>
-              <el-switch v-model="md.comment"
-              inline-prompt
-              active-text="open"
-              inactive-text="off"
-              active-value="1"
-              inactive-value="0"
-              inactive-color="green" 
-              ></el-switch>
+
             </div>
+
             <el-input v-model="md.photo" class="input" style="width:300px;" placeholder="输入图片链接"></el-input>
             <v-md-editor
             :include-level="[1,2,3,4]"
@@ -63,36 +94,17 @@
   import {useRoute} from "vue-router";
   import axios from 'axios';
   import {setCacheBlog, uploadFile} from "@/components/api/blog";
-  import {GetAllTag} from "@/components/api/tag";
+  import {AddTag, GetAllTag} from "@/components/api/tag";
   import {SUCCESS_REQUEST} from "@/components/api/status";
   library.add(fas);
   
   export default {
+    methods: {AddTag},
     components: {
       FontAwesomeIcon,
     },
-    beforeRouteLeave (to, from, next) {
-      if (this.md.title || this.md.preface) {
-        const confirmMessage = "您有未保存的内容，确定要离开吗？"
-        if (confirm(confirmMessage)) {
-          next()
-        } else {
-          next(false)
-        }
-      } else {
-        next()
-      }
-    },
-    beforeUnmount() {
-      alert("sss")
-      window.addEventListener('beforeunload', this.handleBeforeUnload);
-    },
-    methods:{
-      handleBeforeUnload(event) {
-        event.preventDefault();
-      }
-    },
     setup() {
+      const saveDialog = ref(false);
       const getTagList = ref([]);
       const route = useRoute();
       let md = reactive({
@@ -202,9 +214,13 @@
         md.comment = route.query.comment || "";
         md.photo = route.query.photo || "";
         getTag();
-
       });
 
+      const addTag = () => {
+        AddTag().then(() => {
+          getTag();
+        });
+      }
       return {
         md,
         saveOrUpdate,
@@ -214,6 +230,8 @@
         SaveTemporarily,
         continueEdit,
         status,
+        saveDialog,
+        addTag
       };
     },
   };

@@ -36,3 +36,10 @@ bin/
 .vscode/
 .idea/
 *.swp
+
+# 不需要提交的文件
+docker
+app/blog/configs
+app/user/configs
+app/gateway/configs
+app/comment/configs

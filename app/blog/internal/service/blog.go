@@ -60,3 +60,6 @@ func (s *BlogService) GetAllSuggest(ctx context.Context, req *pb.SearchAllSugges
 func (s *BlogService) DeleteSuggestBlog(ctx context.Context, req *pb.SuggestBlogRequest) (*pb.SuggestBlogReply, error) {
 	return s.uc.DeleteSuggestBlog(ctx, req), nil
 }
+func (s *BlogService) UpdateBlogVisit(ctx context.Context, request *pb.UpdateBlogVisitRq) (*pb.UpdateBlogVisitRq, error) {
+	return s.uc.UpdateBlogVisit(ctx, request), nil
+}

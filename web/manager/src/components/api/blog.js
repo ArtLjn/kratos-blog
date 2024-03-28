@@ -15,13 +15,13 @@ export const uploadFile = (event) => {
     const header = {
         'Content-Type': 'multipart/form-data'
     }
-    return req('post','/util/upload',formData,true,header)
+    return req('post','/tool/upload',formData,true,header)
 }
 
 //删除博客文章api
 
-export const DeleteBlog = (id,key) => {
-    return req('delete',`/api/deleteBlog/${id}/${key}`)
+export const DeleteBlog = (id) => {
+    return req('delete',`/api/deleteBlog/${id}`)
 }
 
 export const SearchBlog = (val) => {

@@ -35,7 +35,6 @@ import { onMounted, ref } from 'vue'
 import addPhoto from './addPhoto.vue'
 import { ElMessage } from 'element-plus'
 import {DeletePhoto, GetAllPhoto} from "@/components/api/photo";
-import {safeMath} from "@/components/api/util";
 export default{
     name:"blogPhoto",
     components:{
@@ -56,13 +55,11 @@ export default{
             key:''
         });
         const delteBlogPhoto = (id) => {
-          safeMath().then((r) => {
             DeletePhoto(id,r).then((res) => {
               if (res.status === 200) {
                 ElMessage.success("删除成功");
                 getAllphoto();
               }
-            })
           })
         }
         const selectedRows = ref([]);
@@ -79,13 +76,11 @@ export default{
         const deleteSomePhoto = () => {
           console.log(selectedRows.value)
             selectedRows.value.forEach(row => {
-              safeMath().then((r) => {
                 DeletePhoto(row,r).then((res) => {
                   if (res.status === 200) {
                     getAllphoto();
                   }
                 })
-              })
             });
         }
 

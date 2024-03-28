@@ -1,0 +1,82 @@
+FROM ubuntu:20.02
+WORKDIR /etc/apt
+RUN cp -n sources.list sources.list.old \
+    && sed -i 's%http://archive.ubuntu.com/ubuntu/%http://mirrors.aliyun.com/ubuntu/%g' ./sources.list \
+    && apt-get update \
+    && apt-get install -y golang \
+    && go env -w GO111MODULE=on \
+    && go env -w GOPROXY=https://goproxy.io,direct
+
+WORKDIR /usr/local/hongDou
+
+RUN git clone https://gitee.com/morning-ljn/kratos-blog.git \
+    && cd app/blog/cmd/blog && go build && mv blog ../../../../docker/hongDou/blog \
+    && cd ../../../comment/cmd/comment && go build && mv comment ../../../../docker/hongDou/comment \
+    && cd ../../../user/cmd/user && go build && mv user ../../../../docker/hongDou/user \
+    && cd ../../../gateway/cmd/gateway && go build && mv gateway ../../../../docker/hongDou/gateway \
+    && cd ../../../../tool && go build && mv tool ../docker/hongDou/tool
+
+
+
+WOKDIR /usr/local/hongDou/kratos/docker/hongDou
+RUN chmod +x ./user/user ./comment/comment ./blog/blog ./gateway/gateway ./tool/tool
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

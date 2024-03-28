@@ -23,6 +23,7 @@ type BlogRepo interface {
 	AddSuggestBlog(ctx context.Context, request *pb.SuggestBlogRequest) *pb.SuggestBlogReply
 	GetAllSuggestBlog(ctx context.Context, request *pb.SearchAllSuggest) *pb.SearchAllReply
 	DeleteSuggestBlog(ctx context.Context, request *pb.SuggestBlogRequest) *pb.SuggestBlogReply
+	UpdateBlogVisitsCount()
 }
 
 type BlogUseCase struct {
@@ -39,6 +40,11 @@ func SetStatus(code int64, msg string) *pb.CommonReply {
 		Code:   code,
 		Result: msg,
 	}
+}
+
+func (uc *BlogUseCase) UpdateBlogVisit(ctx context.Context, request *pb.UpdateBlogVisitRq) *pb.UpdateBlogVisitRq {
+	uc.repo.UpdateBlogVisitsCount()
+	return &pb.UpdateBlogVisitRq{}
 }
 
 func (uc *BlogUseCase) AddBlog(ctx context.Context, request *pb.CreateBlogRequest) *pb.CreateBlogReply {

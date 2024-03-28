@@ -45,7 +45,6 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import axios from 'axios'
-import {safeMath} from "@/components/api/util";
 import {DeleteFriend} from "@/components/api/friend";
 export default{
     name:"FriendManager",
@@ -106,13 +105,11 @@ export default{
             key:""
         });
         const deleteFriend = (id) => {
-          safeMath().then((r) => {
-            DeleteFriend(id,r).then((res) => {
+            DeleteFriend(id).then((res) => {
               if (res.status === 200) {
                 getAllFriend()
                 ElMessage.success("删除成功")
               }
-            })
           })
         }
         const isFalse = ref(false);

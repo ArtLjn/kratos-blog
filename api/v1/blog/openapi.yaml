@@ -78,18 +78,13 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /api/deleteBlog/{id}/{key}:
+    /api/deleteBlog/{id}:
         delete:
             tags:
                 - Blog
             operationId: Blog_DeleteBlog
             parameters:
                 - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: key
                   in: path
                   required: true
                   schema:

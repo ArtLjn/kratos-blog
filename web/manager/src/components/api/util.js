@@ -1,22 +1,22 @@
 import {ElMessageBox} from "element-plus";
 
-export const safeMath = () => {
+export const addTagMath = () => {
     let key;
     return new Promise((resolve) => {
         ElMessageBox.prompt(
-            '请输入你的安全码',
+            '请输入标签',
             '提示',
             {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
-                inputPlaceholder: '请输入安全码',
+                inputPlaceholder: '请输入标签',
                 inputValidator: (value) => {
                     if (!value) {
-                        return '请输入安全码';
+                        return '请输入标签';
                     }
                     key = value;
                 },
-                type: 'warning'
+                type: 'success'
             }
         ).then(() => {
             resolve(key);
