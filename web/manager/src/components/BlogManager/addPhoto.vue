@@ -31,7 +31,7 @@ export default{
     })
     const file2 = ref('')
     const handleMainPhoto = (event) => {
-        uploadFile(event).then((res) => {
+        uploadFile(event.target.files[0]).then((res) => {
           data.photo = res.result;
         })
      }

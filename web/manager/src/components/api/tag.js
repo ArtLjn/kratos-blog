@@ -14,27 +14,32 @@ export const GetAllTag = () => {
 }
 
 export const AddTag = () => {
-    addTagMath().then((tagName) => {
-        const tagForm = {
-            "data":{
-                "tagName": tagName
-            }
-        }
-        const promise = new Promise((resolve, reject) => {
-            req('post','/api/addTag',tagForm).then(
-                (res => {
+    return new Promise((resolve, reject) => {
+        addTagMath().then((tagName) => {
+            const tagForm = {
+                "data": {
+                    "tagName": tagName
+                }
+            };
+
+            req('post', '/api/addTag', tagForm).then(
+                (res) => {
                     if (res.common.code === SUCCESS_REQUEST) {
                         ElMessage.success(res.common.result);
-                        resolve(res.common.result)
+                        resolve(res.common.result);
                     } else {
-                        ElMessage.error(res.common.result)
-                        reject(res.common.result)
+                        ElMessage.error(res.common.result);
+                        reject(res.common.result);
                     }
-                })
-            )
-        })
-        return promise
-    })
+                },
+                (error) => { // 添加错误处理，当 req 失败时触发
+                    reject(error); // 将错误传递给外部
+                }
+            );
+        }, (error) => { // 添加错误处理，当 addTagMath 失败时触发
+            reject(error); // 将错误传递给外部
+        });
+    });
 }
 
 //发送信息api

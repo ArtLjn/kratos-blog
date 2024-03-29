@@ -16,7 +16,7 @@ module.exports = defineConfig({
         }
       },
       '/tool':{
-        target: 'http://localhost:8080/tool',
+        target: 'http://localhost:8099/tool',
         // ws: true,
         changeOrigin: true, //是否跨域
         pathRewrite: {

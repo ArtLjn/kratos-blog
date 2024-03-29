@@ -1,7 +1,7 @@
 <template>
     <el-button @click="addTag" type="success" plain>新增标签</el-button>
     <el-button @click="deleteSomeTag" type="danger" plain>批量删除</el-button>
-    <el-table :data="tags" class="table" border style="margin-top:20px;" :lazy="true"  stripe height="300">
+    <el-table :data="tags" border class="table" style="margin-top:20px;" :lazy="true"  stripe height="300">
         <el-table-column type="selection" label="序号" width="80" >
             <template #default="{ row }">
               <el-checkbox v-model="row.selected" @change="handlePush(row.id)"></el-checkbox>
@@ -29,8 +29,9 @@ export default{
           })
         }
         const addTag = () => {
-            AddTag();
-            getTag();
+            AddTag().then(() => {
+              getTag();
+            })
         }
 
         const deleteTag = (id) => {

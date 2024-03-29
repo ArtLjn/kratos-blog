@@ -8,8 +8,7 @@ export const GetAllBlog = () => {return req('get','/api/getAllBlog')}
 export const updateIndividual = (data) => {return req('put','/api/updateIndividual'),data}
 
 //上传文件
-export const uploadFile = (event) => {
-    const file = event.target.files[0]
+export const uploadFile = (file) => {
     const formData = new FormData();
     formData.append("file",file)
     const header = {

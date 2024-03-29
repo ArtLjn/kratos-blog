@@ -19,14 +19,20 @@ func main() {
 	InitRouter(r)
 	r.StaticFS("/img", http.Dir("tool/assets"))
 	UpdatePhoto()
-	r.Run(":8099")
+	err := r.Run(":8099")
+	if err != nil {
+		return
+	}
 }
 
 func init() {
 	c := cron.New()
-	c.AddFunc("0 0 * * *", func() {
+	_, err := c.AddFunc("0 0 * * *", func() {
 		go UpdatePhoto()
 	})
+	if err != nil {
+		return
+	}
 	c.Start()
 }
 
@@ -36,8 +42,12 @@ func UpdatePhoto() {
 		defer Current.mu.Unlock()
 		Current.lastUpdateTime = time.Now()
 		c := make(chan string, 1)
-		BingPhoto(c)
+		err := BingPhoto(c)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 		Current.Url = <-c
-		log.Println(Current)
+		log.Println(Current.Url)
 	}()
 }

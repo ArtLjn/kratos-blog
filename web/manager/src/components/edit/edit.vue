@@ -8,8 +8,6 @@
               style="margin:16px 20px auto 10px;float:right;height:30px;"
               @click="saveDialog = true"
             ></font-awesome-icon>
-            <el-button @click="saveDialog = true">Click</el-button>
-
             <el-dialog
             title="保存文章"
             v-model="saveDialog"
@@ -43,9 +41,8 @@
                       drag
                       multiple
                       style="width:200px"
-                      :on-success="handleMainPhoto"
+                      :on-change="handleMainPhoto"
                   >
-                    <i class="el-icon-upload"></i>
                     <div class="el-upload__text">添加文章封面</div>
                   </el-upload>
                 </el-form-item>
@@ -67,11 +64,6 @@
              </el-tooltip>
 
             <input placeholder="导语" class="input" style="border:none;" v-model="md.preface">
-            <div style="margin-bottom:20px;">
-
-            </div>
-
-            <el-input v-model="md.photo" class="input" style="width:300px;" placeholder="输入图片链接"></el-input>
             <v-md-editor
             :include-level="[1,2,3,4]"
             v-model="md.content"
@@ -186,21 +178,22 @@
       };
 
       const handleUploadImage = (event) => {
-        uploadFile(event).then((res) => {
+        uploadFile(event.target.files[0]).then((res) => {
           if (res.code === 200) {
             ElMessage.success("上传成功");
             md.content += "\n![Description](" + res.data + ")";
           }
         })
      };
-     const handleMainPhoto = (event) => {
-        uploadFile(event).then((res) => {
-          if (res.code === 200) {
-            md.photo = res.data;
-            ElMessage.success("上传成功")
-          }
-        })
+     const handleMainPhoto = (file) => {
+      uploadFile(file.raw).then((res) => {
+        if (res.code == 200) {
+          md.data.photo = res.data;
+          ElMessage.success("上传成功");
+        }
+      })
      }
+
      const getTag = () => {
         GetAllTag().then((res) => {
           getTagList.value = res.data;
@@ -219,7 +212,7 @@
       const addTag = () => {
         AddTag().then(() => {
           getTag();
-        });
+        })
       }
       return {
         md,
