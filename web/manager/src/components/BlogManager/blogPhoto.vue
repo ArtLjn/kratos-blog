@@ -1,5 +1,5 @@
 <template>
-    <div>
+  <div>
     <el-button @click="deleteSomePhoto" type="danger" plain>批量删除</el-button>
     <addPhoto></addPhoto>
     <el-image-viewer
@@ -24,17 +24,19 @@
         <el-table-column label="时间" prop="date"></el-table-column>
         <el-table-column fixed="right" label="操作">
           <template #default="{row}">
-            <el-button  @click="delteBlogPhoto(row.id)" type="danger" round>删除</el-button>
+            <el-button  @click="deleteBlogPhoto(row.id)" type="danger" round>删除</el-button>
           </template>
         </el-table-column>
     </el-table>
 </div>
 </template>
 <script>
-import { onMounted, ref } from 'vue'
+import {onMounted, ref} from 'vue'
 import addPhoto from './addPhoto.vue'
-import { ElMessage } from 'element-plus'
+import {ElMessage} from 'element-plus'
 import {DeletePhoto, GetAllPhoto} from "@/components/api/photo";
+import {confirmFunc} from "@/components/api/util";
+
 export default{
     name:"blogPhoto",
     components:{
@@ -43,7 +45,7 @@ export default{
     setup() {
         const BlogPhoto = ref([])
         const photoUrl = ref([])
-        const getAllphoto =()=> {
+        const getAllPhoto =()=> {
           GetAllPhoto().then((res) => {
             BlogPhoto.value = res.data
             BlogPhoto.value.map((item) => {
@@ -51,15 +53,14 @@ export default{
             })
           })
         }
-        const okma = ref({
-            key:''
-        });
-        const delteBlogPhoto = (id) => {
-            DeletePhoto(id,r).then((res) => {
-              if (res.status === 200) {
+        const deleteBlogPhoto = (id) => {
+          confirmFunc().then(() => {
+            DeletePhoto(id).then((res) => {
+              if (res) {
                 ElMessage.success("删除成功");
-                getAllphoto();
+                getAllPhoto();
               }
+            })
           })
         }
         const selectedRows = ref([]);
@@ -76,16 +77,16 @@ export default{
         const deleteSomePhoto = () => {
           console.log(selectedRows.value)
             selectedRows.value.forEach(row => {
-                DeletePhoto(row,r).then((res) => {
+                DeletePhoto(row).then((res) => {
                   if (res.status === 200) {
-                    getAllphoto();
+                    getAllPhoto();
                   }
                 })
             });
         }
 
         onMounted(() => {
-            getAllphoto();
+            getAllPhoto();
         })
         const showImageViewer = ref(false);
         const handleImageHide = () => {
@@ -93,14 +94,13 @@ export default{
         }
         const selectedIndex = ref(0)
         const handelEventPhoto = () => {
-            const index = photoUrl.value.indexOf(event.target.src); // 获取点击的图片在photoUrl列表中的索引值
-            // console.logs(index); // 输出索引值
-            selectedIndex.value = index
+             // 获取点击的图片在photoUrl列表中的索引值
+            selectedIndex.value = photoUrl.value.indexOf(event.target.src)
             showImageViewer.value = true;
         }
         return{
             BlogPhoto,
-            delteBlogPhoto,okma,
+            deleteBlogPhoto,
             selectedRows,
             handlePush,
             deleteSomePhoto,

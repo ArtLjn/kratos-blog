@@ -16,9 +16,10 @@
     </el-table>
 </template>
 <script>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus';
 import {AddTag, DeleteTag, GetAllTag} from "@/components/api/tag";
+import {confirmFunc} from "@/components/api/util";
 export default{
     name:"tagManager",
     setup() {
@@ -35,13 +36,13 @@ export default{
         }
 
         const deleteTag = (id) => {
+          confirmFunc().then(() => {
             DeleteTag(id).then((res) => {
-              if (res.status === 200) {
+              if (res) {
                 ElMessage.success("删除成功")
                 getTag()
-              } else {
-                ElMessage.error(res.error)
               }
+            })
           })
         }
         const selectedRows = ref([]);

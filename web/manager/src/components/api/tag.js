@@ -4,8 +4,8 @@ import {addTagMath} from "@/components/api/util";
 import {SUCCESS_REQUEST} from "@/components/api/status";
 import {ElMessage} from "element-plus";
 
-export const DeleteTag = (id,key) => {
-    return req('delete',`/api/deleteTag/${id}/${key}`)
+export const DeleteTag = (id) => {
+    return req('delete',`/api/deleteTag/${id}`)
 }
 
 //获取所有标签

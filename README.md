@@ -5,7 +5,7 @@
 
 - 后端基于 [golang](https://go.dev/) + [go-kratos](https://go-kratos.dev/)
 - 前端基于 [VUE3](https://vuejs.org/) 
-
+- [在线演示](https://lllcnm.cn)
 ## 项目结构 🧐
 
 | 子项目名 | 项目路径                                      |

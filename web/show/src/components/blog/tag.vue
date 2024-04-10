@@ -140,5 +140,44 @@ export default{
         width: calc(100%);
     }
 }
-
+@media screen and (max-width: 1550px) {
+  .card-dd {
+    width: calc(75%);
+  }
+  .div-card {
+    width: calc(75%);
+  }
+}
+@media screen and (max-width: 1441px) {
+  .card-dd {
+    width: calc(80%);
+  }
+  .div-card{
+    width: calc(80%);
+  }
+}
+@media screen and (max-width: 1347px) {
+  .card-dd {
+    width: calc(85%);
+  }
+  .div-card{
+    width: calc(87%);
+  }
+}
+@media screen and (max-width: 1241px) {
+  .card-dd {
+    width: calc(97%);
+  }
+  .div-card{
+    width: calc(80%);
+  }
+}
+@media screen and (max-width: 715px) {
+  .card-dd {
+    width: calc(97%);
+  }
+  .div-card{
+    width: calc(80%);
+  }
+}
 </style>

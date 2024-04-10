@@ -11,7 +11,7 @@ const (
 	AdminNotes  string = "adminNotes"
 	Notes       string = "notes"
 	TableName   string = "BlogVisits"
-	Comment     string = "gateway"
+	Comment     string = "comment"
 	Appear      string = "appear"
 	CacheBlog   string = "cacheBlog"
 	SuggestBlog string = "suggestBlog"

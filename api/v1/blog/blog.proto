@@ -72,7 +72,7 @@ service Blog {
 
 	rpc DeleteCacheBlog(DeleteCacheBlogRequest) returns(DeleteCacheBlogReply) {
 		option (google.api.http) = {
-			delete:"/api/deleteCacheBlog",
+			delete:"/api/deleteCacheBlog/{key}",
 		};
 	}
 

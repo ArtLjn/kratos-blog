@@ -1,0 +1,57 @@
+version: '3.0'
+services:
+  web:
+    image: blog:v1
+    container_name: hongDou_blog
+    restart: always
+    volumes:
+      - "./hongDou:/usr/local/hongDou"
+      - "/www/wwwroot/qiniu.lllcnm.cn/img:/usr/local/img"
+    ports:
+      - "8080:8080"
+      - "8099:8099"
+      - "9000:9000"
+      - "9001:9001"
+      - "9002:9002"
+    depends_on:
+      - mysql
+      - redis
+      - consul
+  mysql:
+    image: mysql:5.7
+    container_name: hongDou_mysql
+    restart: always
+    ports:
+      - "23306:3306"
+    environment:
+      - "MYSQL_DATABASE=hongDou"
+      - "MYSQL_ROOT_PASSWORD=123456"
+    volumes:
+      - "./hongDou/sql/blog.sql:/docker-own-entrypoint-initdb.d/blog.sql"
+  redis:
+    image: redis:5.0.14
+    restart: always
+    container_name: hongDou_redis
+    ports:
+      - "26379:6379"
+    command: redis-server --requirepass 123456
+  consul:
+    image: consul:1.7.3
+    restart: always
+    container_name: hongDou_consul
+    ports:
+      - "8500:8500"
+    command: "consul agent -dev -client=0.0.0.0"
+#  nginx:
+#    image: nginx
+#    container_name: front_nginx
+#    restart: always
+#    volumes:
+#      - "./hongDou/show:/usr/local/blog/show"
+#      - "./hongDou/manager:/usr/local/blog/manager"
+#      - "./hongDou/nginx.conf:/etc/nginx/nginx.conf"
+#    ports:
+#      - "8030:8030"
+#      - "8033:8033"
+#    depends_on:
+#      - web

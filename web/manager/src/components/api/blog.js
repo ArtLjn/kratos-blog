@@ -5,7 +5,9 @@ export const Appear = 1;
 export const GetAllBlog = () => {return req('get','/api/getAllBlog')}
 
 //更新所有博客的评论权限
-export const updateIndividual = (data) => {return req('put','/api/updateIndividual'),data}
+export const UpdateIndividual = (data) => {
+    return req('put','/api/updateIndividual',data)
+}
 
 //上传文件
 export const uploadFile = (file) => {
@@ -23,6 +25,13 @@ export const DeleteBlog = (id) => {
     return req('delete',`/api/deleteBlog/${id}`)
 }
 
+export const updateBlog = (id,data)  => {
+    return req('put',`/api/updateBlog/${id}`,data)
+}
+export const SaveBlog = (data) => {
+    return req('post','/api/addBlog',data)
+}
+
 export const SearchBlog = (val) => {
     return req('get',`/api/searchBlog/${val}`)
 }
@@ -37,17 +46,17 @@ export const setCacheBlog = (data) => {
 }
 
 // 获取所有草稿笔记
-export const getAllCacheBlog = () => {
+export const GetAllCacheBlog = () => {
     return req('get','/api/getCacheBlog')
 }
 
 // 删除草稿笔记
-export const delCacheBlog = (body) => {
-    return req('/delete','/api/deleteCacheBlog',body)
+export const delCacheBlog = (key) => {
+    return req('/delete',`/api/deleteCacheBlog/${key}`)
 }
 
 // 修改文章权限
-export const updateBlogOnly = (data) => {
+export const UpdateBlogOnly = (data) => {
     return req('put','/api/updateOnly',data)
 }
 
@@ -62,6 +71,6 @@ export const delSuggestBlog = (id) => {
 }
 
 //添加推荐文章
-export const addSuggestBlog = (body) => {
+export const AddSuggestBlog = (body) => {
     return req('post','/api/addSuggest',body)
 }

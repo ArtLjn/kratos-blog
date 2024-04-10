@@ -1,0 +1,34 @@
+server:
+  http:
+    addr: 0.0.0.0:8080
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    source: root:123456@tcp(ip:23306)/hongDou
+  redis:
+    addr: ip:26379
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    db: 0
+    password: "123456"
+path:
+  # 配置白名单
+  white:
+    - "/util/upload"
+    - "/util/getBingPhoto"
+    - "/api/login"
+    - "/api/register"
+    - "/api/admin"
+    - "/api/updatePassword"
+  # 配置黑名单
+  black:
+    - "/api/searchBlog"
+# 设置允许访问路由
+domain:
+  # 允许访问源
+  origin:
+    - "https://lllcnm.cn"
+    - "https://api.lllcnm.cn"
+  # 是否开启过滤器
+  open: true

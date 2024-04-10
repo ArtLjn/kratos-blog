@@ -145,7 +145,6 @@ import { getAllBlog } from '@/api/blogFunc';
 library.add(faHome, fas);
 
 export default {
-  name: 'main',
   components: {
     FontAwesomeIcon,
     music,

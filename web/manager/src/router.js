@@ -43,6 +43,10 @@ const routes = [
                 path:'friendManager',
                 component:() => import(/* webpackChunkName:"friendManager" */'./components/BlogManager/FriendManager.vue'),
             },
+            {
+                path:"setting",
+                component:() => import(/* webpackChunkName:"setting" */'./components/setting/set.vue'),
+            }
         ]
     }
 ]

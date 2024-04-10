@@ -251,7 +251,7 @@ func (r *blogRepo) GetCacheBlog(ctx context.Context) *blog.ListCacheReply {
 
 func (r *blogRepo) DeleteCacheBlog(ctx context.Context,
 	request *blog.DeleteCacheBlogRequest) *blog.DeleteCacheBlogReply {
-	if !r.delListItem(CacheBlog, request.GetKey()) {
+	if !r.delListItem(CacheBlog, request.Key) {
 		return &blog.DeleteCacheBlogReply{
 			Common: &blog.CommonReply{
 				Code:   500,

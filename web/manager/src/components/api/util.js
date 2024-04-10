@@ -1,4 +1,4 @@
-import {ElMessageBox} from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 export const addTagMath = () => {
     let key;
@@ -22,6 +22,27 @@ export const addTagMath = () => {
             resolve(key);
         }).catch((err) => {
             console.log(err)
+        })
+    })
+}
+
+export const confirmFunc = () => {
+    return new Promise((resolve) => {
+        ElMessageBox.confirm(
+            'Are you sure to delete this?',
+            'Warning',
+            {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            }
+        ).then(() => {
+            resolve();
+        }).catch(() => {
+            ElMessage({
+                type: 'info',
+                message: 'Delete canceled'
+            });
         })
     })
 }

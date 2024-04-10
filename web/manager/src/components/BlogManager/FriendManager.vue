@@ -3,35 +3,27 @@
     <el-dialog v-model="isFalse" title="添加友链">
         <el-form>
             <el-form-item label="name">
-                <el-input v-model="addForm.title"></el-input>
+                <el-input v-model="addForm.data.title"></el-input>
             </el-form-item>
             <el-form-item label="preface">
-                <el-input v-model="addForm.preface"></el-input>
+                <el-input v-model="addForm.data.preface"></el-input>
             </el-form-item>
             <el-form-item label="url">
-                <el-input v-model="addForm.url" ></el-input>
+                <el-input v-model="addForm.data.url" ></el-input>
             </el-form-item>
             <el-form-item label="图片">
-                <el-input type="text" v-model="addForm.photo"></el-input>
+                <el-input type="text" v-model="addForm.data.photo"></el-input>
             </el-form-item>
             <input type="file" @change="handleMainPhoto"  ref="fileInput">
             <el-button @click="addFriend" type="primary" plain>保存</el-button>
         </el-form>
     </el-dialog>
     <el-table :data="Friends" border style="margin-top:20px;">
-        <el-table-column label="name">
-            <template #default="{row}">
-                <span>{{row.title}}</span>
-            </template>
-        </el-table-column>
-        <el-table-column label="preface">
-            <template #default="{row}">
-                <span>{{row.preface}}</span>
-            </template>
-        </el-table-column>
+        <el-table-column label="name" prop="title"></el-table-column>
+        <el-table-column label="preface" prop="preface"></el-table-column>
         <el-table-column label="url">
             <template #default="{row}">
-                <a :href="row.url">查看</a>
+                <a class="link" :href="row.url" target="_blank">查看</a>
             </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -44,72 +36,58 @@
 <script>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import axios from 'axios'
-import {DeleteFriend} from "@/components/api/friend";
+import {AddFriend, DeleteFriend, GetAllFriend} from "@/components/api/friend";
+import {uploadFile} from "@/components/api/blog";
+import {confirmFunc} from "@/components/api/util";
 export default{
     name:"FriendManager",
     setup() {
         const file = ref('');
         const addForm = reactive({
+          data:{
             title:'',
             preface:'',
             url:'',
             photo:''
+          }
         })
 
         const addFriend = async() => {
-            if(!addForm.title || !addForm.preface || !addForm.url) {
+            if(!addForm.data.title || !addForm.data.preface || !addForm.data.url) {
                 ElMessage.warning("no");
                 return;
             }
-            axios
-                .post("/api/addFriend",addForm)
-                .then((res) => {
-                  if (res.data.status === 200) {
-                    ElMessage.success(res.data.result)
-                    getAllFriend()
-                  } else {
-                    ElMessage.error(res.data.error)
-                  }
-                }).catch((err) => {
-                    ElMessage.error(err.res.data.err)
-                })
+            AddFriend(addForm).then((res) => {
+              if (res) {
+                ElMessage.success(res.common.result)
+                getAllFriend()
+              }
+            })
         }
         const handleMainPhoto = (event) => {
-            file.value = event.target.files[0];
-            const formData = new FormData();
-            formData.append("file",file.value)
-            axios
-                .post('/api/upload', formData,{
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
-                .then((response) => {
-                    console.log(response.data.result)
-                    addForm.photo = response.data.result;
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
+          uploadFile(event.target.files[0]).then((res) => {
+            if (res) {
+              addForm.data.photo = res.data;
+              ElMessage.success("上传成功")
+            }
+          })
         }
         const Friends = ref([]);
         const getAllFriend = () => {
-            axios
-                .get("/api/getAllFriends")
-                .then((response) => {
-                    Friends.value = response.data.list;
-                })
+          GetAllFriend().then((res) => {
+            if (res) {
+              Friends.value = res.data;
+            }
+          });
         }
-        const oka = reactive({
-            key:""
-        });
         const deleteFriend = (id) => {
+          confirmFunc().then(() => {
             DeleteFriend(id).then((res) => {
-              if (res.status === 200) {
+              if (res) {
                 getAllFriend()
                 ElMessage.success("删除成功")
               }
+            })
           })
         }
         const isFalse = ref(false);
@@ -122,7 +100,7 @@ export default{
         return{
             addForm,
             addFriend,
-            Friends,oka,deleteFriend
+            Friends,deleteFriend
             ,isFalse,addFalse,file,handleMainPhoto
         }
     }
