@@ -102,14 +102,15 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /api/deleteCacheBlog:
+    /api/deleteCacheBlog/{key}:
         delete:
             tags:
                 - Blog
             operationId: Blog_DeleteCacheBlog
             parameters:
                 - name: key
-                  in: query
+                  in: path
+                  required: true
                   schema:
                     type: string
             responses:

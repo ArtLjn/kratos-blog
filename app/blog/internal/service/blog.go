@@ -63,3 +63,6 @@ func (s *BlogService) DeleteSuggestBlog(ctx context.Context, req *pb.SuggestBlog
 func (s *BlogService) UpdateBlogVisit(ctx context.Context, request *pb.UpdateBlogVisitRq) (*pb.UpdateBlogVisitRq, error) {
 	return s.uc.UpdateBlogVisit(ctx, request), nil
 }
+func (s *BlogService) GetCommentPower(ctx context.Context, req *pb.GetCommentPowerRq) (*pb.GetCommentPowerReply, error) {
+	return s.uc.GetCommentPower(ctx, req), nil
+}

@@ -43,6 +43,16 @@ func init() {
 		cfg.Section("upload").Key("maxsize").String(),
 		cfg.Section("upload").Key("uri").String(),
 	)
+	//redSql := cfg.Section("mysql")
+	//NewDB(
+	//	redSql.Key("username").String(),
+	//	redSql.Key("password").String(),
+	//	redSql.Key("host").String(),
+	//	redSql.Key("port").String(),
+	//	redSql.Key("database").String(),
+	//	redSql.Key("charset").String(),
+	//)
+
 }
 
 type UploadRepo struct {

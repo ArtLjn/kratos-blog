@@ -62,7 +62,7 @@ func (f *FilterRepo) FilterPermission(whiteList, blackList []string) http.Filter
 	return f.data.role.FilterPermission(whiteList, blackList)
 }
 
-func (f *FilterRepo) AllowDomainsMiddleware(cf conf.Domain) http.FilterFunc {
+func (f *FilterRepo) AllowDomainsMiddleware(cf *conf.Domain) http.FilterFunc {
 	return func(handler h.Handler) h.Handler {
 		return h.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			origin := req.Referer()

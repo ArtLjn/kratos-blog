@@ -24,6 +24,7 @@ type BlogRepo interface {
 	GetAllSuggestBlog(ctx context.Context, request *pb.SearchAllSuggest) *pb.SearchAllReply
 	DeleteSuggestBlog(ctx context.Context, request *pb.SuggestBlogRequest) *pb.SuggestBlogReply
 	UpdateBlogVisitsCount()
+	GetCommentPower(path string) (bool, error)
 }
 
 type BlogUseCase struct {
@@ -137,17 +138,17 @@ func (uc *BlogUseCase) ListBlog(ctx context.Context, request *pb.ListBlogRequest
 
 func (uc *BlogUseCase) QueryBlogByID(ctx context.Context, request *pb.GetBlogIDRequest) *pb.GetBlogIDReply {
 	u, d, err := uc.repo.QueryBlogById(ctx, request)
-	status := func(code int64, msg string, data pb.BlogData) *pb.GetBlogIDReply {
+	status := func(code int64, msg string, data *pb.BlogData) *pb.GetBlogIDReply {
 		return &pb.GetBlogIDReply{
 			Common: SetStatus(code, msg),
-			Data:   &data,
+			Data:   data,
 		}
 	}
 	if err != nil {
 		uc.log.Log(log.LevelError, err)
-		return status(400, u, d)
+		return status(400, u, &d)
 	}
-	return status(200, u, d)
+	return status(200, u, &d)
 }
 
 func (uc *BlogUseCase) QueryBlogByTitle(ctx context.Context, request *pb.GetBlogByTitleRequest) *pb.GetBlogByTitleReply {
@@ -190,4 +191,16 @@ func (uc *BlogUseCase) GetSuggestBlog(ctx context.Context, request *pb.SearchAll
 }
 func (uc *BlogUseCase) DeleteSuggestBlog(ctx context.Context, request *pb.SuggestBlogRequest) *pb.SuggestBlogReply {
 	return uc.repo.DeleteSuggestBlog(ctx, request)
+}
+func (uc *BlogUseCase) GetCommentPower(ctx context.Context, request *pb.GetCommentPowerRq) *pb.GetCommentPowerReply {
+	bo, err := uc.repo.GetCommentPower(request.Path)
+	if err != nil {
+		uc.log.Log(log.LevelError, err)
+		return &pb.GetCommentPowerReply{
+			Allow: false,
+		}
+	}
+	return &pb.GetCommentPowerReply{
+		Allow: bo,
+	}
 }

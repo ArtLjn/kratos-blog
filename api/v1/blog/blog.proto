@@ -96,6 +96,7 @@ service Blog {
 	}
 
 	rpc UpdateBlogVisit(UpdateBlogVisitRq) returns (UpdateBlogVisitRq) {}
+	rpc GetCommentPower(GetCommentPowerRq) returns(GetCommentPowerReply) {}
 }
 
 message BlogData {
@@ -220,3 +221,10 @@ message Permission {
 }
 
 message UpdateBlogVisitRq {}
+
+message GetCommentPowerRq {
+	string path = 1;
+}
+message GetCommentPowerReply {
+	bool allow = 1;
+}

@@ -18,7 +18,6 @@ func NewBlogService(logger log.Logger, uc pb.BlogClient, role *data.Role) *BlogS
 	l := log.NewHelper(log.With(logger, "module", "data"))
 	return &BlogService{uc: uc, log: l, role: role}
 }
-
 func (s *BlogService) CreateBlog(ctx context.Context, req *pb.CreateBlogRequest) (*pb.CreateBlogReply, error) {
 	return s.uc.CreateBlog(ctx, req)
 }

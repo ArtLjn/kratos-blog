@@ -85,6 +85,10 @@ func (r *blogRepo) UpdateIndividualFields(ctx context.Context, request *blog.Upd
 		r.log.Log(log.LevelError, err)
 		return vo.UPDATE_FAIL, err
 	}
+	f := r.UpdateCommentPower(request.Status)
+	if !f {
+		r.log.Log(log.LevelError, "Error updating comment_power")
+	}
 	return vo.UPDATE_SUCCESS, nil
 }
 

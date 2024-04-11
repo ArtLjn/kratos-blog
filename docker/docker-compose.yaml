@@ -3,7 +3,6 @@ services:
   web:
     image: blog:v1
     container_name: hongDou_blog
-    restart: always
     volumes:
       - "./hongDou:/usr/local/hongDou"
       - "/www/wwwroot/qiniu.lllcnm.cn/img:/usr/local/img"

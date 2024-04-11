@@ -188,7 +188,7 @@ export default {
 
         RewardData.comment_addr = Ip.value;
         AddReward(RewardData).then((res) => {
-          if (res.code == SUCCESS_REQUEST) {
+          if (res.code === SUCCESS_REQUEST) {
             ElMessage.success("回复成功")
             Object.keys(RewardData).forEach(key => {
               RewardData[key] = null;
