@@ -92,7 +92,10 @@ func initLog(logger *log.Logger) {
 	logFileName := fmt.Sprintf("%s%s", time.Now().Format("2006-01-02"), "-gateway.log")
 	_, e := os.Stat("log")
 	if e != nil && os.IsNotExist(e) {
-		os.MkdirAll("log", os.ModePerm)
+		err := os.MkdirAll("log", os.ModePerm)
+		if err != nil {
+			return
+		}
 	}
 	logPath := filepath.Join("log", logFileName)
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)

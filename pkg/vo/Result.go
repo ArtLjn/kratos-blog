@@ -71,6 +71,7 @@ const (
 	REQUIRE_FILE_ERROR  = "文件获取失败"
 	UPLOAD_FAIL         = "上传失败"
 	UPLOAD_SUCCESS      = "上传成功"
+	SUPPORT_QQ_EMAIL    = "仅支持QQ邮箱"
 )
 
 const (

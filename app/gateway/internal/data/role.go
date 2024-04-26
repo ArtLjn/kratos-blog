@@ -121,22 +121,6 @@ func (r *Role) FilterPermission(whiteList, blackList []string) http.FilterFunc {
 				}
 			}
 
-			token := req.Header.Get("token")
-			if len(token) == 0 {
-				r.WritePermissionError(w)
-				return
-			}
-
-			username := jwt.GetLoginName(token)
-			res, err := r.uc.GetUser(context.Background(), &user.GetUserRequest{
-				Name: username,
-			})
-			if err != nil {
-				panic(err)
-			}
-
-			m := &Permission{U: res}
-			log.Info(m)
 			handler.ServeHTTP(w, req)
 		})
 	}

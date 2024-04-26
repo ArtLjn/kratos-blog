@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	v1 "kratos-blog/api/v1/blog"
@@ -14,8 +13,7 @@ import (
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(cf *conf.Bootstrap, blog *service.BlogService,
 	friend *service.FriendService,
-	tag *service.TagService,
-	logger log.Logger) *http.Server {
+	tag *service.TagService) *http.Server {
 	c := cf.Server
 	var opts = []http.ServerOption{
 		http.Middleware(

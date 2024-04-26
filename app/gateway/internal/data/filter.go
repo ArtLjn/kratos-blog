@@ -1,15 +1,21 @@
 package data
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	user2 "kratos-blog/api/v1/user"
 	"kratos-blog/app/gateway/internal/conf"
+	"kratos-blog/pkg/jwt"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
 	h "net/http"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
@@ -100,4 +106,68 @@ func WritePermissionError(w http.ResponseWriter) {
 	}
 	byteRep, _ := json.Marshal(&rep)
 	w.Write(byteRep)
+}
+
+func (f *FilterRepo) CommentLimiter() http.FilterFunc {
+	return func(handler h.Handler) h.Handler {
+		return h.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			var pathList = []string{
+				"/api/addComment",
+				"/api/addReward",
+			}
+			for _, wlPath := range pathList {
+				if strings.HasPrefix(req.URL.Path, wlPath) {
+					token := req.Header.Get(Token)
+					if len(token) == 0 {
+						WritePermissionError(w)
+						return
+					}
+
+					username := jwt.GetLoginName(token)
+					if len(username) == 0 {
+						WritePermissionError(w)
+						return
+					}
+					res, err := f.data.uc.GetUser(context.Background(), &user2.GetUserRequest{
+						Name: username,
+					})
+					if err != nil {
+						panic(err)
+					}
+					if r, err := strconv.ParseBool(res.Data[5]); !r || err != nil {
+						WritePermissionError(w)
+						return
+					}
+					prefixUsernameKey := fmt.Sprintf("comment_%s", username)
+					data, e := f.data.rdb.Get(context.Background(), prefixUsernameKey).Result()
+					if e != nil {
+						// 处理错误
+						f.log.Log(log.LevelError, e)
+						return
+					}
+					if len(data) > 0 {
+						if i, err := strconv.Atoi(data); err == nil {
+							if i >= 12 {
+								_, err := f.data.uc.SetBlack(context.Background(), &user2.SetBlackRequest{
+									Name: username,
+								})
+								if err != nil {
+									f.log.Log(log.LevelError, err)
+									return
+								}
+								WritePermissionError(w)
+								return
+							}
+							i += 1
+							f.data.rdb.IncrBy(context.Background(), prefixUsernameKey, int64(i))
+						}
+					} else {
+						f.data.rdb.Set(context.Background(), prefixUsernameKey, 1, time.Second*60)
+					}
+				}
+			}
+			handler.ServeHTTP(w, req)
+			return
+		})
+	}
 }

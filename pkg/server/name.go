@@ -36,12 +36,12 @@ var (
 	//BlogConfPath    = "app/blog/configs"
 	//CommentConfPath = "app/comment/configs"
 	//UserConfPath    = "/app/user/configs"
-	//GateWayConfPath = "app/gateway/configs"
+	GateWayConfPath = "app/gateway/configs"
 	//
 	BlogConfPath    = "../../configs"
 	CommentConfPath = "../../configs"
 	UserConfPath    = "../../configs"
-	GateWayConfPath = "../../configs"
+	//GateWayConfPath = "../../configs"
 )
 
 // logPath

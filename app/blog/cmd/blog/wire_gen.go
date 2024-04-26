@@ -40,7 +40,7 @@ func wireApp(conf *conf.Bootstrap, registry *conf.Registry, logger log.Logger) (
 	photoUseCase := biz.NewPhotoUseCase(photoRepo, logger)
 	photoService := service.NewPhotoService(photoUseCase)
 	grpcServer := server.NewGRPCServer(conf.Server, blogService, friendService, tagService, photoService, logger)
-	httpServer := server.NewHTTPServer(conf, blogService, friendService, tagService, logger)
+	httpServer := server.NewHTTPServer(conf, blogService, friendService, tagService)
 	app := newApp(logger, grpcServer, httpServer, r)
 	return app, func() {
 	}, nil

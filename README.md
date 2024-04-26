@@ -1,5 +1,4 @@
 # Kratos-Blog 微服务博客系统
-项目持续开发中.....🥰
 
 一个基于Golang的微服务博客系统
 
@@ -49,6 +48,30 @@ Kratos-blog 可以通过容器化的方式部署，支持 Docker 和 Kubernetes�
 4. 启动 Docker 容器或使用 Kubernetes 部署应用。
 5. 配置数据库连接信息和必要的环境变量。
 6. 访问 Kratos-blog 的入口地址即可开始使用。
+
+## 软件截图
+<table>
+    <tr>
+        <td><img src="static/iShot_2024-04-26_22.08.07.png"/></td>
+        <td><img src="static/iShot_2024-04-26_22.10.14.png"/></td>
+    </tr>
+    <tr>
+        <td><img src="static/iShot_2024-04-26_22.10.43.png"/></td>
+        <td><img src="static/iShot_2024-04-26_22.11.06.png"/></td>
+    </tr>
+    <tr>
+        <td><img src="static/iShot_2024-04-26_22.11.26.png"/></td>
+        <td><img src="static/iShot_2024-04-26_22.11.44.png"/></td>
+    </tr>
+    <tr>
+        <td><img src="static/iShot_2024-04-26_22.11.44.png"/></td>
+        <td><img src="static/iShot_2024-04-26_22.12.20.png"/></td>
+    </tr>
+    <tr>
+        <td><img src="static/iShot_2024-04-26_22.12.40.png"/></td>
+        <td><img src="static/iShot_2024-04-26_22.13.14.png"/></td>
+    </tr>
+</table>
 
 ## 总结
 

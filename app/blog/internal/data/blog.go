@@ -200,6 +200,8 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 			r.log.Info(blog.ID, "update failed!")
 		}
 	}
+	r.data.rdb.Del(CTX, AdminNotes)
+	r.data.rdb.Del(CTX, Notes)
 }
 
 // QueryBlogByTitle :dev query for matching blog posts based on the title

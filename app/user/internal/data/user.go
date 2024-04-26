@@ -79,7 +79,6 @@ func (u *userRepo) AddUser(ctx context.Context, request *user.CreateUserRequest)
 
 // Login :dev Common user login func
 func (u *userRepo) Login(ctx context.Context, request *user.LoginRequest) (string, string, error) {
-
 	if u.data.pf.HasExist(User{}, map[string]interface{}{
 		"name":     request.Name,
 		"password": MD5(request.Pass),

@@ -57,6 +57,9 @@ func (s *CommentService) AddComment(ctx context.Context, req *pb.CreateCommentRe
 		return &pb.CreateCommentReply{Code: vo.BAD_REQUEST, Result: err.Error()}, nil
 	}
 	res := s.role.QueryUserMsg(ctx)
+	if r, err := strconv.ParseBool(res.U.Data[5]); !r || err != nil {
+		return &pb.CreateCommentReply{Code: vo.PERMISSION_REQUEST, Result: vo.PERMISSION_ERROR}, nil
+	}
 	if len(res.U.Data[0]) == 0 || len(res.U.Data[1]) == 0 {
 		return &pb.CreateCommentReply{Code: vo.PERMISSION_REQUEST, Result: vo.PERMISSION_ERROR}, nil
 	}
@@ -69,6 +72,9 @@ func (s *CommentService) AddReward(ctx context.Context, req *pb.CreateRewardRequ
 		return &pb.CreateRewardReply{Code: vo.BAD_REQUEST, Result: err.Error()}, nil
 	}
 	res := s.role.QueryUserMsg(ctx)
+	if r, err := strconv.ParseBool(res.U.Data[5]); !r || err != nil {
+		return &pb.CreateRewardReply{Code: vo.PERMISSION_REQUEST, Result: vo.PERMISSION_ERROR}, nil
+	}
 	if len(res.U.Data[0]) == 0 || len(res.U.Data[1]) == 0 {
 		return &pb.CreateRewardReply{Code: vo.PERMISSION_REQUEST, Result: vo.PERMISSION_ERROR}, nil
 	}

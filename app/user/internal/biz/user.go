@@ -8,6 +8,7 @@ import (
 	"kratos-blog/app/user/internal/conf"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
+	"strings"
 	"time"
 )
 
@@ -53,6 +54,10 @@ func (u *UserUseCase) Register(ctx context.Context, request *user.CreateUserRequ
 }
 
 func (u *UserUseCase) SendEmail(ctx context.Context, request *user.SendEmailRequest) *user.SendEmailReply {
+	emailPrefix := strings.Split(request.Email, "@")[1]
+	if emailPrefix != "qq.com" {
+		return &user.SendEmailReply{Common: &user.CommonReply{Code: 300, Result: vo.SUPPORT_QQ_EMAIL}}
+	}
 	currentTime := time.Now().Unix()
 	if _, ok := emailList[request.Email]; ok {
 		coolDown := emailList[request.Email]

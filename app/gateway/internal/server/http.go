@@ -37,6 +37,7 @@ func NewHTTPServer(cf *conf.Bootstrap,
 			filter.FilterPermission(cf.Path.GetWhite(), cf.Path.GetBlack()),
 			filter.DeleteCache(),
 			filter.AllowDomainsMiddleware(cf.GetDomain()),
+			filter.CommentLimiter(),
 		),
 	}
 	c := cf.Server
