@@ -48,14 +48,14 @@ func (r *blogRepo) CreateBlog(ctx context.Context, request *blog.CreateBlogReque
 }
 
 func (r *blogRepo) UpdateBlog(ctx context.Context, request *blog.UpdateBlogRequest) (string, error) {
-	var blog Blog
+	var b Blog
 	f, _ := json.Marshal(&request.Data)
-	if err := json.Unmarshal(f, &blog); err != nil {
+	if err := json.Unmarshal(f, &b); err != nil {
 		panic(err)
 	}
-	blog.UpdateTime = time.Now().Format("2006-01-02")
-	if err := r.data.db.Model(&blog).Where("id = ?", request.Id).Updates(blog).Error; err != nil {
-		r.log.Log(log.LevelError, "Error updating blog:", err)
+	b.UpdateTime = time.Now().Format("2006-01-02")
+	if err := r.data.db.Model(&b).Where("id = ?", request.Id).Updates(b).Error; err != nil {
+		r.log.Log(log.LevelError, "Error updating b:", err)
 		return vo.UPDATE_FAIL, err
 	}
 	return vo.UPDATE_SUCCESS, nil
@@ -95,17 +95,17 @@ func (r *blogRepo) UpdateIndividualFields(ctx context.Context, request *blog.Upd
 // createBlogFromRequest :dev create a blog record
 func (r *blogRepo) createBlogFromRequest(request *blog.CreateBlogRequest) func() Blog {
 	return func() Blog {
-		var blog Blog
+		var b Blog
 		f, _ := json.Marshal(&request.Data)
-		if err := json.Unmarshal(f, &blog); err != nil {
+		if err := json.Unmarshal(f, &b); err != nil {
 			panic(err)
 		}
-		blog.CreateTime = time.Now().Format("2006-01-02")
-		blog.UpdateTime = time.Now().Format("2006-01-02")
-		blog.Comment = true
-		blog.Visits = 0
-		blog.Appear = true
-		return blog
+		b.CreateTime = time.Now().Format("2006-01-02")
+		b.UpdateTime = time.Now().Format("2006-01-02")
+		b.Comment = true
+		b.Visits = 0
+		b.Appear = true
+		return b
 	}
 }
 
@@ -183,21 +183,21 @@ func (r *blogRepo) UpdateBlogVisitsCount() {
 	}
 
 	// traverse the list
-	for _, blog := range blogs {
-		visitCount := blog.Visits
+	for _, b := range blogs {
+		visitCount := b.Visits
 		var res error
-		cacheCount := r.getHashField(TableName, strconv.Itoa(blog.ID))
-		if !r.hasHashField(TableName, strconv.Itoa(blog.ID)) {
-			res = r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": blog.ID},
+		cacheCount := r.getHashField(TableName, strconv.Itoa(b.ID))
+		if !r.hasHashField(TableName, strconv.Itoa(b.ID)) {
+			res = r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": b.ID},
 				map[string]interface{}{"visits": 0}, false)
 		} else if cacheCount < visitCount {
-			r.setHashField(TableName, strconv.Itoa(blog.ID), visitCount)
+			r.setHashField(TableName, strconv.Itoa(b.ID), visitCount)
 		} else {
-			res = r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": blog.ID},
+			res = r.data.pf.UpdateFunc(Blog{}, map[string]interface{}{"id": b.ID},
 				map[string]interface{}{"visits": cacheCount}, false)
 		}
 		if res != nil {
-			r.log.Info(blog.ID, "update failed!")
+			r.log.Info(b.ID, "update failed!")
 		}
 	}
 	r.data.rdb.Del(CTX, AdminNotes)

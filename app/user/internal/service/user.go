@@ -36,3 +36,9 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 func (s *UserService) AdminLogin(ctx context.Context, req *pb.AdminLoginRequest) (*pb.AdminLoginReply, error) {
 	return s.uc.AdminLoginRsg(ctx, req), nil
 }
+func (s *UserService) VerifyToken(ctx context.Context, req *pb.VerifyTokenRequest) (*pb.VerifyTokenReply, error) {
+	return s.uc.VerifyToken(ctx, req), nil
+}
+func (s *UserService) LogOut(ctx context.Context, req *pb.LogOutRequest) (*pb.LogOutReply, error) {
+	return s.uc.LogOut(ctx, req), nil
+}

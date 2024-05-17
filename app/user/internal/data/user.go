@@ -25,6 +25,7 @@ type userRepo struct {
 	log  *log.Helper
 	mu   sync.Mutex
 	model.PublicFunc
+	key TokenManager
 }
 
 type User struct {
@@ -42,9 +43,11 @@ func (u User) TableName() string {
 }
 
 func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
+	l := log.NewHelper(logger)
 	return &userRepo{
 		data: data,
-		log:  log.NewHelper(logger),
+		log:  l,
+		key:  NewToken(data.rdb, l),
 	}
 }
 
@@ -66,9 +69,9 @@ func (u *userRepo) AddUser(ctx context.Context, request *user.CreateUserRequest)
 		return fmt.Sprintf("%s", err), err
 	}
 	userFactory := u.createUserFromRequest(request)
-	user := userFactory()
+	factory := userFactory()
 	//Create a user record
-	if err := u.data.db.Create(&user).Error; err != nil {
+	if err := u.data.db.Create(&factory).Error; err != nil {
 		return vo.INSERT_ERROR, errors.New(vo.INSERT_ERROR)
 	} else {
 		//Delete the mailbox cache
@@ -84,9 +87,9 @@ func (u *userRepo) Login(ctx context.Context, request *user.LoginRequest) (strin
 		"password": MD5(request.Pass),
 	}) {
 		//generate token
-		token, err := jwt.Sign(request.Name)
-		if err != nil {
-			return vo.GENERATE_TOKEN_FAIL, "", err
+		token := u.key.SaveToken(request.Name)
+		if len(token) == 0 {
+			return vo.GENERATE_TOKEN_FAIL, "", fmt.Errorf(vo.GENERATE_TOKEN_FAIL)
 		}
 		return vo.LOGIN_SUCCESS, token, nil
 	}
@@ -245,4 +248,32 @@ func (u *userRepo) AdminLogin(ctx context.Context, request *user.AdminLoginReque
 		return status(&user.CommonReply{Code: 200, Result: vo.LOGIN_SUCCESS}, []string{token})
 	}
 	return status(&user.CommonReply{Code: 400, Result: vo.LOGIN_FAIL}, nil)
+}
+
+func (u *userRepo) VerifyToken(ctx context.Context, request *user.VerifyTokenRequest) *user.VerifyTokenReply {
+	err := u.key.VerifyToken(request.GetToken())
+	if err != nil {
+		return &user.VerifyTokenReply{
+			Common: &user.CommonReply{
+				Code:   vo.PERMISSION_REQUEST,
+				Result: err.Error(),
+			},
+		}
+	}
+	return &user.VerifyTokenReply{
+		Common: &user.CommonReply{
+			Code:   vo.SUCCESS_REQUEST,
+			Result: vo.VERIFY_THORUGH,
+		},
+	}
+}
+
+func (u *userRepo) LogOut(ctx context.Context, request *user.LogOutRequest) *user.LogOutReply {
+	u.key.LogOutToken(request.GetName())
+	return &user.LogOutReply{
+		Common: &user.CommonReply{
+			Code:   vo.SUCCESS_REQUEST,
+			Result: vo.OPERATE_SUCCESS,
+		},
+	}
 }

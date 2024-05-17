@@ -72,6 +72,8 @@ const (
 	UPLOAD_FAIL         = "上传失败"
 	UPLOAD_SUCCESS      = "上传成功"
 	SUPPORT_QQ_EMAIL    = "仅支持QQ邮箱"
+	VERIFY_THORUGH      = "验证通过"
+	OPERATE_SUCCESS     = "操作成功"
 )
 
 const (

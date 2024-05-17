@@ -33,14 +33,14 @@ var (
 	//UserConfPath    = "user/configs"
 	//GateWayConfPath = "gateway/configs"
 
-	//BlogConfPath    = "app/blog/configs"
-	//CommentConfPath = "app/comment/configs"
-	//UserConfPath    = "/app/user/configs"
+	BlogConfPath    = "app/blog/configs"
+	CommentConfPath = "app/comment/configs"
+	UserConfPath    = "app/user/configs"
 	GateWayConfPath = "app/gateway/configs"
-	//
-	BlogConfPath    = "../../configs"
-	CommentConfPath = "../../configs"
-	UserConfPath    = "../../configs"
+
+	//BlogConfPath    = "../../configs"
+	//CommentConfPath = "../../configs"
+	//UserConfPath    = "../../configs"
 	//GateWayConfPath = "../../configs"
 )
 

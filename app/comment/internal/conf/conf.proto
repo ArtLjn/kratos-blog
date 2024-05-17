@@ -10,6 +10,7 @@ message Bootstrap {
   Data data = 2;
   Api api = 3;
   Service service = 4;
+  Mq mq = 5;
 }
 
 message Server {
@@ -61,4 +62,10 @@ message Service {
     string endpoint = 1;
   }
   User user = 1;
+}
+message Mq {
+  string url = 1;
+  bool open = 2;
+  repeated string exchange = 3;
+  repeated string queue = 4;
 }

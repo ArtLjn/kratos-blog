@@ -73,6 +73,7 @@ func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
 	if len(token) == 0 {
 		return grantVisitorRole()
 	}
+
 	username := jwt.GetLoginName(token)
 	r.log.Info("username:", username)
 	// call grpc to query the user

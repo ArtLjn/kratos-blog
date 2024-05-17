@@ -80,7 +80,7 @@ func (f *FilterRepo) AllowDomainsMiddleware(cf *conf.Domain) http.FilterFunc {
 			} else {
 				f.mu.Lock()
 				var allow bool
-				for _, domain := range cf.GetOrigin() {
+				for _, domain := range cf.Origin {
 					if strings.HasPrefix(origin, domain) {
 						allow = true
 						break

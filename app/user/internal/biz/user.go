@@ -21,6 +21,8 @@ type UserRepo interface {
 	SetBlack(ctx context.Context, request *user.SetBlackRequest) (string, error)
 	GetUserMsg(request *user.GetUserRequest) []string
 	AdminLogin(ctx context.Context, request *user.AdminLoginRequest) *user.AdminLoginReply
+	VerifyToken(ctx context.Context, request *user.VerifyTokenRequest) *user.VerifyTokenReply
+	LogOut(ctx context.Context, request *user.LogOutRequest) *user.LogOutReply
 }
 
 type UserUseCase struct {
@@ -107,4 +109,12 @@ func (u *UserUseCase) GetUserMsg(ctx context.Context, request *user.GetUserReque
 
 func (u *UserUseCase) AdminLoginRsg(ctx context.Context, request *user.AdminLoginRequest) *user.AdminLoginReply {
 	return u.repo.AdminLogin(ctx, request)
+}
+
+func (u *UserUseCase) VerifyToken(ctx context.Context, request *user.VerifyTokenRequest) *user.VerifyTokenReply {
+	return u.repo.VerifyToken(ctx, request)
+}
+
+func (u *UserUseCase) LogOut(ctx context.Context, request *user.LogOutRequest) *user.LogOutReply {
+	return u.repo.LogOut(ctx, request)
 }

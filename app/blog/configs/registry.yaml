@@ -1,6 +1,3 @@
-#consul:
-#  address: 8.218.92.69:8500
-#  scheme: http
 consul:
   address: localhost:8500
   scheme: http

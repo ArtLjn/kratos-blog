@@ -47,6 +47,12 @@ service User {
 			body:"*",
 		};
 	};
+	rpc VerifyToken(VerifyTokenRequest) returns(VerifyTokenReply);
+	rpc LogOut(LogOutRequest) returns (LogOutReply) {
+		option (google.api.http) = {
+			get:"/api/logOut/{name}"
+		};
+	};
 }
 
 message CommonReply {
@@ -112,4 +118,18 @@ message AdminLoginRequest {
 message AdminLoginReply {
 	CommonReply common = 1;
 	repeated string data = 2;
+}
+
+message VerifyTokenRequest {
+	string token = 1;
+}
+message VerifyTokenReply {
+	CommonReply common = 1;
+}
+
+message LogOutRequest {
+	string name = 1;
+}
+message LogOutReply {
+	CommonReply common = 1;
 }

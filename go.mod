@@ -4,12 +4,12 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-kratos/kratos/contrib/config/consul/v2 v2.0.0-20240320015221-1fdaabbd4813
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20240119085030-a556a2b53120
 	github.com/go-kratos/kratos/v2 v2.7.2
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.1
 	github.com/google/wire v0.5.0
+	github.com/gorilla/websocket v1.5.1
 	github.com/hashicorp/consul/api v1.27.0
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/robfig/cron/v3 v3.0.1
@@ -22,6 +22,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/gorm v1.25.5
+	github.com/streadway/amqp v1.1.0
 )
 
 require (
