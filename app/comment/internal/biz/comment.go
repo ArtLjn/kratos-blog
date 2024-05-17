@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/api/v1/comment"
-	"kratos-blog/app/comment/internal/data"
 )
 
 type CommRepo interface {
@@ -25,8 +24,6 @@ func NewUCommUseCase(repo CommRepo, logger log.Logger) *CommUseCase {
 }
 
 func (c *CommUseCase) AddComment(ctx context.Context, req *comment.CreateCommentRequest) *comment.CreateCommentReply {
-	m := data.NewCommentMq(config.M)
-	m.ReceiveComment(c.repo.AddComment)
 	return c.repo.AddComment(ctx, req)
 }
 
