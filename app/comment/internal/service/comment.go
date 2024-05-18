@@ -12,7 +12,9 @@ type CommentService struct {
 }
 
 func NewCommentService(uc *biz.CommUseCase) *CommentService {
-	return &CommentService{uc: uc}
+	return &CommentService{
+		uc: uc,
+	}
 }
 
 func (s *CommentService) AddComment(ctx context.Context, req *pb.CreateCommentRequest) (*pb.CreateCommentReply, error) {

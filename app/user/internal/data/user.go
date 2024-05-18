@@ -60,9 +60,6 @@ func MD5(str string) string {
 
 // AddUser :dev create user func
 func (u *userRepo) AddUser(ctx context.Context, request *user.CreateUserRequest) (string, error) {
-	//Enable mutex
-	u.mu.Lock()
-	defer u.mu.Unlock()
 	//Check the registration conditions
 	if err := u.validateUser(request); err != nil {
 		u.log.Log(log.LevelError, err)
@@ -154,28 +151,28 @@ func (u *userRepo) validateUser(request *user.CreateUserRequest) error {
 // createUserFromRequest :dev create a user record
 func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func() User {
 	return func() User {
-		var user User
+		var us User
 		body, err := json.Marshal(&request)
 		if err != nil {
 			panic(err)
 		}
-		if e := json.Unmarshal(body, &user); e != nil {
+		if e := json.Unmarshal(body, &us); e != nil {
 			panic(e)
 		}
-		user.UUID = uuid.New().String()
-		user.Black = false
-		user.Password = MD5(user.Password)
-		user.Role = server.User
-		return user
+		us.UUID = uuid.New().String()
+		us.Black = false
+		us.Password = MD5(us.Password)
+		us.Role = server.User
+		return us
 	}
 }
 
 // update validate validateUpdatePass
 func (u *userRepo) validateUpdatePass(request *user.UpdatePasswordRequest) error {
-	var user User
+	var uS User
 	data, _ := u.data.pf.QueryFunc(User{}, map[string]interface{}{"email": request.Email}, false)
-	u.data.pf.ParseJSONToStruct(data, &user)
-	if user.Email != request.Email {
+	u.data.pf.ParseJSONToStruct(data, &uS)
+	if uS.Email != request.Email {
 		return errors.New(vo.EMAIL_NOT_MATCH)
 	} else if cacheCode, _ := u.data.rdb.Get(context.Background(), request.Email).Result(); cacheCode != request.Code {
 		return errors.New(vo.KEY_ERROR)
@@ -194,18 +191,21 @@ func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) 
 		return vo.UPDATE_FAIL, errors.New(vo.UPDATE_FAIL)
 	}
 
-	var user User
+	var uS User
 	data, _ := u.data.pf.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
-	u.data.pf.ParseJSONToStruct(data, &user)
+	if err := u.data.pf.ParseJSONToStruct(data, &uS); err != nil {
+		u.log.Log(log.LevelError, err)
+		return vo.UPDATE_FAIL, errors.New(vo.UPDATE_FAIL)
+	}
 	// Create a coroutine to send a message
 	go func() {
 		u.mu.Lock()
 		conf := u.data.c.Mail
 		blackBody := fmt.Sprintf("亲爱的用户,您好！\n系统检测到您的账号\n %s \n有异常行为,你的账号被暂停使用!"+
-			",如有疑问请联系管理员 %s ,谢谢您的配合!", user.Email, conf.Username)
-		body := fmt.Sprintf("系统检测到该用户有异常操作行为\n %s \n %s \n 现已被封禁如有异常请您进行处理。", user.Name, user.Email)
+			",如有疑问请联系管理员 %s ,谢谢您的配合!", uS.Email, conf.Username)
+		body := fmt.Sprintf("系统检测到该用户有异常操作行为\n %s \n %s \n 现已被封禁如有异常请您进行处理。", uS.Name, uS.Email)
 		u.SendEmail(body, conf.Username, "通知邮件")
-		u.SendEmail(blackBody, user.Email, "违规邮件")
+		u.SendEmail(blackBody, uS.Email, "违规邮件")
 		u.mu.Unlock()
 	}()
 	return vo.UPDATE_SUCCESS, nil

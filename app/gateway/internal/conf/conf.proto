@@ -11,6 +11,7 @@ message Bootstrap {
   Upload upload = 3;
   Path path = 4;
   Domain domain = 5;
+  Mq mq = 6;
 }
 
 message Server {
@@ -62,4 +63,10 @@ message Path {
 message Domain {
   repeated string origin = 1;
   bool open = 2;
+}
+message Mq {
+  string url = 1;
+  bool open = 2;
+  repeated string exchange = 3;
+  repeated string queue = 4;
 }

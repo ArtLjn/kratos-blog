@@ -28,10 +28,18 @@ func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logge
 	discovery := data.NewDiscovery(registry)
 	userClient := data.NewUserServiceClient(discovery)
 	role := data.NewRole(rdb, userClient, logger)
-	userService := service.NewUserService(logger, userClient)
 	commentClient := data.NewCommentServiceClient(discovery)
 	blogClient := data.NewBlogServiceClient(discovery)
-	commentService := service.NewCommentService(logger, commentClient, blogClient, role)
+	q := data.NewCommentMq(confData.Mq, log.NewHelper(logger))
+	if q == nil {
+		log.Fatalf("conncet mq is failed")
+	}
+	q.StartMq(confData.Mq.GetQueue()...)
+	commentService := service.NewCommentService(logger, commentClient, blogClient, role, q)
+	userService := service.NewUserService(logger, userClient)
+	// 启动评论和回复的消费者
+	go q.ReceiveComment(commentService.UC.AddComment, commentService.HasAllowComment, userService.UC.SendEmailCommon)
+	go q.ReceiveReward(commentService.UC.AddReward, commentService.HasAllowComment, userService.UC.SendEmailCommon)
 	Cron(blogClient)
 	blogService := service.NewBlogService(logger, blogClient, role)
 	tagClient := data.NewTagServiceClient(discovery)

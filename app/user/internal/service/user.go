@@ -42,3 +42,6 @@ func (s *UserService) VerifyToken(ctx context.Context, req *pb.VerifyTokenReques
 func (s *UserService) LogOut(ctx context.Context, req *pb.LogOutRequest) (*pb.LogOutReply, error) {
 	return s.uc.LogOut(ctx, req), nil
 }
+func (s *UserService) SendEmailCommon(ctx context.Context, req *pb.SendEmailCommonRequest) (*pb.SendEmailCommonReply, error) {
+	return s.uc.SendEmailCommon(ctx, req), nil
+}

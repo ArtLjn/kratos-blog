@@ -32,3 +32,12 @@ domain:
     - "http://localhost:8036"
   # 是否开启过滤器
   open: false
+mq:
+  url: "amqp://root:123456@localhost:5672/host1"
+  # 是否开启处理评论信息
+  open: true
+  exchange:
+    - "gateway_exchange"
+  queue:
+    - "comment_queue" # 评论队列
+    - "reward_queue" # 回复队列

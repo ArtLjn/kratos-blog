@@ -96,7 +96,14 @@ func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentReq
 	}
 
 	var commentParent bean.CommentParent
-	c.data.pf.ParseJSONToStruct(*req, &commentParent)
+	e := c.data.pf.ParseJSONToStruct(req, &commentParent)
+	if e != nil {
+		c.log.Log(log.LevelError, e)
+		return &comment.CreateCommentReply{
+			Code:   vo.BAD_REQUEST,
+			Result: vo.INSERT_ERROR,
+		}
+	}
 	commentParent.CommentAddr = ipAddr
 	commentParent.CommentTime = time.Now().Format("2006-01-02 15:04")
 	err := c.data.pf.CreateFunc(commentParent, &bean.CommentParent{})
@@ -119,17 +126,22 @@ func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardReque
 		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.IPADDR_ERROR}
 	}
 	var commentSubTwo bean.CommentSubTwo
-	c.data.pf.ParseJSONToStruct(*req, &commentSubTwo)
+	e := c.data.pf.ParseJSONToStruct(req, &commentSubTwo)
+	if e != nil {
+		c.log.Log(log.LevelError, e)
+		return &comment.CreateRewardReply{
+			Code:   vo.BAD_REQUEST,
+			Result: vo.INSERT_ERROR,
+		}
+	}
 	commentSubTwo.CommentTime = time.Now().Format("2006-01-02 15:04")
 	commentSubTwo.CommentAddr = ipAddr
 	err := c.data.pf.CreateFunc(commentSubTwo, &bean.CommentSubTwo{})
 	if err != nil {
-		if err != nil {
-			c.log.Log(log.LevelError, err)
-			return &comment.CreateRewardReply{
-				Code:   vo.BAD_REQUEST,
-				Result: vo.INSERT_ERROR,
-			}
+		c.log.Log(log.LevelError, err)
+		return &comment.CreateRewardReply{
+			Code:   vo.BAD_REQUEST,
+			Result: vo.INSERT_ERROR,
 		}
 	}
 

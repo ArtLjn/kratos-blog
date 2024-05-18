@@ -11,17 +11,17 @@ import (
 
 type UserService struct {
 	pb.UnimplementedUserServer
-	uc  pb.UserClient
+	UC  pb.UserClient
 	log *log.Helper
 }
 
 func NewUserService(logger log.Logger, uc pb.UserClient) *UserService {
 	l := log.NewHelper(log.With(logger, "module", "data"))
-	return &UserService{uc: uc, log: l}
+	return &UserService{UC: uc, log: l}
 }
 
 func (s *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserReply, error) {
-	return s.uc.CreateUser(ctx, req)
+	return s.UC.CreateUser(ctx, req)
 }
 func (s *UserService) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.LoginReply, error) {
 	ok, token := s.verifyToken(&ctx)
@@ -30,19 +30,19 @@ func (s *UserService) LoginUser(ctx context.Context, req *pb.LoginRequest) (*pb.
 	} else if !ok {
 		return &pb.LoginReply{Common: &pb.CommonReply{Code: vo.PERMISSION_REQUEST, Result: token}}, nil
 	}
-	return s.uc.LoginUser(ctx, req)
+	return s.UC.LoginUser(ctx, req)
 }
 func (s *UserService) SendEmail(ctx context.Context, req *pb.SendEmailRequest) (*pb.SendEmailReply, error) {
-	return s.uc.SendEmail(ctx, req)
+	return s.UC.SendEmail(ctx, req)
 }
 func (s *UserService) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordReply, error) {
-	return s.uc.UpdatePassword(ctx, req)
+	return s.UC.UpdatePassword(ctx, req)
 }
 func (s *UserService) SetBlack(ctx context.Context, req *pb.SetBlackRequest) (*pb.SetBlackReply, error) {
-	return s.uc.SetBlack(ctx, req)
+	return s.UC.SetBlack(ctx, req)
 }
 func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserReply, error) {
-	return s.uc.GetUser(ctx, req)
+	return s.UC.GetUser(ctx, req)
 }
 func (s *UserService) AdminLogin(ctx context.Context, req *pb.AdminLoginRequest) (*pb.AdminLoginReply, error) {
 	ok, token := s.verifyToken(&ctx)
@@ -51,10 +51,10 @@ func (s *UserService) AdminLogin(ctx context.Context, req *pb.AdminLoginRequest)
 	} else if !ok {
 		return &pb.AdminLoginReply{Common: &pb.CommonReply{Code: vo.PERMISSION_REQUEST, Result: token}}, nil
 	}
-	return s.uc.AdminLogin(ctx, req)
+	return s.UC.AdminLogin(ctx, req)
 }
 func (s *UserService) LogOut(ctx context.Context, req *pb.LogOutRequest) (*pb.LogOutReply, error) {
-	return s.uc.LogOut(ctx, req)
+	return s.UC.LogOut(ctx, req)
 }
 func (s *UserService) verifyToken(ctx *context.Context) (bool, string) {
 
@@ -64,7 +64,7 @@ func (s *UserService) verifyToken(ctx *context.Context) (bool, string) {
 	}
 	token := res.Header.Get(server.Token)
 	if len(token) != 0 {
-		response, _ := s.uc.VerifyToken(context.Background(), &pb.VerifyTokenRequest{
+		response, _ := s.UC.VerifyToken(context.Background(), &pb.VerifyTokenRequest{
 			Token: token,
 		})
 		if response.Common.Code == vo.SUCCESS_REQUEST {

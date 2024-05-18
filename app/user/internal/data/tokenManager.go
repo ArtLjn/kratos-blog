@@ -6,11 +6,12 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
 	"kratos-blog/pkg/jwt"
+	"kratos-blog/pkg/server"
 )
 
 // Token 管理模块 ** 存储|过期｜续期
 
-const TokenMangerKey = "token_manager"
+const TokenMangerKey = server.TokenMangerKey
 
 type TokenManager interface {
 	SaveToken(string) string

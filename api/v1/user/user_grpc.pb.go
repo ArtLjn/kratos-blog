@@ -19,15 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	User_CreateUser_FullMethodName     = "/api.user.User/CreateUser"
-	User_LoginUser_FullMethodName      = "/api.user.User/LoginUser"
-	User_SendEmail_FullMethodName      = "/api.user.User/SendEmail"
-	User_UpdatePassword_FullMethodName = "/api.user.User/UpdatePassword"
-	User_SetBlack_FullMethodName       = "/api.user.User/SetBlack"
-	User_GetUser_FullMethodName        = "/api.user.User/GetUser"
-	User_AdminLogin_FullMethodName     = "/api.user.User/AdminLogin"
-	User_VerifyToken_FullMethodName    = "/api.user.User/VerifyToken"
-	User_LogOut_FullMethodName         = "/api.user.User/LogOut"
+	User_CreateUser_FullMethodName      = "/api.user.User/CreateUser"
+	User_LoginUser_FullMethodName       = "/api.user.User/LoginUser"
+	User_SendEmail_FullMethodName       = "/api.user.User/SendEmail"
+	User_UpdatePassword_FullMethodName  = "/api.user.User/UpdatePassword"
+	User_SetBlack_FullMethodName        = "/api.user.User/SetBlack"
+	User_GetUser_FullMethodName         = "/api.user.User/GetUser"
+	User_AdminLogin_FullMethodName      = "/api.user.User/AdminLogin"
+	User_VerifyToken_FullMethodName     = "/api.user.User/VerifyToken"
+	User_LogOut_FullMethodName          = "/api.user.User/LogOut"
+	User_SendEmailCommon_FullMethodName = "/api.user.User/SendEmailCommon"
 )
 
 // UserClient is the client API for User service.
@@ -43,6 +44,7 @@ type UserClient interface {
 	AdminLogin(ctx context.Context, in *AdminLoginRequest, opts ...grpc.CallOption) (*AdminLoginReply, error)
 	VerifyToken(ctx context.Context, in *VerifyTokenRequest, opts ...grpc.CallOption) (*VerifyTokenReply, error)
 	LogOut(ctx context.Context, in *LogOutRequest, opts ...grpc.CallOption) (*LogOutReply, error)
+	SendEmailCommon(ctx context.Context, in *SendEmailCommonRequest, opts ...grpc.CallOption) (*SendEmailCommonReply, error)
 }
 
 type userClient struct {
@@ -134,6 +136,15 @@ func (c *userClient) LogOut(ctx context.Context, in *LogOutRequest, opts ...grpc
 	return out, nil
 }
 
+func (c *userClient) SendEmailCommon(ctx context.Context, in *SendEmailCommonRequest, opts ...grpc.CallOption) (*SendEmailCommonReply, error) {
+	out := new(SendEmailCommonReply)
+	err := c.cc.Invoke(ctx, User_SendEmailCommon_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
@@ -147,6 +158,7 @@ type UserServer interface {
 	AdminLogin(context.Context, *AdminLoginRequest) (*AdminLoginReply, error)
 	VerifyToken(context.Context, *VerifyTokenRequest) (*VerifyTokenReply, error)
 	LogOut(context.Context, *LogOutRequest) (*LogOutReply, error)
+	SendEmailCommon(context.Context, *SendEmailCommonRequest) (*SendEmailCommonReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -180,6 +192,9 @@ func (UnimplementedUserServer) VerifyToken(context.Context, *VerifyTokenRequest)
 }
 func (UnimplementedUserServer) LogOut(context.Context, *LogOutRequest) (*LogOutReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LogOut not implemented")
+}
+func (UnimplementedUserServer) SendEmailCommon(context.Context, *SendEmailCommonRequest) (*SendEmailCommonReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendEmailCommon not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -356,6 +371,24 @@ func _User_LogOut_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_SendEmailCommon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendEmailCommonRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).SendEmailCommon(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_SendEmailCommon_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).SendEmailCommon(ctx, req.(*SendEmailCommonRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -398,6 +431,10 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LogOut",
 			Handler:    _User_LogOut_Handler,
+		},
+		{
+			MethodName: "SendEmailCommon",
+			Handler:    _User_SendEmailCommon_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

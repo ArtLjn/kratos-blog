@@ -53,6 +53,12 @@ service User {
 			get:"/api/logOut/{name}"
 		};
 	};
+	rpc SendEmailCommon(SendEmailCommonRequest) returns(SendEmailCommonReply) {
+		option (google.api.http) = {
+			post:"/api/sendCommonEmail",
+			body:"*"
+		};
+	}
 }
 
 message CommonReply {
@@ -131,5 +137,14 @@ message LogOutRequest {
 	string name = 1;
 }
 message LogOutReply {
+	CommonReply common = 1;
+}
+
+message SendEmailCommonRequest {
+	string email = 1;
+	string subject = 2;
+	string body = 3;
+}
+message SendEmailCommonReply {
 	CommonReply common = 1;
 }

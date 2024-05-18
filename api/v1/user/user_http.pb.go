@@ -25,6 +25,7 @@ const OperationUserGetUser = "/api.user.User/GetUser"
 const OperationUserLogOut = "/api.user.User/LogOut"
 const OperationUserLoginUser = "/api.user.User/LoginUser"
 const OperationUserSendEmail = "/api.user.User/SendEmail"
+const OperationUserSendEmailCommon = "/api.user.User/SendEmailCommon"
 const OperationUserSetBlack = "/api.user.User/SetBlack"
 const OperationUserUpdatePassword = "/api.user.User/UpdatePassword"
 
@@ -35,6 +36,7 @@ type UserHTTPServer interface {
 	LogOut(context.Context, *LogOutRequest) (*LogOutReply, error)
 	LoginUser(context.Context, *LoginRequest) (*LoginReply, error)
 	SendEmail(context.Context, *SendEmailRequest) (*SendEmailReply, error)
+	SendEmailCommon(context.Context, *SendEmailCommonRequest) (*SendEmailCommonReply, error)
 	SetBlack(context.Context, *SetBlackRequest) (*SetBlackReply, error)
 	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordReply, error)
 }
@@ -49,6 +51,7 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r.GET("/api/getUserMessage/{name}", _User_GetUser0_HTTP_Handler(srv))
 	r.POST("/api/admin", _User_AdminLogin0_HTTP_Handler(srv))
 	r.GET("/api/logOut/{name}", _User_LogOut0_HTTP_Handler(srv))
+	r.POST("/api/sendCommonEmail", _User_SendEmailCommon0_HTTP_Handler(srv))
 }
 
 func _User_CreateUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -233,6 +236,28 @@ func _User_LogOut0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error
 	}
 }
 
+func _User_SendEmailCommon0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SendEmailCommonRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserSendEmailCommon)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SendEmailCommon(ctx, req.(*SendEmailCommonRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SendEmailCommonReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
 	AdminLogin(ctx context.Context, req *AdminLoginRequest, opts ...http.CallOption) (rsp *AdminLoginReply, err error)
 	CreateUser(ctx context.Context, req *CreateUserRequest, opts ...http.CallOption) (rsp *CreateUserReply, err error)
@@ -240,6 +265,7 @@ type UserHTTPClient interface {
 	LogOut(ctx context.Context, req *LogOutRequest, opts ...http.CallOption) (rsp *LogOutReply, err error)
 	LoginUser(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
 	SendEmail(ctx context.Context, req *SendEmailRequest, opts ...http.CallOption) (rsp *SendEmailReply, err error)
+	SendEmailCommon(ctx context.Context, req *SendEmailCommonRequest, opts ...http.CallOption) (rsp *SendEmailCommonReply, err error)
 	SetBlack(ctx context.Context, req *SetBlackRequest, opts ...http.CallOption) (rsp *SetBlackReply, err error)
 	UpdatePassword(ctx context.Context, req *UpdatePasswordRequest, opts ...http.CallOption) (rsp *UpdatePasswordReply, err error)
 }
@@ -324,6 +350,19 @@ func (c *UserHTTPClientImpl) SendEmail(ctx context.Context, in *SendEmailRequest
 	opts = append(opts, http.Operation(OperationUserSendEmail))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) SendEmailCommon(ctx context.Context, in *SendEmailCommonRequest, opts ...http.CallOption) (*SendEmailCommonReply, error) {
+	var out SendEmailCommonReply
+	pattern := "/api/sendCommonEmail"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserSendEmailCommon))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

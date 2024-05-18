@@ -20,12 +20,3 @@ api:
 service:
   user:
     endpoint: discovery:///user.service
-mq:
-  url: "amqp://root:123456@localhost:5672/host1"
-  # 是否开启处理评论信息
-  open: true
-  exchange:
-    - "comment_exchange"
-  queue:
-    - "comment_queue"
-    - "reward_queue"

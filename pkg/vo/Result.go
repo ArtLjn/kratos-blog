@@ -74,6 +74,7 @@ const (
 	SUPPORT_QQ_EMAIL    = "仅支持QQ邮箱"
 	VERIFY_THORUGH      = "验证通过"
 	OPERATE_SUCCESS     = "操作成功"
+	MESSAGE_PROCESSING  = "消息处理中"
 )
 
 const (

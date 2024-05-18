@@ -3,9 +3,11 @@ package data
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/redis/go-redis/v9"
 	user2 "kratos-blog/api/v1/user"
 	"kratos-blog/app/gateway/internal/conf"
 	"kratos-blog/pkg/jwt"
@@ -128,19 +130,23 @@ func (f *FilterRepo) CommentLimiter() http.FilterFunc {
 						WritePermissionError(w)
 						return
 					}
+					if !f.data.rdb.HExists(context.Background(), server.TokenMangerKey, username).Val() {
+						WritePermissionError(w)
+						return
+					}
 					res, err := f.data.uc.GetUser(context.Background(), &user2.GetUserRequest{
 						Name: username,
 					})
 					if err != nil {
 						panic(err)
 					}
-					if r, err := strconv.ParseBool(res.Data[5]); !r || err != nil {
+					if r, err := strconv.ParseBool(res.Data[5]); r || err != nil {
 						WritePermissionError(w)
 						return
 					}
 					prefixUsernameKey := fmt.Sprintf("comment_%s", username)
 					data, e := f.data.rdb.Get(context.Background(), prefixUsernameKey).Result()
-					if e != nil {
+					if e != nil && !errors.Is(e, redis.Nil) {
 						// 处理错误
 						f.log.Log(log.LevelError, e)
 						return
@@ -148,13 +154,14 @@ func (f *FilterRepo) CommentLimiter() http.FilterFunc {
 					if len(data) > 0 {
 						if i, err := strconv.Atoi(data); err == nil {
 							if i >= 12 {
-								_, err := f.data.uc.SetBlack(context.Background(), &user2.SetBlackRequest{
+								_, err = f.data.uc.SetBlack(context.Background(), &user2.SetBlackRequest{
 									Name: username,
 								})
 								if err != nil {
 									f.log.Log(log.LevelError, err)
 									return
 								}
+								f.data.rdb.Del(context.Background(), prefixUsernameKey)
 								WritePermissionError(w)
 								return
 							}

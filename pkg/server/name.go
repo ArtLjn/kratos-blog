@@ -8,14 +8,15 @@ const (
 )
 
 const (
-	AdminNotes  string = "adminNotes"
-	Notes       string = "notes"
-	TableName   string = "BlogVisits"
-	Comment     string = "comment"
-	Appear      string = "appear"
-	CacheBlog   string = "cacheBlog"
-	SuggestBlog string = "suggestBlog"
-	Token              = "token"
+	AdminNotes     string = "adminNotes"
+	Notes          string = "notes"
+	TableName      string = "BlogVisits"
+	Comment        string = "comment"
+	Appear         string = "appear"
+	CacheBlog      string = "cacheBlog"
+	SuggestBlog    string = "suggestBlog"
+	Token                 = "token"
+	TokenMangerKey        = "token_manager"
 )
 
 // RoleSwitch

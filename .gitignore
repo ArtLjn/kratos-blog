@@ -39,7 +39,6 @@ bin/
 
 # 不需要提交的文件
 docker-own
-app/blog/configs
-app/user/configs
-app/gateway/configs
-app/comment/configs
+
+.gitignore
+web/show/node_modules

@@ -118,3 +118,10 @@ func (u *UserUseCase) VerifyToken(ctx context.Context, request *user.VerifyToken
 func (u *UserUseCase) LogOut(ctx context.Context, request *user.LogOutRequest) *user.LogOutReply {
 	return u.repo.LogOut(ctx, request)
 }
+
+func (u *UserUseCase) SendEmailCommon(ctx context.Context, request *user.SendEmailCommonRequest) *user.SendEmailCommonReply {
+	if u.repo.SendEmail(request.GetBody(), request.GetEmail(), request.GetSubject()) {
+		return &user.SendEmailCommonReply{Common: &user.CommonReply{Code: 200, Result: vo.EMAIL_SUCCESS}}
+	}
+	return &user.SendEmailCommonReply{Common: &user.CommonReply{Code: 400, Result: vo.EMAIL_FAIL}}
+}

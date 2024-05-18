@@ -132,6 +132,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/sendCommonEmail:
+        post:
+            tags:
+                - User
+            operationId: User_SendEmailCommon
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendEmailCommonRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SendEmailCommonReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/sendEmail/{email}:
         get:
             tags:
@@ -288,6 +312,20 @@ components:
                 name:
                     type: string
                 pass:
+                    type: string
+        SendEmailCommonReply:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
+        SendEmailCommonRequest:
+            type: object
+            properties:
+                email:
+                    type: string
+                subject:
+                    type: string
+                body:
                     type: string
         SendEmailReply:
             type: object

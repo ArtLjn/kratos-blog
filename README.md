@@ -16,6 +16,13 @@
 | 管理前台 | [/kratos-blog/web/manager](./web/manager) |
 | 展现前台 | [/kratos-blog/web/show](./web/show)       |
 
+## 技术栈
+- mysql
+- redis
+- rabbitmq
+- consul
+- elasticsearch
+
 ## 功能特点
 
 1. **文章管理**：用户可以创建、编辑和删除文章。支持 MarkDown 编辑器，可以插入图片、链接等多媒体元素。

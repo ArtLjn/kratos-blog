@@ -13,6 +13,7 @@ require (
 	github.com/hashicorp/consul/api v1.27.0
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/streadway/amqp v1.1.0
 	github.com/thedevsaddam/gojsonq v2.3.0+incompatible
 	go.uber.org/automaxprocs v1.5.3
 	google.golang.org/genproto/googleapis/api v0.0.0-20231002182017-d307bd883b97
@@ -22,7 +23,6 @@ require (
 	gopkg.in/ini.v1 v1.67.0
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/gorm v1.25.5
-	github.com/streadway/amqp v1.1.0
 )
 
 require (
