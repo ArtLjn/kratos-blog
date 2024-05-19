@@ -155,7 +155,7 @@ export default {
         addComment.comment_addr = Ip.value;
         AddComment(addComment).then((res) => {
           if (res.code === SUCCESS_REQUEST) {
-            ElMessage.success('评论成功');
+            ElMessage.success(res.result);
             Object.keys(addComment).forEach(key => {
               addComment[key] = null;
             });
@@ -189,7 +189,7 @@ export default {
         RewardData.comment_addr = Ip.value;
         AddReward(RewardData).then((res) => {
           if (res.code === SUCCESS_REQUEST) {
-            ElMessage.success("回复成功")
+            ElMessage.success(res.result)
             Object.keys(RewardData).forEach(key => {
               RewardData[key] = null;
             })

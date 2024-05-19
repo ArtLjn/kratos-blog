@@ -48,6 +48,5 @@ var (
 // logPath
 
 var (
-// GatewayLogPath = "gateway/log"
-// GatewayLogPath = "log"
+	LogOutStreamPath = "log"
 )

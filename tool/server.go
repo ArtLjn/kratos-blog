@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/robfig/cron/v3"
 	"github.com/thedevsaddam/gojsonq"
 	"gopkg.in/ini.v1"
 	"io"
+	"kratos-blog/pkg/m_logs"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
 	"log"
@@ -43,16 +45,42 @@ func init() {
 		cfg.Section("upload").Key("maxsize").String(),
 		cfg.Section("upload").Key("uri").String(),
 	)
-	//redSql := cfg.Section("mysql")
-	//NewDB(
-	//	redSql.Key("username").String(),
-	//	redSql.Key("password").String(),
-	//	redSql.Key("host").String(),
-	//	redSql.Key("port").String(),
-	//	redSql.Key("database").String(),
-	//	redSql.Key("charset").String(),
-	//)
 
+	mailKey := cfg.Section("mail")
+	port, _ := mailKey.Key("port").Int()
+	Mail = NewMail(
+		mailKey.Key("username").String(),
+		mailKey.Key("host").String(),
+		port,
+		mailKey.Key("password").String(),
+	)
+
+	redSql := cfg.Section("mysql")
+	NewDB(
+		redSql.Key("username").String(),
+		redSql.Key("password").String(),
+		redSql.Key("host").String(),
+		redSql.Key("port").String(),
+		redSql.Key("database").String(),
+		redSql.Key("charset").String(),
+	)
+	ProxyPath = u.UploadPath
+
+	c := cron.New()
+	_, err = c.AddFunc("0 0 * * *", func() {
+		go UpdatePhoto()
+	})
+	outPath := redSql.Key("backup_path").String()
+	backupCycle := redSql.Key("backup_cycle").String()
+	//设置定时任务，每7天执行一次
+	_, err = c.AddFunc("0 0 */"+backupCycle+" * *", func() {
+		m_logs.CleanOldFile(0, outPath)
+		InitBackUp(Dns, outPath)
+	})
+	if err != nil {
+		return
+	}
+	c.Start()
 }
 
 type UploadRepo struct {
@@ -130,7 +158,7 @@ func BingPhoto(uri chan string) error {
 			return fmt.Errorf("The request failure status code is %d\n", res.StatusCode)
 		}
 		defer res.Body.Close()
-		newImgName := fmt.Sprintf("%s%s", uuid.New().String()[:8], ".jpg")
+		newImgName := fmt.Sprintf("%s%s", time.Now().Format("2006-01-02"), "_bing.jpg")
 		savePath := filepath.Join(u.UploadPath, newImgName)
 		if ue := CopyFile(savePath, res.Body); ue != nil {
 			return ue

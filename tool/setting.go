@@ -8,11 +8,12 @@ import (
 
 // GormDB 基础设置
 var GormDB *gorm.DB
+var Dns string
 
 func NewDB(option ...string) {
-	url := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=Local",
+	Dns = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=Local",
 		option[0], option[1], option[2], option[3], option[4], option[5])
-	g, err := gorm.Open(mysql.Open(url), &gorm.Config{
+	g, err := gorm.Open(mysql.Open(Dns), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {

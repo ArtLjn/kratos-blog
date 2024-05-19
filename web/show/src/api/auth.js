@@ -9,12 +9,14 @@ export const Login = (param) => {
         if (res.common.code === SUCCESS_REQUEST) {
             const token = res.data[0];
             localStorage.setItem("token", token);
+            localStorage.setItem("name",param.name)
             // 登录成功后保存用户认证信息
             ElMessage.success("登录成功")
             const authData = { isLoggedIn: true, userData: {} };
             localStorage.setItem('authData', JSON.stringify(authData));
-            router.go(0);
+            router.go(0)
         } else {
+            localStorage.clear();
             ElMessage.error(res.common.result)
         }
     })
@@ -48,4 +50,8 @@ export const UpdatePassword = (param,code) => {
             ElMessage.error(res.common.result)
         }
     })
+}
+
+export const LogOut = (name) => {
+    return  req('get',`/api/logOut/${name}`)
 }

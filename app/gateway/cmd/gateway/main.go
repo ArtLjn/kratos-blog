@@ -8,16 +8,13 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	_ "go.uber.org/automaxprocs"
 	"kratos-blog/app/gateway/internal/conf"
+	"kratos-blog/pkg/m_logs"
 	"kratos-blog/pkg/server"
 	"os"
-	"path/filepath"
-	"time"
-
-	_ "go.uber.org/automaxprocs"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -54,7 +51,7 @@ func newApp(logger log.Logger, hs *http.Server, r registry.Registrar) *kratos.Ap
 func main() {
 	flag.Parse()
 	var logger log.Logger
-	initLog(&logger)
+	m_logs.InitLog(&logger, id, Name, Version, "gateway")
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),
@@ -86,31 +83,6 @@ func main() {
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
-}
-
-func initLog(logger *log.Logger) {
-	logFileName := fmt.Sprintf("%s%s", time.Now().Format("2006-01-02"), "-gateway.log")
-	_, e := os.Stat("log")
-	if e != nil && os.IsNotExist(e) {
-		err := os.MkdirAll("log", os.ModePerm)
-		if err != nil {
-			return
-		}
-	}
-	logPath := filepath.Join("log", logFileName)
-	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		return
-	}
-	*logger = log.With(log.NewStdLogger(f),
-		"ts", log.DefaultTimestamp,
-		"caller", log.DefaultCaller,
-		"service.id", id+"-gateway",
-		"service.name", Name,
-		"service.version", Version,
-		"trace.id", tracing.TraceID(),
-		"span.id", tracing.SpanID(),
-	)
 }
 
 func listenConfigChange(c config.Config, serverName string,

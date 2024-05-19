@@ -8,32 +8,22 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
 	"log"
 	"net/http"
 	"time"
 )
 
+var ProxyPath string
+
 func main() {
 	r := gin.Default()
 	InitRouter(r)
-	r.StaticFS("/img", http.Dir("tool/assets"))
+	r.StaticFS("/img", http.Dir(ProxyPath))
 	UpdatePhoto()
 	err := r.Run(":8099")
 	if err != nil {
 		return
 	}
-}
-
-func init() {
-	c := cron.New()
-	_, err := c.AddFunc("0 0 * * *", func() {
-		go UpdatePhoto()
-	})
-	if err != nil {
-		return
-	}
-	c.Start()
 }
 
 func UpdatePhoto() {

@@ -142,6 +142,8 @@ import login from '../authentication/login.vue'
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { getAllBlog } from '@/api/blogFunc';
+import {Login, LogOut} from "@/api/auth";
+import {SUCCESS_REQUEST} from "@/api/status";
 library.add(faHome, fas);
 
 export default {
@@ -185,7 +187,7 @@ export default {
 
     watch(() => keyword.keyOk, () => {
       searchKeyword();
-      if(keyword.keyOk == '' || keyword.keyOk == null) {
+      if(keyword.keyOk === '' || keyword.keyOk == null) {
         recommendBlogs.value = [];
       }
     });
@@ -207,28 +209,31 @@ export default {
         isLogin.value = false;
       }
     };
-    const Logined = ref(true);
-    const logouted = ref(false);
+    const Login_ed = ref(true);
+    const logout_ed = ref(false);
     const router = useRouter();
     const logout = () => {
-      localStorage.removeItem("token")
-      localStorage.removeItem("authData")
-      logouted.value = false;
-      Logined.value = true;
-      router.go(0);
-      ElMessage.info("账号退出")
+      LogOut().then((res) => {
+        if (res.common.code === SUCCESS_REQUEST) {
+          logout_ed.value = false;
+          Login_ed.value = true;
+          localStorage.clear();
+          router.go(0);
+          ElMessage.info("账号退出")
+        }
+      })
     }
     const token = localStorage.getItem("token");
     const LoginStatus = () => {
       if(token != null
-       || token != "")
+       || token !== "")
        {
-        Logined.value = false;
-        logouted.value = true;
+         Login_ed.value = false;
+        logout_ed.value = true;
        }
        if (token == null) {
-        Logined.value = true;
-        logouted.value = false;
+        Login_ed.value = true;
+        logout_ed.value = false;
        }
     }
     return {
@@ -244,8 +249,8 @@ export default {
       isLogin,
       WantLogin,
       closeLogin,
-      Logined,
-      logouted,
+      Logined: Login_ed,
+      logouted: logout_ed,
       logout
     };
   }

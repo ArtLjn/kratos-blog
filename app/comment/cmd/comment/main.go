@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/go-kratos/kratos/v2/registry"
 	"kratos-blog/app/comment/internal/conf"
+	"kratos-blog/pkg/m_logs"
 	"kratos-blog/pkg/server"
 	"os"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 
@@ -52,15 +52,8 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 
 func main() {
 	flag.Parse()
-	logger := log.With(log.NewStdLogger(os.Stdout),
-		"ts", log.DefaultTimestamp,
-		"caller", log.DefaultCaller,
-		"service.id", id+"-comment",
-		"service.name", Name,
-		"service.version", Version,
-		"trace.id", tracing.TraceID(),
-		"span.id", tracing.SpanID(),
-	)
+	var logger log.Logger
+	m_logs.InitLog(&logger, id, Name, Version, "comment")
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),

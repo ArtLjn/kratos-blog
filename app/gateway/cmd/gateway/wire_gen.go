@@ -64,7 +64,7 @@ func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logge
 // Cron 定时任务
 func Cron(cli blog.BlogClient) {
 	c := cron.New()
-	c.AddFunc("0 0 * * *", func() {
+	c.AddFunc("0 0 0 * * *", func() {
 		go cli.UpdateBlogVisit(context.Background(), &blog.UpdateBlogVisitRq{})
 	})
 	c.Start()
