@@ -7,20 +7,32 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"time"
 )
 
-var ProxyPath string
+var (
+	ProxyPath string
+	Host      string
+	Port      string
+)
 
 func main() {
 	r := gin.Default()
-	InitRouter(r)
 	r.StaticFS("/img", http.Dir(ProxyPath))
 	UpdatePhoto()
-	err := r.Run(":8099")
+
+	options := NewFilterOptions(WithOriginFilter())
+	if len(options.filters) != 0 {
+		for _, filter := range options.filters {
+			r.Use(filter.Apply())
+		}
+	}
+	InitRouter(r)
+	err := r.Run(fmt.Sprintf("%s:%s", Host, Port))
 	if err != nil {
 		return
 	}

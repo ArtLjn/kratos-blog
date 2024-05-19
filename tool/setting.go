@@ -7,8 +7,12 @@ import (
 )
 
 // GormDB 基础设置
-var GormDB *gorm.DB
-var Dns string
+
+var (
+	GormDB  *gorm.DB
+	Dns     string
+	OutPath string
+)
 
 func NewDB(option ...string) {
 	Dns = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=Local",

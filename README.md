@@ -13,8 +13,10 @@
 | 评论服务 | [/kratos-blog/app/comment](./app/comment) |
 | 用户服务 | [/kratos-blog/app/user](./app/user)       |
 | 服务网关 | [/kratos-blog/app/gateway](./app/gateway) |
+| 工具模块 | [/kratos-blog/tool](./tool/README.md)     |
 | 管理前台 | [/kratos-blog/web/manager](./web/manager) |
 | 展现前台 | [/kratos-blog/web/show](./web/show)       |
+
 
 ## 技术栈
 - mysql

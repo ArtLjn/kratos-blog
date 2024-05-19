@@ -64,18 +64,26 @@ func init() {
 		redSql.Key("database").String(),
 		redSql.Key("charset").String(),
 	)
+
+	F = NewFilter(
+		strings.Split(cfg.Section("filter").Key("domain").String(), ","),
+		cfg.Section("filter").Key("open").MustBool(false),
+	)
+	Host = cfg.Section("server").Key("host").String()
+	Port = cfg.Section("server").Key("port").String()
+
 	ProxyPath = u.UploadPath
 
 	c := cron.New()
 	_, err = c.AddFunc("0 0 * * *", func() {
 		go UpdatePhoto()
 	})
-	outPath := redSql.Key("backup_path").String()
+	OutPath = redSql.Key("backup_path").String()
 	backupCycle := redSql.Key("backup_cycle").String()
 	//设置定时任务，每7天执行一次
 	_, err = c.AddFunc("0 0 */"+backupCycle+" * *", func() {
-		m_logs.CleanOldFile(0, outPath)
-		InitBackUp(Dns, outPath)
+		m_logs.CleanOldFile(0, OutPath)
+		InitBackUp(Dns, OutPath)
 	})
 	if err != nil {
 		return
