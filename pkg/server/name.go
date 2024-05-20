@@ -28,7 +28,7 @@ const (
 
 // ConfigPath
 
-var (
+const (
 	//BlogConfPath    = "blog/configs"
 	//CommentConfPath = "comment/configs"
 	//UserConfPath    = "user/configs"
@@ -47,6 +47,15 @@ var (
 
 // logPath
 
-var (
+const (
 	LogOutStreamPath = "log"
+)
+
+// 服务连接密钥
+
+const (
+	//Kratos_BlogKey 博客服务请求头
+	Kratos_BlogKey = "X-HongDou-Key-Gateway"
+	//ToolKey 资源服务器请求头
+	ToolKey = "X-Tool-Key"
 )

@@ -75,12 +75,15 @@ func (f *FilterRepo) AllowDomainsMiddleware(cf *conf.Domain) http.FilterFunc {
 		return h.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			origin := req.Referer()
 			// 检查请求的 Origin 是否在允许的域名列表中
-
+			key := req.Header.Get(server.Kratos_BlogKey)
+			if len(key) == 0 && key != cf.GetKey() {
+				WritePermissionError(w)
+				return
+			}
 			if !cf.Open {
 				handler.ServeHTTP(w, req)
 				return
 			} else {
-				f.mu.Lock()
 				var allow bool
 				for _, domain := range cf.Origin {
 					if strings.HasPrefix(origin, domain) {
@@ -88,7 +91,6 @@ func (f *FilterRepo) AllowDomainsMiddleware(cf *conf.Domain) http.FilterFunc {
 						break
 					}
 				}
-				f.mu.Unlock()
 				if allow {
 					handler.ServeHTTP(w, req)
 					return

@@ -55,7 +55,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 func main() {
 	flag.Parse()
 	var logger log.Logger
-	m_logs.InitLog(&logger, id, Name, Version, "blog")
+	go m_logs.InitLog(&logger, id, Name, Version, "blog")
 	fmt.Println(flagconf)
 	c := config.New(
 		config.WithSource(

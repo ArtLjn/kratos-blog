@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
 	"github.com/thedevsaddam/gojsonq"
@@ -16,7 +17,6 @@ import (
 	"kratos-blog/pkg/m_logs"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
-	"log"
 	h2 "net/http"
 	"os"
 	"path/filepath"
@@ -34,9 +34,13 @@ func NewUploadRepo(data ...string) *UploadRepo {
 }
 
 func init() {
+	// 启动日志服务
+	var logger log.Logger
+	go m_logs.InitLog(&logger, "tool", "tool", "1.0", "tool")
+	// 读取配置文件
 	cfg, err := ini.Load("tool/config.ini")
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 	u = NewUploadRepo(
@@ -68,6 +72,8 @@ func init() {
 	F = NewFilter(
 		strings.Split(cfg.Section("filter").Key("domain").String(), ","),
 		cfg.Section("filter").Key("open").MustBool(false),
+		strings.Split(cfg.Section("filter").Key("whiteList").String(), ","),
+		cfg.Section("filter").Key("key").String(),
 	)
 	Host = cfg.Section("server").Key("host").String()
 	Port = cfg.Section("server").Key("port").String()

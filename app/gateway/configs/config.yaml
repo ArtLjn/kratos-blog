@@ -32,6 +32,8 @@ domain:
     - "http://localhost:8036"
   # 是否开启过滤器
   open: false
+  # 资源服务请求密钥
+  key: fdfeapfsdklf
 mq:
   url: "amqp://root:123456@localhost:5672/host1"
   # 是否开启处理评论信息

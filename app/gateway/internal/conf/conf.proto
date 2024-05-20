@@ -63,6 +63,7 @@ message Path {
 message Domain {
   repeated string origin = 1;
   bool open = 2;
+  string key = 3;
 }
 message Mq {
   string url = 1;

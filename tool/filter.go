@@ -8,21 +8,26 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"kratos-blog/pkg/server"
 	"net/http"
 	"strings"
 )
 
 type Filter struct {
-	Domain []string
-	Open   bool
+	Domain    []string
+	Open      bool
+	WhiteList []string
+	Key       string
 }
 
 var F *Filter
 
-func NewFilter(domain []string, open bool) *Filter {
+func NewFilter(domain []string, open bool, whiteList []string, key string) *Filter {
 	return &Filter{
-		Domain: domain,
-		Open:   open,
+		Domain:    domain,
+		Open:      open,
+		WhiteList: whiteList,
+		Key:       key,
 	}
 }
 
@@ -57,7 +62,6 @@ type originFilter struct{}
 
 func (f originFilter) Apply() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// TODO 安全加固
 		referer := c.Request.Header.Get("Referer")
 		if F.Open && len(F.Domain) > 0 {
 			for _, v := range F.Domain {
@@ -79,5 +83,53 @@ func (f originFilter) Apply() gin.HandlerFunc {
 				}
 			}
 		}
+	}
+}
+
+type ipWhiteFilter struct{}
+
+func WithIpWhiteFilter() Option {
+	return func(options *FilterOptions) {
+		options.filters = append(options.filters, ipWhiteFilter{})
+	}
+}
+
+func (f ipWhiteFilter) Apply() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ip := c.ClientIP()
+		for _, whiteIp := range F.WhiteList {
+			if ip == whiteIp {
+				c.Next()
+				return
+			} else {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+				c.Abort()
+				return
+			}
+		}
+	}
+}
+
+type apiKeyFilter struct{}
+
+func WithApiKeyFilter() Option {
+	return func(options *FilterOptions) {
+		options.filters = append(options.filters, apiKeyFilter{})
+	}
+}
+
+func (f apiKeyFilter) Apply() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		apiKey := c.GetHeader(server.ToolKey)
+		if len(apiKey) == 0 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+			c.Abort()
+			return
+		} else if apiKey != F.Key {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+			c.Abort()
+			return
+		}
+		c.Next()
 	}
 }

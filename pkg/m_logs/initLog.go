@@ -2,9 +2,11 @@ package m_logs
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/robfig/cron/v3"
+	"io"
 	"kratos-blog/pkg/server"
 	"os"
 	"path/filepath"
@@ -27,6 +29,27 @@ func InitLog(logger *log.Logger, id, name, version, prefix string) {
 	// 开始定时任务
 	c.Start()
 	InitDailyLogFile(logger, id, name, version, prefix)
+	if err != nil {
+		log.Fatalf("Failed to set up log file creation and cleaning: %v", err)
+	}
+}
+
+func InitGinLog(prefix string) {
+	c := cron.New(cron.WithSeconds())
+
+	// 每天创建新的日志文件
+	_, err := c.AddFunc("0 0 0 * * *", func() {
+		initGinLog(prefix)
+	})
+
+	// 每7天清理旧的日志文件
+	_, err = c.AddFunc("0 0 0 */7 * *", func() {
+		CleanOldFile(0, server.LogOutStreamPath)
+	})
+
+	// 开始定时任务
+	c.Start()
+	initGinLog(prefix)
 	if err != nil {
 		log.Fatalf("Failed to set up log file creation and cleaning: %v", err)
 	}
@@ -73,7 +96,7 @@ func InitDailyLogFile(logger *log.Logger, id, name, version, prefix string) {
 
 	// 创建日志目录，如果不存在的话
 	if _, err := os.Stat(server.LogOutStreamPath); os.IsNotExist(err) {
-		err := os.MkdirAll(server.LogOutStreamPath, os.ModePerm)
+		err = os.MkdirAll(server.LogOutStreamPath, os.ModePerm)
 		if err != nil {
 			log.Fatalf("Failed to create log directory: %v", err)
 		}
@@ -94,4 +117,24 @@ func InitDailyLogFile(logger *log.Logger, id, name, version, prefix string) {
 		"trace.id", tracing.TraceID(),
 		"span.id", tracing.SpanID(),
 	)
+}
+
+func initGinLog(prefix string) {
+	logFileName := fmt.Sprintf("%s-%s.log", time.Now().Format("2006-01-02"), prefix)
+	logPath := filepath.Join(server.LogOutStreamPath, logFileName)
+
+	// 创建日志目录，如果不存在的话
+	if _, err := os.Stat(server.LogOutStreamPath); os.IsNotExist(err) {
+		err = os.MkdirAll(server.LogOutStreamPath, os.ModePerm)
+		if err != nil {
+			log.Fatalf("Failed to create log directory: %v", err)
+		}
+	}
+
+	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+	gin.DisableConsoleColor()
+	gin.DefaultWriter = io.MultiWriter(f)
 }
