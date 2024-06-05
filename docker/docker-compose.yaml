@@ -41,16 +41,3 @@ services:
     ports:
       - "8500:8500"
     command: "consul agent -dev -client=0.0.0.0"
-#  nginx:
-#    image: nginx
-#    container_name: front_nginx
-#    restart: always
-#    volumes:
-#      - "./hongDou/show:/usr/local/blog/show"
-#      - "./hongDou/manager:/usr/local/blog/manager"
-#      - "./hongDou/nginx.conf:/etc/nginx/nginx.conf"
-#    ports:
-#      - "8030:8030"
-#      - "8033:8033"
-#    depends_on:
-#      - web

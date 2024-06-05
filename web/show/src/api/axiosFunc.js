@@ -6,7 +6,9 @@ export const req = (method,url,params = null,header = true) => {
     if (header) {
         data = {
             "Content-Type":"application/json",
-            "token": token
+            "token": token,
+            "X-HongDou-Key-Gateway":"fdfeapfsdklf",
+            'X-Tool-Key':"xfkcdsoesop"
         }
     }
     return axios({

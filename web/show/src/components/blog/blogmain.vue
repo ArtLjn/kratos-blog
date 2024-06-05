@@ -32,7 +32,7 @@
             </div>
             <div style="margin-right: 30px;">
               <el-tooltip content="访问github" placement="top">
-                <a href="https://github.com/620324" style="color:white;text-direction:none;" target="_blank">
+                <a href="https://github.com/ArtLjn" style="color:white;text-direction:none;" target="_blank">
                   <font-awesome-icon :icon="['fab', 'github']" /></a>
               </el-tooltip>
             </div>
@@ -97,7 +97,7 @@
   import { fab } from '@fortawesome/free-brands-svg-icons';
   import newFooter from './util/newFooter.vue';
   import {getAllBlog,getShici,getBingPhoto, getAllSuggest} from '../../api/blogFunc'
-  import {utilButton} from '../../api/util/util'
+  import {utilButton} from '@/api/util/util'
   import {SUCCESS_REQUEST} from "@/api/status";
   library.add(faHome, fas, fab);
   export default {

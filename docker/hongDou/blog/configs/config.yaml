@@ -8,13 +8,13 @@ server:
 data:
   database:
     driver: mysql
-    source: root:123456@tcp(localhost:23306)/hongDou
+    source: root:123456@tcp(localhost:3306)/hongDou
   redis:
-    addr: localhost:26379
+    addr: 127.0.0.1:6379
     read_timeout: 0.2s
     write_timeout: 0.2s
     db: 0
-    password: "123456"
+    password:
 service:
   user:
     endpoint: discovery:///user.service

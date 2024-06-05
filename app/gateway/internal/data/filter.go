@@ -74,12 +74,6 @@ func (f *FilterRepo) AllowDomainsMiddleware(cf *conf.Domain) http.FilterFunc {
 	return func(handler h.Handler) h.Handler {
 		return h.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			origin := req.Referer()
-			// 检查请求的 Origin 是否在允许的域名列表中
-			key := req.Header.Get(server.Kratos_BlogKey)
-			if len(key) == 0 && key != cf.GetKey() {
-				WritePermissionError(w)
-				return
-			}
 			if !cf.Open {
 				handler.ServeHTTP(w, req)
 				return

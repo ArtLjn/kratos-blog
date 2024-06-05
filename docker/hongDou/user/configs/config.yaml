@@ -8,18 +8,18 @@ server:
 data:
   database:
     driver: mysql
-    source: root:123456@tcp(localhost:23306)/hongDou
+    source: root:123456@tcp(127.0.0.1:3306)/hongDou
   redis:
-    addr: localhost:26379
+    addr: 127.0.0.1:6379
     read_timeout: 0.2s
     write_timeout: 0.2s
     db: 0
-    password: "123456"
+    password:
 mail:
-  username: 1521505611@qq.com
-  password: xxxxxxx
+  username: example@qq.com
+  password: xxxxxx
   port: 465
   host: smtp.qq.com
 admin:
-  username: xxx
-  password: xxx
+  username: test
+  password: test

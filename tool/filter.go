@@ -8,7 +8,6 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"kratos-blog/pkg/server"
 	"net/http"
 	"strings"
 )
@@ -107,29 +106,5 @@ func (f ipWhiteFilter) Apply() gin.HandlerFunc {
 				return
 			}
 		}
-	}
-}
-
-type apiKeyFilter struct{}
-
-func WithApiKeyFilter() Option {
-	return func(options *FilterOptions) {
-		options.filters = append(options.filters, apiKeyFilter{})
-	}
-}
-
-func (f apiKeyFilter) Apply() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		apiKey := c.GetHeader(server.ToolKey)
-		if len(apiKey) == 0 {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
-			c.Abort()
-			return
-		} else if apiKey != F.Key {
-			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
-			c.Abort()
-			return
-		}
-		c.Next()
 	}
 }

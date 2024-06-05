@@ -27,16 +27,15 @@ func main() {
 	r.StaticFS("/img", http.Dir(ProxyPath))
 	UpdatePhoto()
 
-	options := NewFilterOptions(
-		WithOriginFilter(),
-		WithIpWhiteFilter(),
-		WithApiKeyFilter(),
-	)
-	if len(options.filters) != 0 {
-		for _, filter := range options.filters {
-			r.Use(filter.Apply())
-		}
-	}
+	//options := NewFilterOptions(
+	//WithOriginFilter(),
+	//WithIpWhiteFilter(),
+	//)
+	//if len(options.filters) != 0 {
+	//	for _, filter := range options.filters {
+	//		r.Use(filter.Apply())
+	//	}
+	//}
 
 	InitRouter(r)
 	err := r.Run(fmt.Sprintf("%s:%s", Host, Port))

@@ -5,30 +5,39 @@ server:
 data:
   database:
     driver: mysql
-    source: root:123456@tcp(ip:23306)/hongDou
+    source: root:123456@tcp(127.0.0.1:3306)/hongDou
   redis:
-    addr: ip:26379
+    addr: 127.0.0.1:6379
     read_timeout: 0.2s
     write_timeout: 0.2s
     db: 0
-    password: "123456"
+    password:
+# 配置黑白名单, 白名单不需要传递Token,黑名单特殊接口需要传递Token
 path:
-  # 配置白名单
+  # 配置白名单 不需要传递token接口
   white:
-    - "/util/upload"
-    - "/util/getBingPhoto"
     - "/api/login"
     - "/api/register"
     - "/api/admin"
     - "/api/updatePassword"
-  # 配置黑名单
+    - "/api/upload"
+  # 配置黑名单 Get请求但需要传递token接口
   black:
     - "/api/searchBlog"
 # 设置允许访问路由
 domain:
   # 允许访问源
   origin:
-    - "https://lllcnm.cn"
-    - "https://api.lllcnm.cn"
+    - "http://localhost:8033"
+    - "http://localhost:8036"
   # 是否开启过滤器
+  open: false
+mq:
+  url: "amqp://root:123456@localhost:5672/host1"
+  # 是否开启处理评论信息
   open: true
+  exchange:
+    - "gateway_exchange"
+  queue:
+    - "comment_queue" # 评论队列
+    - "reward_queue" # 回复队列

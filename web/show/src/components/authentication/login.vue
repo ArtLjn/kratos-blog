@@ -73,8 +73,7 @@
   import { onMounted, ref } from 'vue';
   import { ElMessage } from 'element-plus';
   import {Login, Register, SendEmail, UpdatePassword} from "@/api/auth";
-  import router from "@/router";
-   
+
   export default {
     name: 'LoginComponent',
     setup() {

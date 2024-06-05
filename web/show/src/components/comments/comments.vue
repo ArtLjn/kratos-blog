@@ -11,7 +11,7 @@
     </div>
     <form  v-if="replyIndex === null" @submit.prevent="saveComment">
       <textarea class="textarea-field" placeholder="好言一句三冬暖 恶语伤人六月寒" v-model="addComment.comment"  @keydown.enter.prevent></textarea>
-      <div class="expression" @click="clickShowEmjio">(っ◔◡◔)っ</div>
+      <div class="expression" @click="clickShow">(っ◔◡◔)っ</div>
       <div class="button-group">
         <el-button class="submit-button" @click="saveComment" :disabled="isCountingDown">
           {{ isCountingDown ? '发表评论 (' + countdown + ')' : '发表评论' }}
@@ -24,46 +24,45 @@
       <span class="comment-title" v-if="commentList.length > 0">评论</span>
       <div class="comment-list">
         <div v-for="(comment, index) in commentList" :key="index" class="comment-item">
-          <div class="comment-header">
-            <div style="display:flex;">
-              <img :src="`http://q2.qlogo.cn/headimg_dl?dst_uin=${comment.email}&spec=1`" class="photo"/>
-              <span class="comment-name">{{ comment.name }}</span>
-            </div>
-            <span class="comment-time">{{ comment.commentTime }}</span>
-            <span class="comment-addr">
+            <div class="comment-header">
+              <div style="display:flex;">
+                <img :src="`http://q2.qlogo.cn/headimg_dl?dst_uin=${comment.email}&spec=1`" class="photo"/>
+                <span class="comment-name">{{ comment.name }}</span>
+              </div>
+              <span class="comment-time">{{ comment.commentTime }}</span>
+              <span class="comment-addr">
               <font-awesome-icon :icon="['fas', 'location-dot']" style="color: #495a79;" /> {{comment.commentAddr}}</span>
-            <span v-if="replyIndex !== index" @click="replyIndex = index" class="reply-button">回复</span>
-          </div>   
-          <div class="comment-body">
-            <div>{{ comment.comment }}</div>
-          </div>
-
+              <span v-if="replyIndex !== index" @click="replyIndex = index" class="reply-button">回复</span>
+            </div>
+            <div class="comment-body">
+              <div>{{ comment.comment }}</div>
+            </div>
             <div v-if="comment.child" >
               <div v-for="(reward,index) in comment.child" :key="index" style="margin-left:35px;">
                 <div style="display:flex;">
-                <img :src="`http://q2.qlogo.cn/headimg_dl?dst_uin=${reward.email}&spec=1`" class="photo"/>
-                <span class="comment-name">{{reward.name}}</span></div>
+                  <img :src="`http://q2.qlogo.cn/headimg_dl?dst_uin=${reward.email}&spec=1`" class="photo"/>
+                  <span class="comment-name">{{reward.name}}</span></div>
                 <span class="comment-time">{{reward.commentTime}}</span>
                 <span class="comment-addr">
-                  <font-awesome-icon :icon="['fas', 'location-dot']" style="color: #495a79;" /> {{reward.commentAddr}}</span>
+                <font-awesome-icon :icon="['fas', 'location-dot']" style="color: #495a79;" /> {{reward.commentAddr}}</span>
                 <div class="comment-body">
                   <span>{{reward.comment}}</span>
                 </div>
-            </div>
-          </div>
-          <div v-if="replyIndex === index">
-            <form class="reply-form" @submit.prevent="saveReward(comment.id)">
-              <textarea class="textarea-field" placeholder="好言一句三冬暖 恶语伤人六月寒" v-model="RewardData.comment"  @keydown.enter.prevent></textarea>
-              <div style="float:left;" @click="clickShowEmjio2" class="expression">(っ◔◡◔)っ</div>
-              <div class="button-group">
-                <el-button class="submit-button" @click="saveReward(comment.id)" :disabled="isCountingDown">
-                  {{ isCountingDown ? '发表评论 (' + countdown + ')' : '发表评论' }}
-                </el-button>
-                <el-button class="cancel-button" @click="cancelReply">取消</el-button>
               </div>
-            </form>
-            <Picker :data="emojiIndex" set="twitter" @select="showEmoji2" v-if="hideEmoji2" class="b"/>
-          </div>
+            </div>
+            <div v-if="replyIndex === index">
+              <form class="reply-form" @submit.prevent="saveReward(comment.id)">
+                <textarea class="textarea-field" placeholder="好言一句三冬暖 恶语伤人六月寒" v-model="RewardData.comment"  @keydown.enter.prevent></textarea>
+                <div style="float:left;" @click="clickShowTwo" class="expression">(っ◔◡◔)っ</div>
+                <div class="button-group">
+                  <el-button class="submit-button" @click="saveReward(comment.id)" :disabled="isCountingDown">
+                    {{ isCountingDown ? '发表评论 (' + countdown + ')' : '发表评论' }}
+                  </el-button>
+                  <el-button class="cancel-button" @click="cancelReply">取消</el-button>
+                </div>
+              </form>
+              <Picker :data="emojiIndex" set="twitter" @select="showEmoji2" v-if="hideEmoji2" class="b"/>
+            </div>
         </div>
       </div>
     </div>
@@ -97,11 +96,11 @@ export default {
       RewardData.comment += emoji.native;
     }
     const hideEmoji = ref(false);
-    const clickShowEmjio = () => {
+    const clickShow = () => {
       hideEmoji.value = !hideEmoji.value;
     }
     const hideEmoji2 = ref(false);
-    const clickShowEmjio2 = () => {
+    const clickShowTwo = () => {
       hideEmoji2.value = !hideEmoji2.value;
     }
     const route = useRoute();
@@ -117,7 +116,6 @@ export default {
         parent_id:0,
     })
     const replyIndex = ref(null);
-
 
     /*
     评论接口
@@ -159,14 +157,13 @@ export default {
             Object.keys(addComment).forEach(key => {
               addComment[key] = null;
             });
-            const userAgent = window.navigator.userAgent;
-            console.log(userAgent);
-            getAllComment();
-            loading.value = false; // 取消加载状态
+            setTimeout(() => {
+              getAllComment()
+            }, 3000); // 延迟3秒后执行
           } else {
-            ElMessage.error(res.result);
-            loading.value = false; // 取消加载状态
+              ElMessage.error(res.result);
           }
+          loading.value = false; // 取消加载状态
         });
       }
     };
@@ -193,12 +190,13 @@ export default {
             Object.keys(RewardData).forEach(key => {
               RewardData[key] = null;
             })
-            getAllComment();
-            loading.value = false; // 取消加载状态
+            setTimeout(() => {
+              getAllComment();
+            },3000)
           } else {
             ElMessage.error(res.result);
-            loading.value = false; // 取消加载状态
           }
+          loading.value = false; // 取消加载状态
         })
       }
     }
@@ -256,8 +254,8 @@ export default {
       showEmoji,
       showEmoji2,
       hideEmoji,
-      clickShowEmjio,
-      clickShowEmjio2,
+      clickShow,
+      clickShowTwo,
       hideEmoji2,
       countdown,
       isCountingDown,

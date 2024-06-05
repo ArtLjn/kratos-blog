@@ -49,12 +49,12 @@
           <span style="color:white;margin-left:5px;">搜索</span>
         </div>
         <div class="lh">
-          <router-link to="#" class="link" @click="WantLogin" v-if="Logined">
+          <router-link to="#" class="link" @click="WantLogin" v-if="login_ed">
             <font-awesome-icon :icon="['fas', 'user']" /> 登录
           </router-link>
         </div>
         <div class="lh">
-          <router-link to="#" class="link" @click="logout" v-if="logouted">
+          <router-link to="#" class="link" @click="logout" v-if="logout_ed">
             <font-awesome-icon :icon="['fas', 'user']" /> 退出
           </router-link>
         </div>
@@ -83,10 +83,10 @@
           <font-awesome-icon :icon="['fas', 'address-card']" /> 友链
         </router-link>
         <font-awesome-icon :icon="['fas', 'magnifying-glass']" style="color:white;" @click="searchBlog" />
-        <router-link to="#" class="link" @click="WantLogin" style="margin-left:20px;" v-if="Logined">
+        <router-link to="#" class="link" @click="WantLogin" style="margin-left:20px;" v-if="login_ed">
           <font-awesome-icon :icon="['fas', 'user']" /> 登录
         </router-link>
-        <router-link to="#" class="link" @click="logout" style="margin-left:20px;" v-if="logouted">
+        <router-link to="#" class="link" @click="logout" style="margin-left:20px;" v-if="logout_ed">
           <font-awesome-icon :icon="['fas', 'user']" /> 退出
         </router-link>
       </div>
@@ -126,7 +126,7 @@
     </el-backtop>
   
     <el-backtop :bottom="80" class="backUp" >
-      <el-icon><span style="font-size:20px;font-weight;bold;color:white;">
+      <el-icon><span style="font-size:20px;font-weight:bold;color:white;">
         <font-awesome-icon :icon="['fas', 'arrow-up']" /></span></el-icon>
     </el-backtop>
   </el-container>
@@ -142,7 +142,7 @@ import login from '../authentication/login.vue'
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { getAllBlog } from '@/api/blogFunc';
-import {Login, LogOut} from "@/api/auth";
+import {LogOut} from "@/api/auth";
 import {SUCCESS_REQUEST} from "@/api/status";
 library.add(faHome, fas);
 
@@ -175,15 +175,23 @@ export default {
       keyOk: ''
     });
     const recommendBlogs = ref([]);
-    
+
     const searchKeyword = () => {
-      recommendBlogs.value = []; 
-      Blogs.value.forEach((blog) => {
-        if (blog.title.includes(keyword.keyOk) || blog.content.includes(keyword.keyOk)) {
-          recommendBlogs.value.push(blog);
-        }
-      });
+      const keywords = keyword.keyOk.toLowerCase().split(' '); // 拆分用户输入的关键字并转换为小写
+      recommendBlogs.value = Blogs.value.map(blog => {
+        let matches = 0;
+        const regex = new RegExp(keywords.join('|'), 'gi'); // 构建正则表达式，匹配所有关键字，忽略大小写
+        const matchContent = `${blog.title} ${blog.content} ${blog.preface}`.toLowerCase(); // 将博客标题、内容、前言拼接并转换为小写
+        matchContent.replace(regex, () => {
+          matches++;
+          return ''; // 使用空字符串替换匹配到的内容
+        });
+        return { blog, matches };
+      }).filter(item => item.matches > 0)
+          .sort((a, b) => b.matches - a.matches) // 根据匹配度降序排序
+          .map(item => item.blog); // 仅保留博客对象
     };
+
 
     watch(() => keyword.keyOk, () => {
       searchKeyword();
@@ -209,14 +217,14 @@ export default {
         isLogin.value = false;
       }
     };
-    const Login_ed = ref(true);
+    const login_ed = ref(true);
     const logout_ed = ref(false);
     const router = useRouter();
     const logout = () => {
       LogOut().then((res) => {
         if (res.common.code === SUCCESS_REQUEST) {
           logout_ed.value = false;
-          Login_ed.value = true;
+          login_ed.value = true;
           localStorage.clear();
           router.go(0);
           ElMessage.info("账号退出")
@@ -228,11 +236,11 @@ export default {
       if(token != null
        || token !== "")
        {
-         Login_ed.value = false;
+        login_ed.value = false;
         logout_ed.value = true;
        }
        if (token == null) {
-        Login_ed.value = true;
+        login_ed.value = true;
         logout_ed.value = false;
        }
     }
@@ -249,8 +257,8 @@ export default {
       isLogin,
       WantLogin,
       closeLogin,
-      Logined: Login_ed,
-      logouted: logout_ed,
+      login_ed,
+      logout_ed,
       logout
     };
   }
