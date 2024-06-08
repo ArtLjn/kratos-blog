@@ -11,7 +11,6 @@ import (
 	"gopkg.in/gomail.v2"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/user/internal/biz"
-	"kratos-blog/pkg/jwt"
 	"kratos-blog/pkg/model"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
@@ -241,10 +240,7 @@ func (u *userRepo) AdminLogin(ctx context.Context, request *user.AdminLoginReque
 	if request.Name == u.data.c.Admin.Username &&
 		request.Password == u.data.c.Admin.Password {
 		// generate token
-		token, err := jwt.Sign(request.Name)
-		if err != nil {
-			return status(&user.CommonReply{Code: vo.BAD_REQUEST, Result: vo.GENERATE_TOKEN_FAIL}, nil)
-		}
+		token := u.key.SaveToken(request.Name)
 		return status(&user.CommonReply{Code: 200, Result: vo.LOGIN_SUCCESS}, []string{token})
 	}
 	return status(&user.CommonReply{Code: 400, Result: vo.LOGIN_FAIL}, nil)

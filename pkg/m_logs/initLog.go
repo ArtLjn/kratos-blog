@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func InitLog(logger *log.Logger, id, name, version, prefix string) {
+func InitLog(logger *log.Logger, id, name, version, prefix string, cleanOld bool) {
 	c := cron.New(cron.WithSeconds())
 
 	// 每天创建新的日志文件
@@ -21,10 +21,12 @@ func InitLog(logger *log.Logger, id, name, version, prefix string) {
 		InitDailyLogFile(logger, id, name, version, prefix)
 	})
 
-	// 每7天清理旧的日志文件
-	_, err = c.AddFunc("0 0 0 */7 * *", func() {
-		CleanOldFile(0, server.LogOutStreamPath)
-	})
+	if cleanOld {
+		// 每7天清理旧的日志文件
+		_, err = c.AddFunc("0 0 0 */7 * *", func() {
+			CleanOldFile(0, server.LogOutStreamPath)
+		})
+	}
 
 	// 开始定时任务
 	c.Start()
@@ -42,10 +44,10 @@ func InitGinLog(prefix string) {
 		initGinLog(prefix)
 	})
 
-	// 每7天清理旧的日志文件
-	_, err = c.AddFunc("0 0 0 */7 * *", func() {
-		CleanOldFile(0, server.LogOutStreamPath)
-	})
+	//// 每7天清理旧的日志文件
+	//_, err = c.AddFunc("0 0 0 */7 * *", func() {
+	//	CleanOldFile(0, server.LogOutStreamPath)
+	//})
 
 	// 开始定时任务
 	c.Start()

@@ -33,7 +33,7 @@ domain:
   # 是否开启过滤器
   open: false
 mq:
-  url: "amqp://root:123456@localhost:5672/host1"
+  url: "amqp://root:123456@localhost:5672/hongDou"
   # 是否开启处理评论信息
   open: true
   exchange:

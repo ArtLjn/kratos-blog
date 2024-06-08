@@ -16,8 +16,8 @@ data:
     db: 0
     password:
 mail:
-  username: 1521505611@qq.com
-  password: cxhyobbgxcclgifd
+  username: example@qq.com
+  password: xxxxx
   port: 465
   host: smtp.qq.com
 admin:

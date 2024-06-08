@@ -1,59 +1,38 @@
 #!/bin/bash
 
-# 设置 MySQL 版本
-MYSQL_VERSION="8.0.27-1ubuntu20.04"
+# 更新包列表
+apt-get update
 
-# 设置 MYSQL 密码
-MYSQL_ROOT_PASSWORD="123456"
+# 安装 MySQL Server
+DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
+DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-client
 
-# 设置下载链接（使用阿里云的镜像源）
-DOWNLOAD_URL="https://mirrors.aliyun.com/mysql/MySQL-8.0/mysql-server_${MYSQL_VERSION}_amd64.deb-bundle.tar"
 
-# 创建临时目录
-TEMP_DIR=$(mktemp -d)
+# 启动 MySQL 服务
+service mysql start
 
-# 下载 MySQL
-echo "Downloading MySQL ${MYSQL_VERSION} from Aliyun Mirror..."
-#wget -O ${TEMP_DIR}/mysql-server.deb-bundle.tar ${DOWNLOAD_URL}
+# 确保 MySQL 服务已启动
+sleep 5
 
-# 检查下载是否成功
-#if [ $? -ne 0 ]; then
-#    echo "Failed to download MySQL from ${DOWNLOAD_URL}"
-#    exit 1
-#fi
-cp -r  mysql-server_8.0.27-1ubuntu20.04_amd64.deb-bundle.tar ${TEMP_DIR}/mysql-server.deb-bundle.tar
-# 解压 MySQL
-echo "Extracting MySQL..."
-tar -xf ${TEMP_DIR}/mysql-server.deb-bundle.tar -C ${TEMP_DIR}
+# 进行 MySQL 安全设置和密码更新
+mysql -u root <<EOF
+INSTALL PLUGIN validate_password SONAME 'validate_password.so';
+SET GLOBAL validate_password_policy=0;
+SET GLOBAL validate_password_mixed_case_count=0;
+SET GLOBAL validate_password_number_count=0;
+SET GLOBAL validate_password_special_char_count=0;
+SET GLOBAL validate_password_length=6;
+SHOW VARIABLES LIKE 'validate_password%';
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '123456';
+UPDATE mysql.user SET Host='%' WHERE User='root' AND Host='localhost';FLUSH PRIVILEGES;
+EOF
 
-# 检查解压是否成功
-if [ $? -ne 0 ]; then
-    echo "Failed to extract MySQL tar file"
-    exit 1
-fi
+# 创建 hongDou 数据库
+mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS hongDou CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
 
-# 配置预先设置文件，以避免在安装过程中出现交互提示
-echo "Configuring preseed file for MySQL installation..."
-echo "mysql-community-server mysql-community-server/root-pass password ${MYSQL_ROOT_PASSWORD}" |  debconf-set-selections
-echo "mysql-community-server mysql-community-server/re-root-pass password ${MYSQL_ROOT_PASSWORD}" |  debconf-set-selections
-
-# 安装 MySQL
-echo "Installing MySQL..."
-dpkg -i ${TEMP_DIR}/mysql-common_${MYSQL_VERSION}_amd64.deb
-dpkg -i ${TEMP_DIR}/mysql-community-client-plugins_${MYSQL_VERSION}_amd64.deb
-dpkg -i ${TEMP_DIR}/mysql-community-client-core_${MYSQL_VERSION}_amd64.deb
-dpkg -i ${TEMP_DIR}/mysql-community-client_${MYSQL_VERSION}_amd64.deb
-dpkg -i ${TEMP_DIR}/mysql-community-server-core_${MYSQL_VERSION}_amd64.deb
-dpkg -i ${TEMP_DIR}/mysql-community-server_${MYSQL_VERSION}_amd64.deb
-
-# 检查安装是否成功
-if [ $? -ne 0 ]; then
-    echo "Failed to install MySQL"
-    exit 1
-fi
-
-# 清理临时文件
-echo "Cleaning up..."
-#rm -rf ${TEMP_DIR}
-
-echo "MySQL ${MYSQL_VERSION} downloaded and installed with default password '${MYSQL_ROOT_PASSWORD}'."
+# 导入 SQL 文件到 hongDou 数据库
+mysql -u root -p123456 hongDou < ../hongDou/sql/blog.sql
+sed -i 's/^bind-address\s*=\s*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf
+service mysql restart
+# 输出 MySQL 状态
+service mysql status

@@ -51,7 +51,7 @@ func newApp(logger log.Logger, hs *http.Server, r registry.Registrar) *kratos.Ap
 func main() {
 	flag.Parse()
 	var logger log.Logger
-	go m_logs.InitLog(&logger, id, Name, Version, "gateway")
+	go m_logs.InitLog(&logger, id, Name, Version, "gateway", true)
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),

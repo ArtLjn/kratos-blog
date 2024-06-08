@@ -1,5 +1,6 @@
 #!/bin/bash
 sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+sed -i 's@//ports.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list
 apt update
 apt-get install -y curl unzip wget
 source ./install_consul.sh

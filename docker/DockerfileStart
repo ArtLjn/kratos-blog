@@ -1,12 +1,15 @@
 FROM ubuntu:20.04
-WORKDIR /usr/local/
-COPY script ./
-COPY hongDou ./
+WORKDIR /root/
+COPY script ./script
+COPY hongDou ./hongDou
 RUN chmod +x ./hongDou/* ./script/*
-RUN ./script/install.sh
-WORKDIR /usr/local/hongDou
-RUN ./start_all.sh
+WORKDIR /root/script/
+RUN ./install.sh
+WORKDIR /root/hongDou/
 EXPOSE 8080
 EXPOSE 3306
 EXPOSE 6379
+EXPOSE 8099
 EXPOSE 8500
+EXPOSE 15672
+CMD ./start_all.sh

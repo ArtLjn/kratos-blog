@@ -17,7 +17,7 @@ data:
     password:
 mail:
   username: example@qq.com
-  password: xxxxxx
+  password: xxxx
   port: 465
   host: smtp.qq.com
 admin:

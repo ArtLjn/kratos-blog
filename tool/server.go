@@ -35,8 +35,6 @@ func NewUploadRepo(data ...string) *UploadRepo {
 
 func init() {
 	// 启动日志服务
-	var logger log.Logger
-	go m_logs.InitLog(&logger, "tool", "tool", "1.0", "tool")
 	// 读取配置文件
 	cfg, err := ini.Load("tool/config.ini")
 	if err != nil {

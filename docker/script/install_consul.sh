@@ -23,6 +23,6 @@ data_dir = "/var/lib/consul"
 EOF
 
 # 后台启动 Consul
-nohup consul agent -dev -client=0.0.0.0 -config-dir=/etc/consul.d &
+nohup consul agent -dev -client=0.0.0.0 -config-dir=/etc/consul.d >/dev/null 2>&1 &
 
 echo "Consul 启动完成。"
