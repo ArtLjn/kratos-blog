@@ -23,7 +23,8 @@
 - redis
 - rabbitmq
 - consul
-- elasticsearch
+- gin
+- jwt
 
 ## 功能特点
 
@@ -49,15 +50,49 @@ Kratos-blog 采用 go-kratos 微服务框架作为后端核心，实现了高并
 
 ## 部署方式
 
-Kratos-blog 可以通过容器化的方式部署，支持 Docker 和 Kubernetes。具体的部署步骤如下：
+Kratos-blog 可以通过容器化的方式部署，支持 Docker，具体的部署步骤如下：
 
-1. 安装 Docker 或 Kubernetes。
-2. 克隆 Kratos-blog 的源代码仓库。
-3. 构建 Docker 镜像或 Kubernetes 部署文件。
-4. 启动 Docker 容器或使用 Kubernetes 部署应用。
-5. 配置数据库连接信息和必要的环境变量。
-6. 访问 Kratos-blog 的入口地址即可开始使用。
-
+### 1. docker部署
+- 使用Dockerfile一键构建镜像
+``` bash
+cd docker
+docker build -t blog:v1 -f DockerfileStart .
+```
+- 直接拉去镜像
+``` bash
+docker pull ljnnb/blog:v1
+```
+- 部署好镜像之后构建容器
+``` bash
+# 创建容器卷(可选)
+docker volume create blog
+docker run -it --name=blog -p 8080:8080 -p 8500:8500 -p 15762:15752 -p 23306:3306 -p 26379:6379 -p 8099:8099 -v blog:/root/hongDou -d ljnnb/blog:v1
+```
+注: 基础配置文件可进入容器之后自行修改
+- 前端在网站nginx配置文件中加上
+``` nginx
+location /api {
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header REMOTE-HOST $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_pass http://127.0.0.1:8080/api;
+}
+location /tool {
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header REMOTE-HOST $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_pass http://127.0.0.1:8099/tool;
+}
+location / {
+    try_files $uri $uri/ @router;
+    index  index.html index.htm;
+}
+location @router {
+    rewrite ^.*$ /index.html last;
+}
+```
 ## 软件截图
 <table>
     <tr>
@@ -82,6 +117,5 @@ Kratos-blog 可以通过容器化的方式部署，支持 Docker 和 Kubernetes�
     </tr>
 </table>
 
-## 总结
 
-Kratos-blog 是一款基于 go-kratos 微服务框架的博客系统，具有丰富的功能和良好的扩展性。通过使用先进的技术和架构，它为用户提供了一个可靠、高效的博客平台，满足了不同用户的写作和分享需求。无论是个人博客还是团队协作，Kratos-blog 都是一个很好的选择。
+
