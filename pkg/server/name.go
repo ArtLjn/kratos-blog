@@ -29,15 +29,15 @@ const (
 // ConfigPath
 
 const (
-	BlogConfPath    = "blog/configs"
-	CommentConfPath = "comment/configs"
-	UserConfPath    = "user/configs"
-	GateWayConfPath = "gateway/configs"
+	//BlogConfPath    = "blog/configs"
+	//CommentConfPath = "comment/configs"
+	//UserConfPath    = "user/configs"
+	//GateWayConfPath = "gateway/configs"
 
-	//BlogConfPath    = "app/blog/configs"
-	//CommentConfPath = "app/comment/configs"
-	//UserConfPath    = "app/user/configs"
-	//GateWayConfPath = "app/gateway/configs"
+	BlogConfPath    = "app/blog/configs"
+	CommentConfPath = "app/comment/configs"
+	UserConfPath    = "app/user/configs"
+	GateWayConfPath = "app/gateway/configs"
 
 	//BlogConfPath    = "../../configs"
 	//CommentConfPath = "../../configs"

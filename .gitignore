@@ -37,6 +37,7 @@ bin/
 .idea/
 *.swp
 
+log
 # 不需要提交的文件
 docker-own
 

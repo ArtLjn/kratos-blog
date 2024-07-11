@@ -186,10 +186,10 @@ func BingPhoto(uri chan string) error {
 func CopyFile(savePath string, src io.Reader) error {
 	// 创建上传目录
 	if !directoryExists(u.UploadPath) {
-		os.MkdirAll(u.UploadPath, os.ModePerm)
-	}
-	if !directoryExists(u.UploadPath) {
-		os.MkdirAll(u.UploadPath, os.ModePerm)
+		err := os.MkdirAll(u.UploadPath, os.ModePerm)
+		if err != nil {
+			return err
+		}
 	}
 	if e := checkPathAvailability(u.UploadPath); e != nil {
 		return fmt.Errorf("Path is not available: %v\n", e)
@@ -199,8 +199,16 @@ func CopyFile(savePath string, src io.Reader) error {
 	if es != nil {
 		return fmt.Errorf("create file error: %v\n", es)
 	}
-	defer f.Close()
-	io.Copy(f, src)
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(f)
+	_, err := io.Copy(f, src)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -227,9 +235,6 @@ func checkPathAvailability(path string) error {
 func directoryExists(path string) bool {
 	fi, err := os.Stat(path)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
 		return false
 	}
 	return fi.IsDir()

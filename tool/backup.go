@@ -30,7 +30,7 @@ func InitBackUp(dns, outPath string) {
 		mysqldump.WithWriter(f),
 	)
 	if err != nil {
-		log.Error("backup error: %v", err)
+		log.Errorf("backup error: %v", err)
 		return
 	}
 	go SendBackupMail(filePath)
@@ -65,6 +65,6 @@ func SendBackupMail(filepath string) {
 	m.Attach(filepath)
 	d := gomail.NewDialer(Mail.Host, Mail.Port, Mail.Username, Mail.Password)
 	if err := d.DialAndSend(m); err != nil {
-		log.Error("send mail error: %v", err)
+		log.Errorf("send mail error: %v", err)
 	}
 }

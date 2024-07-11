@@ -1,0 +1,25 @@
+server:
+  http:
+    addr: 0.0.0.0:8001
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9001
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    source: root:123456@tcp(127.0.0.1:3306)/hongDou
+  redis:
+    addr: 127.0.0.1:6379
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    db: 0
+    password:
+mail:
+  username: example@qq.com
+  password: xxxx
+  port: 465
+  host: smtp.qq.com
+admin:
+  username: test
+  password: test

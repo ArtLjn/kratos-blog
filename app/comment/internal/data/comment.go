@@ -148,35 +148,61 @@ func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardReque
 	return &comment.CreateRewardReply{Code: vo.SUCCESS_REQUEST, Result: vo.TALK_SUCCESS}
 }
 
-func (c *commRepo) ExtractParentComments(ctx context.Context,
-
-	req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply {
-	commentParent, err := c.data.pf.QueryFunc(bean.CommentParent{},
-		map[string]interface{}{"article_id": req.Id}, true)
-	var parents []bean.CommentParent
-	err = c.data.pf.ParseJSONToStruct(commentParent, &parents)
+func (c *commRepo) ExtractParentComments(ctx context.Context, req *comment.ExtractParentCommentsRequest) *comment.ExtractParentCommentsReply {
+	commentParent, err := c.data.pf.QueryFunc(bean.CommentParent{}, map[string]interface{}{"article_id": req.Id}, true)
 	if err != nil {
 		c.log.Log(log.LevelError, err)
 		return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
 	}
-	var mapList []*comment.ExtractResult
+
+	commentSub, err := c.data.pf.QueryFunc(bean.CommentSubTwo{}, map[string]interface{}{"article_id": req.Id}, true)
+	if err != nil {
+		c.log.Log(log.LevelError, err)
+		return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
+	}
+
+	var (
+		parents []bean.CommentParent
+		subs    []bean.CommentSubTwo
+		mapList []*comment.ExtractResult
+	)
+
+	if err := c.data.pf.ParseJSONToStruct(commentParent, &parents); err != nil {
+		c.log.Log(log.LevelError, err)
+		return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
+	}
+
+	if err := c.data.pf.ParseJSONToStruct(commentSub, &subs); err != nil {
+		c.log.Log(log.LevelError, err)
+		return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
+	}
+
 	for i := 0; i < len(parents); i++ {
 		c.mu.Lock()
 		parent := parents[i]
-		sub, err := c.data.pf.QueryFunc(bean.CommentSubTwo{}, map[string]interface{}{
-			"article_id": req.Id,
-			"parent_id":  parent.ID,
-		}, true)
-		if err != nil {
-			continue
-		}
 		var mp comment.ExtractResult
+		if err := c.data.pf.ParseJSONToStruct(parent, &mp); err != nil {
+			c.mu.Unlock()
+			c.log.Log(log.LevelError, err)
+			return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
+		}
+
 		var child []*comment.CommentSubResult
-		c.data.pf.ParseJSONToStruct(parent, &mp)
-		c.data.pf.ParseJSONToStruct(sub, &child)
+		for j := 0; j < len(subs); j++ {
+			if subs[j].ParentID == parent.ID {
+				var s comment.CommentSubResult
+				if err := c.data.pf.ParseJSONToStruct(subs[j], &s); err != nil {
+					c.mu.Unlock()
+					c.log.Log(log.LevelError, err)
+					return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
+				}
+				child = append(child, &s)
+			}
+		}
 		mp.Child = child
 		mapList = append(mapList, &mp)
 		c.mu.Unlock()
 	}
+
 	return &comment.ExtractParentCommentsReply{Code: vo.SUCCESS_REQUEST, Result: vo.QUERY_SUCCESS, List: mapList}
 }

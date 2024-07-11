@@ -19,5 +19,12 @@ func InitRouter(r *gin.Engine) {
 				"msg":  "success",
 			})
 		})
+		group.GET("/export_md", func(context *gin.Context) {
+			exportData(NewExportData())
+			context.JSON(200, gin.H{
+				"code": 200,
+				"msg":  "success",
+			})
+		})
 	}
 }

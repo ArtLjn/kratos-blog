@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
@@ -56,7 +55,6 @@ func main() {
 	flag.Parse()
 	var logger log.Logger
 	go m_logs.InitLog(&logger, id, Name, Version, "blog", false)
-	fmt.Println(flagconf)
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),
@@ -83,7 +81,7 @@ func main() {
 	defer cleanup()
 
 	// start and wait for stop signal
-	if err := app.Run(); err != nil {
+	if err = app.Run(); err != nil {
 		panic(err)
 	}
 }

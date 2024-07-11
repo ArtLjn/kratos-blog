@@ -1,0 +1,3 @@
+consul:
+  address: localhost:8500
+  scheme: http

@@ -37,10 +37,10 @@ func NewBlogRepo(data *Data, logger log.Logger) biz.BlogRepo {
 
 // CreateBlog :dev
 func (r *blogRepo) CreateBlog(ctx context.Context, request *blog.CreateBlogRequest) (string, error) {
-	var blog Blog
+	var b Blog
 	re := r.createBlogFromRequest(request)
-	blog = re()
-	if err := r.data.db.Create(&blog).Error; err != nil {
+	b = re()
+	if err := r.data.db.Create(&b).Error; err != nil {
 		r.log.Info(err)
 		return vo.INSERT_ERROR, err
 	}
@@ -81,7 +81,7 @@ func (r *blogRepo) UpdateIndividualFields(ctx context.Context, request *blog.Upd
 	}
 	if err := r.data.pf.UpdateFunc(Blog{}, nil, map[string]interface{}{condName: request.Status},
 		true); err != nil {
-		err := errors.New(vo.UPDATE_FAIL)
+		err = errors.New(vo.UPDATE_FAIL)
 		r.log.Log(log.LevelError, err)
 		return vo.UPDATE_FAIL, err
 	}
@@ -132,7 +132,6 @@ func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogReques
 // ListBlog :dev query all blog posts based on permissions
 func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) (string,
 	[]*blog.BlogData, error) {
-	r.log.Info("日志记录")
 	var (
 		blogs []*blog.BlogData
 		err   error

@@ -1,5 +1,10 @@
 # Kratos-Blog 微服务博客系统
+<div>
 
+![Go version](https://img.shields.io/badge/go-%3E%3Dv1.18-9cf)
+![Release](https://img.shields.io/badge/release-1.1-green.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+</div>
 一个基于Golang的微服务博客系统
 
 - 后端基于 [golang](https://go.dev/) + [go-kratos](https://go-kratos.dev/)
