@@ -24,7 +24,7 @@ func InitLog(logger *log.Logger, id, name, version, prefix string, cleanOld bool
 	if cleanOld {
 		// 每7天清理旧的日志文件
 		_, err = c.AddFunc("0 0 0 */7 * *", func() {
-			CleanOldFile(0, server.LogOutStreamPath)
+			CleanOldFile(2, server.LogOutStreamPath)
 		})
 	}
 
@@ -46,7 +46,7 @@ func InitGinLog(prefix string) {
 
 	//// 每7天清理旧的日志文件
 	//_, err = c.AddFunc("0 0 0 */7 * *", func() {
-	//	CleanOldFile(0, server.LogOutStreamPath)
+	//	CleanOldFile(2, server.LogOutStreamPath)
 	//})
 
 	// 开始定时任务

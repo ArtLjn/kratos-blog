@@ -14,7 +14,8 @@ type BlogRepo interface {
 	UpdateIndividualFields(ctx context.Context, request *pb.UpdateIndividualFieldsRequest) (string, error)
 	GetByTagName(ctx context.Context, request *pb.GetBlogRequest) (string, []*pb.BlogData, error)
 	ListBlog(ctx context.Context, request *pb.ListBlogRequest) (string, []*pb.BlogData, error)
-	QueryBlogById(ctx context.Context, request *pb.GetBlogIDRequest) (msg string, da pb.BlogData, e error)
+	QueryBlogById(ctx context.Context, request *pb.GetBlogIDRequest) (msg string, da *pb.BlogData, e error)
+	SetBlogVisit(id int)
 	QueryBlogByTitle(ctx context.Context, request *pb.GetBlogByTitleRequest) (string, []*pb.BlogData, error)
 	UpdateOnly(ctx context.Context, request *pb.UpdateOnlyRequest) *pb.UpdateOnlyReply
 	CacheBlog(ctx context.Context, request *pb.CreateBlogRequest) *pb.CreateBlogReply
@@ -146,9 +147,10 @@ func (uc *BlogUseCase) QueryBlogByID(ctx context.Context, request *pb.GetBlogIDR
 	}
 	if err != nil {
 		uc.log.Log(log.LevelError, err)
-		return status(400, u, &d)
+		return status(400, u, d)
 	}
-	return status(200, u, &d)
+	uc.repo.SetBlogVisit(int(request.GetId()))
+	return status(200, u, d)
 }
 
 func (uc *BlogUseCase) QueryBlogByTitle(ctx context.Context, request *pb.GetBlogByTitleRequest) *pb.GetBlogByTitleReply {

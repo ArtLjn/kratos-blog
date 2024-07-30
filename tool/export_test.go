@@ -7,7 +7,9 @@
 
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestExportData(t *testing.T) {
 	exportData(NewExportData(WithExportPath("")))

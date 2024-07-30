@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/app/blog/internal/biz"
@@ -151,27 +152,30 @@ func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) 
 
 // QueryBlogById :dev more blog post ID query blog posts
 func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDRequest) (msg string,
-	da blog.BlogData, e error) {
+	da *blog.BlogData, e error) {
 	var b Blog
 	if err := r.data.db.Where("id = ?", request.Id).First(&b).Error; err != nil {
 		r.log.Errorf("query error %s", err)
-		return vo.QUERY_FAIL, blog.BlogData{}, err
+		return vo.QUERY_FAIL, &blog.BlogData{}, fmt.Errorf(vo.QUERY_FAIL)
 	}
 	if err := r.data.pf.ParseJSONToStruct(b, &da); err != nil {
-		return vo.JSON_ERROR, blog.BlogData{}, err
+		return vo.JSON_ERROR, &blog.BlogData{}, fmt.Errorf(vo.JSON_ERROR)
 	}
 
 	if !b.Appear && !request.GetPermission().GetAdmin() {
-		return vo.FORBIDDEN_ACCESS, blog.BlogData{}, nil
+		return vo.FORBIDDEN_ACCESS, &blog.BlogData{}, fmt.Errorf(vo.FORBIDDEN_ACCESS)
 	}
-	strID := strconv.Itoa(int(request.Id))
+	return vo.QUERY_SUCCESS, da, nil
+}
+
+func (r *blogRepo) SetBlogVisit(id int) {
+	strID := strconv.Itoa(id)
 	if r.hasHashField(TableName, strID) {
 		currentCount := r.getHashField(TableName, strID)
 		r.setHashField(TableName, strID, currentCount+1)
 	} else {
 		r.setHashField(TableName, strID, 1)
 	}
-	return vo.QUERY_SUCCESS, da, nil
 }
 
 // UpdateBlogVisitsCount :dev update the number of blog post visits
@@ -276,6 +280,12 @@ func (r *blogRepo) AddSuggestBlog(ctx context.Context, request *blog.SuggestBlog
 	_, data, err := r.QueryBlogById(ctx, &blog.GetBlogIDRequest{Id: request.GetId()})
 	if err != nil {
 		r.log.Log(log.LevelError, err)
+		return &blog.SuggestBlogReply{
+			Common: &blog.CommonReply{
+				Code:   vo.BAD_REQUEST,
+				Result: err.Error(),
+			},
+		}
 	}
 	r.setCacheList(SuggestBlog, []interface{}{data})
 	return &blog.SuggestBlogReply{

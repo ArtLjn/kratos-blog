@@ -122,5 +122,8 @@ location @router {
     </tr>
 </table>
 
+### 代办
+- [ ] consul 多集群部署
+- [ ] k8s容器编排管理
 
 

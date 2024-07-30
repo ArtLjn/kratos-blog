@@ -91,8 +91,8 @@
         </router-link>
       </div>
     </el-header>
-      <el-dialog v-model="isOK" style="min-height:450px;height:auto;width:90%;" class="search"
-      :lock-scroll="false" accesskey="F"
+      <el-dialog v-model="isOK" style="min-height:450px;height:auto;width:80%;border-radius: 20px;" class="search"
+      :lock-scroll="false" accesskey="F" :before-close="clearContent()"
       >
         <music class="audio"/>
         <div>
@@ -244,6 +244,9 @@ export default {
         logout_ed.value = false;
        }
     }
+    const clearContent = () => {
+      keyword.keyOk = '';
+    }
     return {
       drawer,
       isOK,
@@ -259,7 +262,8 @@ export default {
       closeLogin,
       login_ed,
       logout_ed,
-      logout
+      logout,
+      clearContent
     };
   }
 };
@@ -272,9 +276,6 @@ export default {
     left: 0;
     width:calc(100%);
     z-index: 999;
-  }
-  .scrolled {
-    background-color: red;
   }
   .audio{
     display: none;
@@ -295,9 +296,6 @@ export default {
     .daohang{
       display: block;
       margin-left: 10px;
-    }
-    .drawer{
-      display: block;
     }
     .to{
       display: flex;

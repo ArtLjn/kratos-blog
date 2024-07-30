@@ -8,99 +8,17 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
-	"github.com/robfig/cron/v3"
 	"github.com/thedevsaddam/gojsonq"
-	"gopkg.in/ini.v1"
 	"io"
-	"kratos-blog/pkg/m_logs"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
 	h2 "net/http"
-	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
-
-var u *UploadRepo
-
-func NewUploadRepo(data ...string) *UploadRepo {
-	return &UploadRepo{UploadPath: data[0], Domain: data[1], MaxSize: data[2], Url: data[3]}
-}
-
-func init() {
-	// 启动日志服务
-	// 读取配置文件
-	cfg, err := ini.Load("tool/config.ini")
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-	u = NewUploadRepo(
-		cfg.Section("upload").Key("path").String(),
-		cfg.Section("upload").Key("domain").String(),
-		cfg.Section("upload").Key("maxsize").String(),
-		cfg.Section("upload").Key("uri").String(),
-	)
-
-	mailKey := cfg.Section("mail")
-	port, _ := mailKey.Key("port").Int()
-	Mail = NewMail(
-		mailKey.Key("username").String(),
-		mailKey.Key("host").String(),
-		port,
-		mailKey.Key("password").String(),
-	)
-
-	redSql := cfg.Section("mysql")
-	NewDB(
-		redSql.Key("username").String(),
-		redSql.Key("password").String(),
-		redSql.Key("host").String(),
-		redSql.Key("port").String(),
-		redSql.Key("database").String(),
-		redSql.Key("charset").String(),
-	)
-
-	F = NewFilter(
-		strings.Split(cfg.Section("filter").Key("domain").String(), ","),
-		cfg.Section("filter").Key("open").MustBool(false),
-		strings.Split(cfg.Section("filter").Key("whiteList").String(), ","),
-		cfg.Section("filter").Key("key").String(),
-	)
-	Host = cfg.Section("server").Key("host").String()
-	Port = cfg.Section("server").Key("port").String()
-
-	ProxyPath = u.UploadPath
-
-	c := cron.New()
-	_, err = c.AddFunc("0 0 * * *", func() {
-		go UpdatePhoto()
-	})
-	OutPath = redSql.Key("backup_path").String()
-	backupCycle := redSql.Key("backup_cycle").String()
-	//设置定时任务，每7天执行一次
-	_, err = c.AddFunc("0 0 */"+backupCycle+" * *", func() {
-		m_logs.CleanOldFile(0, OutPath)
-		InitBackUp(Dns, OutPath)
-	})
-	if err != nil {
-		return
-	}
-	c.Start()
-}
-
-type UploadRepo struct {
-	UploadPath string //上传路径
-	Domain     string // 域名
-	MaxSize    string // 最大文件大小（字节）
-	Url        string // 外部uri
-}
 
 // GinUploadImg :dev 使用gin框架进行文件上传
 func GinUploadImg(ctx *gin.Context) {
@@ -124,7 +42,7 @@ func GinUploadImg(ctx *gin.Context) {
 	// 提取后缀名
 	extension := originName[lastDotIndex+1:]
 	newFileName := fmt.Sprintf("%s%s%s", uuid.New().String()[:8], ".", extension)
-	savePath := filepath.Join(u.UploadPath, newFileName)
+	savePath := filepath.Join(FileSavaPath, newFileName)
 	getLastIndex(&u.Domain)
 	if err := ctx.SaveUploadedFile(file, savePath); err != nil {
 		ctx.JSON(vo.BAD_REQUEST, res.SetCode(vo.BAD_REQUEST).SetInfo("上传文件失败").GetCodeInfo())
@@ -133,15 +51,6 @@ func GinUploadImg(ctx *gin.Context) {
 	uri := fmt.Sprintf("%s%s", u.Domain, newFileName)
 	ctx.JSON(vo.SUCCESS_REQUEST, res.SetCode(vo.SUCCESS_REQUEST).SetInfo("上传成功").SetData(uri).GetCodeInfo())
 }
-
-// CurrentBing :dev 今日Bing图片
-type CurrentBing struct {
-	Url            string
-	lastUpdateTime time.Time
-	mu             sync.Mutex
-}
-
-var Current CurrentBing
 
 // GetBingPhoto :dev GetBingPhoto 获取Bing每日随机图片
 func GetBingPhoto(ctx *gin.Context) {
@@ -171,7 +80,7 @@ func BingPhoto(uri chan string) error {
 		}
 		defer res.Body.Close()
 		newImgName := fmt.Sprintf("%s%s", time.Now().Format("2006-01-02"), "_bing.jpg")
-		savePath := filepath.Join(u.UploadPath, newImgName)
+		savePath := filepath.Join(FileSavaPath, newImgName)
 		if ue := CopyFile(savePath, res.Body); ue != nil {
 			return ue
 		}
@@ -183,95 +92,82 @@ func BingPhoto(uri chan string) error {
 	return fmt.Errorf("The image URI parsing failed \n")
 }
 
-func CopyFile(savePath string, src io.Reader) error {
-	// 创建上传目录
-	if !directoryExists(u.UploadPath) {
-		err := os.MkdirAll(u.UploadPath, os.ModePerm)
+func BackUpSql(ctx *gin.Context) {
+	InitBackUp(Dns, OutPath)
+	ctx.JSON(200, gin.H{
+		"code": 200,
+		"msg":  "success",
+	})
+}
+
+func ExportMD(ctx *gin.Context) {
+	needDownload := ctx.Query("download")
+	need, err := strconv.ParseBool(needDownload)
+	if err != nil {
+		ctx.JSON(200, gin.H{
+			"code": 500,
+			"msg":  "needDownload must be bool",
+		})
+		return
+	}
+	exportData(NewExportData())
+	if need {
+		buf, err := ZipToMemory(filepath.Join(u.UploadPath, "md"))
 		if err != nil {
-			return err
+			ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+			return
 		}
-	}
-	if e := checkPathAvailability(u.UploadPath); e != nil {
-		return fmt.Errorf("Path is not available: %v\n", e)
-	}
-	// 创建上传文件
-	f, es := os.Create(savePath)
-	if es != nil {
-		return fmt.Errorf("create file error: %v\n", es)
-	}
-	defer func(f *os.File) {
-		err := f.Close()
+
+		// 设置响应头
+		ctx.Header("Content-Disposition", "attachment; filename=md.zip")
+		ctx.Header("Content-Type", "application/zip")
+		ctx.Header("Content-Length", fmt.Sprintf("%d", buf.Len()))
+
+		// 将缓冲区中的数据写入响应
+		_, err = io.Copy(ctx.Writer, buf)
 		if err != nil {
-			panic(err)
+			ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
 		}
-	}(f)
-	_, err := io.Copy(f, src)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func getLastIndex(uri *string) {
-	n := len(*uri)
-	lastIndex := (*uri)[n-1 : n]
-	if lastIndex != "/" {
-		*uri = fmt.Sprintf("%s%s", *uri, "/")
+	} else {
+		ctx.JSON(200, gin.H{
+			"code": 200,
+			"msg":  "success",
+		})
 	}
 }
 
-// 检查路径是否可用
-func checkPathAvailability(path string) error {
-	// 尝试在给定路径下创建一个临时文件
-	f, err := os.CreateTemp(path, "temple.*")
+func BackUpAllC(ctx *gin.Context) {
+	BackUpAll()
+	needDownload := ctx.Query("download")
+	need, err := strconv.ParseBool(needDownload)
 	if err != nil {
-		return err // 返回错误，路径不可用
+		ctx.JSON(200, gin.H{
+			"code": 500,
+			"msg":  "needDownload must be bool",
+		})
+		return
 	}
-	defer os.Remove(f.Name()) // 删除临时文件
-	f.Close()                 // 关闭文件句柄
-	return nil
-}
+	if need {
+		buf, err := ZipToMemory(u.UploadPath)
+		if err != nil {
+			ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+			return
+		}
 
-func directoryExists(path string) bool {
-	fi, err := os.Stat(path)
-	if err != nil {
-		return false
+		// 设置响应头
+		ctx.Header("Content-Disposition", "attachment; filename=backup.zip")
+		ctx.Header("Content-Type", "application/zip")
+		ctx.Header("Content-Length", fmt.Sprintf("%d", buf.Len()))
+
+		// 将缓冲区中的数据写入响应
+		_, err = io.Copy(ctx.Writer, buf)
+		if err != nil {
+			ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		}
+	} else {
+		ctx.JSON(200, gin.H{
+			"code": 200,
+			"msg":  "success",
+		})
 	}
-	return fi.IsDir()
-}
-
-// ParseSize parses a size string like "10MB" and returns the number of bytes.
-func ParseSize(sizeStr string) (int64, error) {
-	// Remove any potential spaces from the string.
-	sizeStr = strings.TrimSpace(sizeStr)
-
-	// Use regular expression to match the number and unit.
-	re := regexp.MustCompile(`^(\d+)([A-Za-z]+)$`)
-	matches := re.FindStringSubmatch(sizeStr)
-	if len(matches) != 3 {
-		return 0, fmt.Errorf("invalid size format: %s", sizeStr)
-	}
-
-	// Parse the number as an int64.
-	size, err := strconv.ParseInt(matches[1], 10, 64)
-	if err != nil {
-		return 0, err
-	}
-
-	// Convert the unit to bytes.
-	var bytes int64
-	switch strings.ToUpper(matches[2]) {
-	case "B":
-		bytes = size
-	case "KB":
-		bytes = size * 1024
-	case "MB":
-		bytes = size * 1024 * 1024
-	case "GB":
-		bytes = size * 1024 * 1024 * 1024
-	default:
-		return 0, fmt.Errorf("unsupported size unit: %s", matches[2])
-	}
-
-	return bytes, nil
 }

@@ -36,24 +36,6 @@ func InitBackUp(dns, outPath string) {
 	go SendBackupMail(filePath)
 }
 
-type MailS struct {
-	Username string
-	Host     string
-	Port     int
-	Password string
-}
-
-func NewMail(username, host string, port int, password string) MailS {
-	return MailS{
-		Username: username,
-		Host:     host,
-		Port:     port,
-		Password: password,
-	}
-}
-
-var Mail MailS
-
 func SendBackupMail(filepath string) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", Mail.Username)
@@ -67,4 +49,9 @@ func SendBackupMail(filepath string) {
 	if err := d.DialAndSend(m); err != nil {
 		log.Errorf("send mail error: %v", err)
 	}
+}
+
+func BackUpAll() {
+	InitBackUp(Dns, OutPath)
+	exportData(NewExportData())
 }
