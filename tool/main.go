@@ -22,12 +22,13 @@ import (
 )
 
 var (
-	Host         string
-	Port         string
-	u            *UploadRepo
-	FileSavaPath string
-	Current      CurrentBing
-	Mail         MailS
+	Host               string
+	Port               string
+	u                  *UploadRepo
+	FileSavaPath       string
+	Current            CurrentBing
+	Mail               MailS
+	BackUpSqlSendEmail bool
 )
 
 func main() {
@@ -95,6 +96,7 @@ func (b *BuilderConf) BuilderEmail() ConfigBuilder {
 		port,
 		mailKey.Key("password").String(),
 	)
+	BackUpSqlSendEmail = b.f.Section("mysql").Key("backup_email").MustBool(false)
 	return b
 }
 
@@ -108,6 +110,7 @@ func (b *BuilderConf) BuilderMysql() ConfigBuilder {
 		redSql.Key("database").String(),
 		redSql.Key("charset").String(),
 	)
+
 	return b
 }
 
@@ -132,7 +135,7 @@ func (b *BuilderConf) BuilderCronTask() ConfigBuilder {
 	_, err := c.AddFunc("0 0 * * *", func() {
 		go UpdatePhoto()
 	})
-	OutPath = b.f.Section("mysql").Key("backup_path").String()
+	OutPath = filepath.Join(b.f.Section("upload").Key("path").String(), "sql")
 	backupCycle := b.f.Section("mysql").Key("backup_cycle").String()
 	_, err = c.AddFunc("0 0 */"+backupCycle+" * *", func() {
 		m_logs.CleanOldFile(0, OutPath)

@@ -33,7 +33,9 @@ func InitBackUp(dns, outPath string) {
 		log.Errorf("backup error: %v", err)
 		return
 	}
-	go SendBackupMail(filePath)
+	if BackUpSqlSendEmail {
+		go SendBackupMail(filePath)
+	}
 }
 
 func SendBackupMail(filepath string) {

@@ -17,5 +17,6 @@ func InitRouter(r *gin.Engine) {
 		group.GET("/backup_sql", BackUpSql)
 		group.GET("/export_md", ExportMD)
 		group.GET("/backupAll", BackUpAllC)
+		group.POST("/zipToRecover", ZipToRecover)
 	}
 }

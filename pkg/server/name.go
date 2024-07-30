@@ -33,7 +33,7 @@ const (
 	CommentConfPath = "app/comment/configs"
 	UserConfPath    = "app/user/configs"
 	GateWayConfPath = "app/gateway/configs"
-	TooPath         = "tool/config.ini"
+	TooPath         = "/Users/ljn/Documents/HongDou-Go-Blog/kratos-blog/tool/config.ini"
 )
 
 // logPath

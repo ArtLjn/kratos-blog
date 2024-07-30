@@ -10,6 +10,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"io"
 	"os"
@@ -81,4 +82,90 @@ func ZipToMemory(src string) (*bytes.Buffer, error) {
 	}
 
 	return buf, nil
+}
+
+func Unzip(src, out string) error {
+	archive, err := zip.OpenReader(src)
+	if err != nil {
+		log.Error(err)
+		return fmt.Errorf("reader error %v", err)
+	}
+	defer archive.Close()
+	for _, f := range archive.File {
+		fp := filepath.Join(out, f.Name)
+		if f.FileInfo().IsDir() {
+			fmt.Println("creating directory...")
+			os.MkdirAll(fp, os.ModePerm)
+			continue
+		}
+
+		if err = os.MkdirAll(filepath.Dir(fp), os.ModePerm); err != nil {
+			log.Error(err)
+			return err
+		}
+
+		dstFile, err := os.OpenFile(fp, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		fileInArchive, err := f.Open()
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		if _, err := io.Copy(dstFile, fileInArchive); err != nil {
+			log.Error(err)
+			return err
+		}
+
+		dstFile.Close()
+		fileInArchive.Close()
+	}
+	return nil
+
+}
+
+func UnUploadZip(reader io.ReaderAt, size int64, out string) error {
+	archive, err := zip.NewReader(reader, size)
+	if err != nil {
+		log.Error(err)
+		return fmt.Errorf("reader error %v", err)
+	}
+
+	for _, f := range archive.File {
+		fp := filepath.Join(out, f.Name)
+		if f.FileInfo().IsDir() {
+			fmt.Println("creating directory...")
+			os.MkdirAll(fp, os.ModePerm)
+			continue
+		}
+
+		if err = os.MkdirAll(filepath.Dir(fp), os.ModePerm); err != nil {
+			log.Error(err)
+			return err
+		}
+
+		dstFile, err := os.OpenFile(fp, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		fileInArchive, err := f.Open()
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		if _, err := io.Copy(dstFile, fileInArchive); err != nil {
+			log.Error(err)
+			return err
+		}
+		dstFile.Close()
+		fileInArchive.Close()
+
+	}
+	return nil
 }

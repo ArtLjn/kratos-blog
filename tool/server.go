@@ -6,8 +6,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
 	"github.com/thedevsaddam/gojsonq"
 	"io"
@@ -94,40 +96,20 @@ func BingPhoto(uri chan string) error {
 
 func BackUpSql(ctx *gin.Context) {
 	InitBackUp(Dns, OutPath)
-	ctx.JSON(200, gin.H{
-		"code": 200,
-		"msg":  "success",
-	})
+	if GetNeedDownload(ctx) {
+		HttpDownload(ctx, filepath.Join(u.UploadPath, "sql"), "sql")
+	} else {
+		ctx.JSON(200, gin.H{
+			"code": 200,
+			"msg":  "success",
+		})
+	}
 }
 
 func ExportMD(ctx *gin.Context) {
-	needDownload := ctx.Query("download")
-	need, err := strconv.ParseBool(needDownload)
-	if err != nil {
-		ctx.JSON(200, gin.H{
-			"code": 500,
-			"msg":  "needDownload must be bool",
-		})
-		return
-	}
 	exportData(NewExportData())
-	if need {
-		buf, err := ZipToMemory(filepath.Join(u.UploadPath, "md"))
-		if err != nil {
-			ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
-			return
-		}
-
-		// 设置响应头
-		ctx.Header("Content-Disposition", "attachment; filename=md.zip")
-		ctx.Header("Content-Type", "application/zip")
-		ctx.Header("Content-Length", fmt.Sprintf("%d", buf.Len()))
-
-		// 将缓冲区中的数据写入响应
-		_, err = io.Copy(ctx.Writer, buf)
-		if err != nil {
-			ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
-		}
+	if GetNeedDownload(ctx) {
+		HttpDownload(ctx, filepath.Join(u.UploadPath, "md"), "md")
 	} else {
 		ctx.JSON(200, gin.H{
 			"code": 200,
@@ -138,36 +120,80 @@ func ExportMD(ctx *gin.Context) {
 
 func BackUpAllC(ctx *gin.Context) {
 	BackUpAll()
-	needDownload := ctx.Query("download")
-	need, err := strconv.ParseBool(needDownload)
-	if err != nil {
-		ctx.JSON(200, gin.H{
-			"code": 500,
-			"msg":  "needDownload must be bool",
-		})
-		return
-	}
-	if need {
-		buf, err := ZipToMemory(u.UploadPath)
-		if err != nil {
-			ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
-			return
-		}
-
-		// 设置响应头
-		ctx.Header("Content-Disposition", "attachment; filename=backup.zip")
-		ctx.Header("Content-Type", "application/zip")
-		ctx.Header("Content-Length", fmt.Sprintf("%d", buf.Len()))
-
-		// 将缓冲区中的数据写入响应
-		_, err = io.Copy(ctx.Writer, buf)
-		if err != nil {
-			ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
-		}
+	if GetNeedDownload(ctx) {
+		HttpDownload(ctx, u.UploadPath, "backup")
 	} else {
 		ctx.JSON(200, gin.H{
 			"code": 200,
 			"msg":  "success",
 		})
 	}
+}
+
+func GetNeedDownload(ctx *gin.Context) bool {
+	needDownload := ctx.Query("download")
+	need, err := strconv.ParseBool(needDownload)
+	if err != nil {
+		log.Error("needDownload must be bool")
+		return false
+	}
+	return need
+}
+
+func HttpDownload(ctx *gin.Context, path, zipName string) {
+	buf, err := ZipToMemory(path)
+	if err != nil {
+		ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		return
+	}
+
+	// 设置响应头
+	ctx.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip", zipName))
+	ctx.Header("Content-Type", "application/zip")
+	ctx.Header("Content-Length", fmt.Sprintf("%d", buf.Len()))
+
+	// 将缓冲区中的数据写入响应
+	_, err = io.Copy(ctx.Writer, buf)
+	if err != nil {
+		ctx.String(h2.StatusInternalServerError, fmt.Sprintf("Error: %v", err))
+		return
+	}
+}
+
+func ZipToRecover(ctx *gin.Context) {
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(h2.StatusBadRequest, gin.H{"code": 400, "msg": "No file is received"})
+		return
+	}
+	filePrefix := strings.Split(file.Filename, ".")
+	if len(filePrefix) < 2 {
+		ctx.JSON(h2.StatusBadRequest, gin.H{"code": 400, "msg": "No file is received"})
+		return
+	}
+	if filePrefix[len(filePrefix)-1] != "zip" {
+		ctx.JSON(h2.StatusBadRequest, gin.H{"code": 400, "msg": "Unsupported file types"})
+		return
+	}
+	uploadedFile, err := file.Open()
+	if err != nil {
+		ctx.JSON(h2.StatusInternalServerError, gin.H{"code": 400, "msg": "Failed to open the uploaded file"})
+		return
+	}
+	defer uploadedFile.Close()
+
+	// Create a buffer to read the uploaded file into
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, uploadedFile); err != nil {
+		ctx.JSON(h2.StatusInternalServerError, gin.H{"code": 400, "msg": "Failed to read the uploaded file"})
+		return
+	}
+
+	// Unzip the file directly from the buffer
+	if err := UnUploadZip(bytes.NewReader(buf.Bytes()), int64(buf.Len()), u.UploadPath); err != nil {
+		ctx.JSON(h2.StatusInternalServerError, gin.H{"code": 400, "msg": "Failed to unzip the file"})
+		return
+	}
+
+	ctx.JSON(h2.StatusOK, gin.H{"code": 200, "msg": "File unzipped successfully"})
 }
