@@ -28,6 +28,8 @@ export const req = (method,url,data = null,isHeader = true,header = null) => {
             ElMessage.error(res.data.result)
         } else if (res.data.common.result) {
             ElMessage.error(res.data.common.result)
+        } else if (res.data.msg) {
+            ElMessage.error(res.data.msg)
         }
     }).catch((err) => {
         ElMessage.error(err)
