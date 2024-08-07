@@ -10,5 +10,4 @@ package main
 import "testing"
 
 func TestBackUp(t *testing.T) {
-	InitBackUp(Dns, OutPath)
 }

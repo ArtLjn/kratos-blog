@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ import (
 func InitPath(paths ...string) {
 	for _, path := range paths {
 		// 创建上传目录
+		path = filepath.Join(Origin.U.UploadPath, path)
 		if !directoryExists(path) {
 			err := os.MkdirAll(path, os.ModePerm)
 			if err != nil {

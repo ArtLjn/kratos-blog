@@ -45,7 +45,7 @@ func NewExportData(options ...ExportOption) *ExportData {
 func exportData(data *ExportData) {
 	// 创建上传目录
 	if len(data.ExportPath) == 0 {
-		data.ExportPath = filepath.Join(u.UploadPath, "md")
+		data.ExportPath = filepath.Join(Origin.U.UploadPath, "md")
 	}
 	if !directoryExists(data.ExportPath) {
 		err := os.MkdirAll(data.ExportPath, os.ModePerm)

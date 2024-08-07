@@ -29,19 +29,3 @@ type CurrentBing struct {
 	lastUpdateTime time.Time
 	mu             sync.Mutex
 }
-
-type MailS struct {
-	Username string
-	Host     string
-	Port     int
-	Password string
-}
-
-func NewMail(username, host string, port int, password string) MailS {
-	return MailS{
-		Username: username,
-		Host:     host,
-		Port:     port,
-		Password: password,
-	}
-}

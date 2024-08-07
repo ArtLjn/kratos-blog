@@ -19,4 +19,12 @@ func InitRouter(r *gin.Engine) {
 		group.GET("/backupAll", BackUpAllC)
 		group.POST("/zipToRecover", ZipToRecover)
 	}
+	c := group.Group("/conf")
+	{
+		c.POST("/createConfig", CreateConfigZ)
+		c.GET("/getAllConfig", GetAllConfig)
+		c.DELETE("/deleteConfig", RemoveConfig)
+		c.PUT("/updateConfig", UpdateConfig)
+		c.GET("/loadConfig", LoadConfigZ)
+	}
 }

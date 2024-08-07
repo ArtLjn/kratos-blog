@@ -19,8 +19,6 @@ type Filter struct {
 	Key       string
 }
 
-var F *Filter
-
 func NewFilter(domain []string, open bool, whiteList []string, key string) *Filter {
 	return &Filter{
 		Domain:    domain,
@@ -62,8 +60,8 @@ type originFilter struct{}
 func (f originFilter) Apply() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		referer := c.Request.Header.Get("Referer")
-		if F.Open && len(F.Domain) > 0 {
-			for _, v := range F.Domain {
+		if Origin.F.Open && len(Origin.F.Domain) > 0 {
+			for _, v := range Origin.F.Domain {
 				if strings.HasPrefix(referer, v) {
 					c.Header("Access-Control-Allow-Origin", referer)
 					c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -96,7 +94,7 @@ func WithIpWhiteFilter() Option {
 func (f ipWhiteFilter) Apply() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ip := c.ClientIP()
-		for _, whiteIp := range F.WhiteList {
+		for _, whiteIp := range Origin.F.WhiteList {
 			if ip == whiteIp {
 				c.Next()
 				return

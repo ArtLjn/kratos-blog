@@ -10,7 +10,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/ini.v1"
+	"gorm.io/gorm"
 	"kratos-blog/pkg/m_logs"
 	"kratos-blog/pkg/server"
 	"log"
@@ -21,23 +23,92 @@ import (
 	"time"
 )
 
+type OriginConfig struct {
+	Server struct {
+		Host string
+		Port string
+	}
+	BackUp struct {
+		Dns                string
+		BackUpCycle        int
+		BackUpSqlSendEmail bool
+	}
+	Mongo   string
+	F       *Filter
+	Prefix  []string
+	U       *UploadRepo
+	Current CurrentBing
+	Mail    MailS
+}
+
 var (
-	Host               string
-	Port               string
-	u                  *UploadRepo
-	FileSavaPath       string
-	Current            CurrentBing
-	Mail               MailS
-	BackUpSqlSendEmail bool
+	GormDB         *gorm.DB
+	MCli           *mongo.Client
+	ConfCollection *mongo.Collection
+	Origin         *OriginConfig
 )
+
+func NewOriginConfig() *OriginConfig {
+	cfg, err := ini.Load(server.TooPath)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	return &OriginConfig{
+		Server: struct {
+			Host string
+			Port string
+		}{
+			Host: cfg.Section("server").Key("host").String(),
+			Port: cfg.Section("server").Key("port").String(),
+		},
+		U: &UploadRepo{
+			cfg.Section("upload").Key("path").String(),
+			cfg.Section("upload").Key("domain").String(),
+			cfg.Section("upload").Key("maxsize").String(),
+			cfg.Section("upload").Key("uri").String(),
+		},
+		Mail: NewMail(
+			cfg.Section("mail").Key("username").String(),
+			cfg.Section("mail").Key("host").String(),
+			cfg.Section("mail").Key("port").MustInt(),
+			cfg.Section("mail").Key("password").String(),
+		),
+		F: NewFilter(
+			strings.Split(cfg.Section("filter").Key("domain").String(), ","),
+			cfg.Section("filter").Key("open").MustBool(false),
+			strings.Split(cfg.Section("filter").Key("whiteList").String(), ","),
+			cfg.Section("filter").Key("key").String(),
+		),
+		BackUp: struct {
+			Dns                string
+			BackUpCycle        int
+			BackUpSqlSendEmail bool
+		}{
+			Dns: fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=Local",
+				cfg.Section("mysql").Key("username").String(),
+				cfg.Section("mysql").Key("password").String(),
+				cfg.Section("mysql").Key("host").String(),
+				cfg.Section("mysql").Key("port").String(),
+				cfg.Section("mysql").Key("database").String(),
+				cfg.Section("mysql").Key("charset").String(),
+			),
+			BackUpCycle:        cfg.Section("mysql").Key("backup_cycle").MustInt(),
+			BackUpSqlSendEmail: cfg.Section("mysql").Key("backup_email").MustBool(false),
+		},
+		Mongo: cfg.Section("mongo").Key("url").String(),
+		Prefix: []string{
+			"img", "sql", "md",
+		},
+	}
+}
 
 func main() {
 	m_logs.InitGinLog("tool")
 	r := gin.Default()
-	r.StaticFS("/img", http.Dir(FileSavaPath))
-	UpdatePhoto()
+	r.StaticFS("/img", http.Dir(filepath.Join(Origin.U.UploadPath, Origin.Prefix[0])))
 	InitRouter(r)
-	err := r.Run(fmt.Sprintf("%s:%s", Host, Port))
+	err := r.Run(fmt.Sprintf("%s:%s", Origin.Server.Host, Origin.Server.Port))
 	if err != nil {
 		return
 	}
@@ -45,127 +116,36 @@ func main() {
 
 func UpdatePhoto() {
 	go func() {
-		Current.mu.Lock()
-		defer Current.mu.Unlock()
-		Current.lastUpdateTime = time.Now()
+		Origin.Current.mu.Lock()
+		defer Origin.Current.mu.Unlock()
+		Origin.Current.lastUpdateTime = time.Now()
 		c := make(chan string, 1)
 		err := BingPhoto(c)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		Current.Url = <-c
-		log.Println(Current.Url)
+		Origin.Current.Url = <-c
+		log.Println(Origin.Current.Url)
 	}()
 }
 
-type ConfigBuilder interface {
-	BuilderUpload() ConfigBuilder
-	BuilderEmail() ConfigBuilder
-	BuilderMysql() ConfigBuilder
-	BuilderFilter() ConfigBuilder
-	BuilderServer() ConfigBuilder
-	BuilderCronTask() ConfigBuilder
-	BuilderPath() ConfigBuilder
-}
-
-type BuilderConf struct {
-	f *ini.File
-}
-
-func NewBuilderConf(f *ini.File) *BuilderConf {
-	return &BuilderConf{f: f}
-}
-
-func (b *BuilderConf) BuilderUpload() ConfigBuilder {
-	u = NewUploadRepo(
-		b.f.Section("upload").Key("path").String(),
-		b.f.Section("upload").Key("domain").String(),
-		b.f.Section("upload").Key("maxsize").String(),
-		b.f.Section("upload").Key("uri").String(),
-	)
-	return b
-}
-
-func (b *BuilderConf) BuilderEmail() ConfigBuilder {
-	mailKey := b.f.Section("mail")
-	port, _ := mailKey.Key("port").Int()
-	Mail = NewMail(
-		mailKey.Key("username").String(),
-		mailKey.Key("host").String(),
-		port,
-		mailKey.Key("password").String(),
-	)
-	BackUpSqlSendEmail = b.f.Section("mysql").Key("backup_email").MustBool(false)
-	return b
-}
-
-func (b *BuilderConf) BuilderMysql() ConfigBuilder {
-	redSql := b.f.Section("mysql")
-	NewDB(
-		redSql.Key("username").String(),
-		redSql.Key("password").String(),
-		redSql.Key("host").String(),
-		redSql.Key("port").String(),
-		redSql.Key("database").String(),
-		redSql.Key("charset").String(),
-	)
-
-	return b
-}
-
-func (b *BuilderConf) BuilderFilter() ConfigBuilder {
-	F = NewFilter(
-		strings.Split(b.f.Section("filter").Key("domain").String(), ","),
-		b.f.Section("filter").Key("open").MustBool(false),
-		strings.Split(b.f.Section("filter").Key("whiteList").String(), ","),
-		b.f.Section("filter").Key("key").String(),
-	)
-	return b
-}
-
-func (b *BuilderConf) BuilderServer() ConfigBuilder {
-	Host = b.f.Section("server").Key("host").String()
-	Port = b.f.Section("server").Key("port").String()
-	return b
-}
-
-func (b *BuilderConf) BuilderCronTask() ConfigBuilder {
+func init() {
+	Origin = NewOriginConfig()
+	GormDB = NewDB(Origin.BackUp.Dns)
+	MCli = NewMongo(Origin.Mongo)
+	ConfCollection = NewCollection(MCli)
+	InitBaseConfig()
 	c := cron.New()
 	_, err := c.AddFunc("0 0 * * *", func() {
 		go UpdatePhoto()
 	})
-	OutPath = filepath.Join(b.f.Section("upload").Key("path").String(), "sql")
-	backupCycle := b.f.Section("mysql").Key("backup_cycle").String()
-	_, err = c.AddFunc("0 0 */"+backupCycle+" * *", func() {
-		m_logs.CleanOldFile(0, OutPath)
-		InitBackUp(Dns, OutPath)
+	_, err = c.AddFunc(fmt.Sprintf("0 0 */%v * *", Origin.BackUp.BackUpCycle), func() {
+		m_logs.CleanOldFile(7, filepath.Join(Origin.U.UploadPath, Origin.Prefix[1]))
+		InitBackUp(Origin.BackUp.Dns, filepath.Join(Origin.U.UploadPath, Origin.Prefix[0]), Origin.BackUp.BackUpSqlSendEmail)
 	})
 	if err != nil {
-		return nil
+		panic(err)
 	}
 	c.Start()
-	return b
-}
-
-func (b *BuilderConf) BuilderPath() ConfigBuilder {
-	FileSavaPath = filepath.Join(u.UploadPath, "img")
-	InitPath(u.UploadPath, FileSavaPath)
-	return b
-}
-
-func init() {
-	cfg, err := ini.Load(server.TooPath)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	NewBuilderConf(cfg).
-		BuilderUpload().
-		BuilderEmail().
-		BuilderMysql().
-		BuilderFilter().
-		BuilderServer().
-		BuilderCronTask().
-		BuilderPath()
 }

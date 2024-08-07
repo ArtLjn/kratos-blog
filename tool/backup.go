@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/jarvanstack/mysqldump"
-	"gopkg.in/gomail.v2"
 	"os"
 	"path/filepath"
 	"time"
 )
 
 // InitBackUp 备份数据库
-func InitBackUp(dns, outPath string) {
+func InitBackUp(dns, outPath string, sendEmail bool) {
 	_, e := os.Stat(outPath)
 	if e != nil && os.IsNotExist(e) {
 		err := os.MkdirAll(outPath, os.ModePerm)
@@ -33,27 +32,12 @@ func InitBackUp(dns, outPath string) {
 		log.Errorf("backup error: %v", err)
 		return
 	}
-	if BackUpSqlSendEmail {
+	if sendEmail {
 		go SendBackupMail(filePath)
 	}
 }
 
-func SendBackupMail(filepath string) {
-	m := gomail.NewMessage()
-	m.SetHeader("From", Mail.Username)
-	m.SetHeader("To", Mail.Username)
-	m.SetHeader("Subject", "sql备份")
-	m.SetBody("text/plain", "sql备份")
-	// 添加附件
-	// 注意：这里的 "/path/to/your/sql_backup.sql" 需要替换为实际的文件路径
-	m.Attach(filepath)
-	d := gomail.NewDialer(Mail.Host, Mail.Port, Mail.Username, Mail.Password)
-	if err := d.DialAndSend(m); err != nil {
-		log.Errorf("send mail error: %v", err)
-	}
-}
-
 func BackUpAll() {
-	InitBackUp(Dns, OutPath)
+	InitBackUp(Origin.BackUp.Dns, filepath.Join(Origin.U.UploadPath, Origin.Prefix[0]), Origin.BackUp.BackUpSqlSendEmail)
 	exportData(NewExportData())
 }
