@@ -107,12 +107,17 @@ export default{
     width: 100%;
     display: flex;
 }
-.blog-p{
-    border-radius: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+.blog-p {
+  column-count: 3;
+  column-gap: 10px;
 }
+
+.blog {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
 .lt-title{
     position: absolute;
     color: white;
@@ -122,10 +127,6 @@ export default{
     text-align: center;
 }
 
-
-.blog{
-    width: 350px;
-}
 .hua{
     text-align:center;color:white;font-size:20px;font-weight:bold;
 }

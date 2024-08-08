@@ -93,8 +93,8 @@ export default {
 
     const handleMainPhoto = (param) => {
       UploadFile(param).then(res => {
-        ElMessage.success(res.data.info);
-        addForm.data.photo = res.data.data;
+        ElMessage.success(res.info);
+        addForm.data.photo = res.data;
       });
     };
 

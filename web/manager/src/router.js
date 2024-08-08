@@ -9,11 +9,16 @@ const routes = [
         path:"/",
         redirect:"/login",
     },
+
     {
         path:"/main",
         component:() => import(/* webpackChunkName:"main" */'./view/main.vue'),
-        redirect:'/main/blog',
+        redirect:'/main/home',
         children:[
+            {
+                path: "home",
+                component:() => import(/* webpackChunkName:"home" */'./view/components/home.vue'),
+            },
             {
                 path:"blog",
                 component:() => import(/* webpackChunkName:"blog" */'./view/BlogManager/Blog.vue'),

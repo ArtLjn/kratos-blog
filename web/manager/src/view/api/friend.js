@@ -1,21 +1,21 @@
-import {req} from "@/view/api/axiosFunc";
+import instance from "@/view/api/axiosFunc";
 
 export const DeleteFriend = (id) => {
-    return req("delete",`/api/deleteFriend/${id}`)
+    return instance.delete(`/api/deleteFriend/${id}`)
 }
 
 export const GetAllFriend = () => {
-    return req("get","/api/getAllFriend")
+    return instance.get("/api/getAllFriend")
 }
 
 export const AddFriend = (data) => {
-    return req("post","/api/addFriend",data)
+    return instance.post("/api/addFriend",data)
 }
 
 export const UpdateFriend = (data) => {
-    return req("put","/api/updateFriend",data)
+    return instance.put("/api/updateFriend",data)
 }
 
 export const GetFriendById = (id) => {
-    return req("get","/api/getFriend/"+id)
+    return instance.get("/api/getFriend/"+id)
 }

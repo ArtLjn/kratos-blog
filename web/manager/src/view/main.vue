@@ -13,8 +13,12 @@
             text-color="#fff"
             :router="true"
             :collapse="isCollapsed"
+            :collapse-transition="false"
+             @collapse-change="handleCollapseChange"
         >
-          <template v-for="item in asideMenu" :key="item.title">
+
+        <template v-for="item in asideMenu" :key="item.title">
+
             <!-- 两级菜单 -->
             <template v-if="item.subs">
               <el-sub-menu :index="item.title">
@@ -27,12 +31,14 @@
                 <template v-for="subItem in item.subs" :key="subItem.index">
                   <el-menu-item
                       :index="subItem.index"
+                      class="is-submenu"
                       @click="() => handleMenuItem(subItem)"
                   >
                     <el-icon><component :is="subItem.icon" /></el-icon>
                     <span>{{ subItem.title }}</span>
                   </el-menu-item>
                 </template>
+
               </el-sub-menu>
             </template>
 
@@ -86,7 +92,8 @@ import {
   ArrowRight,
   Edit,List,PriceTag,PictureFilled,
   Promotion,
-  Grid
+  Grid,
+  HomeFilled
 } from "@element-plus/icons-vue";
 import router from "@/router";
 
@@ -100,11 +107,16 @@ export default {
       editableTabs: [
         {
           title: "首页",
-          index: "/main/blog",
+          index: "/main/home",
         },
       ],
       //左侧菜单选项配置
       asideMenu: [
+        {
+          title: "首页",
+          icon: "HomeFilled",
+          index: "/main/home",
+        },
         {
           title: "文章",
           icon: "Document",
@@ -161,11 +173,20 @@ export default {
     PriceTag,
     PictureFilled,
     Promotion,
-    Grid
+    Grid,
+    HomeFilled
   },
   methods: {
     toggleCollapse() {
       this.isCollapsed = !this.isCollapsed;
+    },
+    handleCollapseChange(collapsed) {
+      const menu = document.querySelector('.el-menu-vertical-demo');
+      if (collapsed) {
+        menu.classList.add('is-collapsed');
+      } else {
+        menu.classList.remove('is-collapsed');
+      }
     },
     handleIsClose(item) {
       return item.index !== "/main/blog";
@@ -243,15 +264,26 @@ export default {
   transition: padding-left 0.2s;
 }
 
-.el-menu-vertical-demo .el-menu-item {
-  padding-left: 0;
+/* 默认状态下，一级菜单和二级菜单的缩进 */
+.el-menu-item,
+.el-sub-menu__title {
+  padding-left: 20px !important;
 }
 
-.el-menu-vertical-demo .el-sub-menu__title {
-  padding-left: 0;
+/* 针对二级菜单项的缩进 */
+.el-menu-item.is-submenu {
+  padding-left: 40px !important;
 }
 
-.el-tabs--border-card .el-tabs__content {
-  padding: 0;
+/* 侧边栏收缩时的缩进调整 */
+.is-collapsed .el-menu-item,
+.is-collapsed .el-sub-menu__title {
+  padding-left: 8px !important;
 }
+
+/* 针对收缩状态下二级菜单的缩进 */
+.is-collapsed .el-menu-item.is-submenu {
+  padding-left: 30px !important;
+}
+
 </style>

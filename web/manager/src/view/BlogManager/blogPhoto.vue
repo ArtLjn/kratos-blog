@@ -118,11 +118,23 @@ export default {
 
     const deleteSomePhoto = () => {
       confirmFunc().then(() => {
-        selectedRows.value.forEach((row) => {
-          DeletePhoto(row)
-        });
+        // 首先检查selectedRows.value是否为空
+        if (!selectedRows.value || selectedRows.value.length === 0) {
+          ElMessage.info("没有选中的项");
+          return;
+        }
+        // 将selectedRows.value中的每个row映射为DeletePhoto的Promise
+        const deletePromises = selectedRows.value.map(row => DeletePhoto(row));
+
+        // 使用Promise.all等待所有删除操作完成
+        return Promise.all(deletePromises);
+      }).then(() => {
+        ElMessage.success("删除成功");
+        getAllPhoto(); // 刷新列表
+      }).catch(error => {
+        // 处理删除过程中的任何错误
+        ElMessage.error("删除失败: " + error.message);
       });
-      getAllPhoto();
     };
 
     onMounted(() => {
@@ -148,8 +160,8 @@ export default {
     });
     const handleMainPhoto = (param) => {
       UploadFile(param).then((res) => {
-        ElMessage.success(res.data.info);
-        data.data.photo = res.data.data;
+        ElMessage.success(res.info);
+        data.data.photo = res.data;
       });
     };
     const save = () => {

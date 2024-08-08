@@ -2,36 +2,69 @@ import axios from "axios";
 import {ElMessage} from "element-plus";
 import {SUCCESS_REQUEST} from "@/view/api/status";
 
+const baseURL = '/'
 
-export const req = (method,url,data = null,isHeader = true,header = null) => {
-    let king = null;
-    const token = localStorage.getItem("token")
-    if (isHeader) {
-        if (header != null) {
-            king = header
-        } else {
-            king = {
-                "Content-Type":"application/json",
-                "token": token
-            }
+const instance = axios.create({
+    baseURL,
+    timeout: 10000
+});
+
+// 添加请求拦截器
+instance.interceptors.request.use(config => {
+    // 在发送请求之前做些什么
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.token = token;
+    }
+
+    // 动态调整 Content-Type
+    if (config.url === '/tool/upload' && config.method === 'post') {
+        config.headers['Content-Type'] = 'multipart/form-data';
+    } else if (!config.headers['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json';
+    }
+
+    return config;
+}, error => {
+    // 对请求错误做些什么
+    return Promise.reject(error);
+});
+
+instance.interceptors.response.use(response => {
+    // 2xx 范围内的状态码都会触发该函数。
+    // 对响应数据做点什么
+    const res = response.data;
+
+    // eslint-disable-next-line no-prototype-builtins
+    if (res?.hasOwnProperty("code")) {
+        if (res.code === SUCCESS_REQUEST || res.code === 200 || res.code === 201) {
+            return response.data;
         }
-    }return axios({
-        method: method,
-        url: url,
-        data: data,
-        headers:king
-    }).then(res => {
-        if (res.data.code === 200 ||res.data.common.code === SUCCESS_REQUEST || res.data.code === SUCCESS_REQUEST) {
-            return res.data;
+        // eslint-disable-next-line no-prototype-builtins
+    } else if (res?.common?.hasOwnProperty("code")) {
+        const code = res.common.code;
+        if (code === SUCCESS_REQUEST) {
+            return response.data;
         }
-        if (res.data.result) {
-            ElMessage.error(res.data.result)
-        } else if (res.data.common.result) {
-            ElMessage.error(res.data.common.result)
-        } else if (res.data.msg) {
-            ElMessage.error(res.data.msg)
+    } else {
+        // 检查其他可能的错误信息字段
+        if (response.data?.result) {
+            ElMessage.error(response.data.result);
+        } else if (response.data?.common?.result) {
+            ElMessage.error(response.data.common.result);
+        } else if (response.data?.msg) {
+            ElMessage.error(response.data.msg);
+        } else if (response.data?.info) {
+            ElMessage.error(response.data.info);
         }
-    }).catch((err) => {
-        ElMessage.error(err)
-    });
-}
+    }
+
+    return Promise.reject(response.data);
+}, error => {
+    // 特殊情况
+    ElMessage.error(error.response?.data?.info || '服务异常');
+    return new Promise(() => {}); // 返回一个包含错误信息的Promise对象
+});
+
+export default instance
+export { baseURL }

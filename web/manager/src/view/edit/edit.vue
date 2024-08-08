@@ -8,9 +8,9 @@
           v-model="saveDialog"
           style="border-radius: 20px;"
           width="40%">
-            <el-form>
-              <el-form-item label="文章标签">
-                <el-select v-model="md.data.tag" clearable placeholder="选择标签" style="float:right;margin-right:10px;">
+            <el-descriptions border column="1">
+              <el-descriptions-item label="文章标签">
+                <el-select v-model="md.data.tag" clearable placeholder="选择标签" style="margin-right:10px;">
                   <el-option
                       v-for="item in getTagList"
                       :key="item.id"
@@ -19,9 +19,8 @@
                   />
                 </el-select>
                 <el-button type="primary" @click="addTag" plain>添加标签</el-button>
-              </el-form-item>
-
-              <el-form-item label="开启评论">
+              </el-descriptions-item>
+              <el-descriptions-item label="开启评论">
                 <el-switch v-model="md.data.comment"
                            inline-prompt
                            active-text="open"
@@ -30,26 +29,26 @@
                            inactive-value="0"
                            inactive-color="green"
                 ></el-switch>
-              </el-form-item>
-
-              <el-form-item label="添加封面">
+              </el-descriptions-item>
+              <el-descriptions-item label="添加封面">
                 <el-upload
                     class="upload-demo"
                     drag
-                    style="width:200px"
-                    :limit="1"
                     :http-request="handleMainPhoto"
-                    :auto-upload="false"
+                    multiple
                 >
-                  <div class="el-upload__text">添加文章封面</div>
+                  <div class="el-upload__text">
+                    拖拽文件到此处，或<em>点击上传</em>
+                  </div>
+                  <template #tip>
+                  </template>
                 </el-upload>
-              </el-form-item>
-
-              <el-form-item style="float: right">
-                <el-button @click="saveDialog=false">取消</el-button>
-                <el-button type="primary" @click="saveOrUpdate">保存</el-button>
-              </el-form-item><br>
-            </el-form>
+              </el-descriptions-item>
+            </el-descriptions><br>
+            <div style="float:right;">
+              <el-button @click="saveDialog=false">取消</el-button>
+              <el-button type="primary" @click="saveOrUpdate">保存</el-button>
+            </div><br>
           </el-dialog>
 
           <div>
@@ -98,7 +97,7 @@
   import { library } from "@fortawesome/fontawesome-svg-core";
   import { ElMessage, ElMessageBox } from "element-plus";
   import {useRoute} from "vue-router";
-  import {SaveBlog, setCacheBlog, updateBlog, uploadFile} from "@/view/api/blog";
+  import {SaveBlog, setCacheBlog, updateBlog} from "@/view/api/blog";
   import {AddTag, GetAllTag} from "@/view/api/tag";
   import {UploadFile} from "@/view/api/tool";
   import axios from "axios";
@@ -206,10 +205,10 @@
         })
      };
 
-      const handleMainPhoto = (file) => {
-        UploadFile(file).then(res => {
+      const handleMainPhoto = (param) => {
+        UploadFile(param).then(res => {
+          ElMessage.success(res.info);
           md.data.photo = res.data;
-          ElMessage.success("上传成功");
         })
       }
 

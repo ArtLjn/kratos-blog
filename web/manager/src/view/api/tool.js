@@ -1,6 +1,6 @@
-import axios from "axios";
 import {ElMessage} from "element-plus";
-
+import instance from "@/view/api/axiosFunc";
+import axios from "axios";
 export const BackUpAll = async () => {
     try {
         const response = await axios({
@@ -61,8 +61,10 @@ export const RecoverBackUp = async (param) =>{
         param.onError(error);
     }
 }
-export const UploadFile = async (param) =>{
+export const UploadFile = async (param) => {
+
     const formData = new FormData();
     formData.append('file', param.file);
-    return await axios.post('/tool/upload',formData)
-}
+
+    return instance.post('/tool/upload', formData);
+};
