@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/ini.v1"
 	"gorm.io/gorm"
+	"kratos-blog/pkg/db"
 	"kratos-blog/pkg/m_logs"
 	"kratos-blog/pkg/server"
 	"log"
@@ -32,6 +33,10 @@ type OriginConfig struct {
 		Dns                string
 		BackUpCycle        int
 		BackUpSqlSendEmail bool
+	}
+	Admin struct {
+		Username string
+		Password string
 	}
 	Mongo   string
 	F       *Filter
@@ -100,6 +105,13 @@ func NewOriginConfig() *OriginConfig {
 		Prefix: []string{
 			"img", "sql", "md",
 		},
+		Admin: struct {
+			Username string
+			Password string
+		}{
+			Username: cfg.Section("admin").Key("username").String(),
+			Password: cfg.Section("admin").Key("password").String(),
+		},
 	}
 }
 
@@ -132,9 +144,9 @@ func UpdatePhoto() {
 
 func init() {
 	Origin = NewOriginConfig()
-	GormDB = NewDB(Origin.BackUp.Dns)
-	MCli = NewMongo(Origin.Mongo)
-	ConfCollection = NewCollection(MCli)
+	GormDB = db.NewDB(Origin.BackUp.Dns)
+	MCli = db.NewMongo(Origin.Mongo)
+	ConfCollection = db.NewCollection(MCli)
 	InitBaseConfig()
 	c := cron.New()
 	_, err := c.AddFunc("0 0 * * *", func() {

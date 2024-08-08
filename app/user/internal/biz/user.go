@@ -6,6 +6,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/user/internal/conf"
+	cf "kratos-blog/pkg/conf"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
 	"strings"
@@ -13,6 +14,7 @@ import (
 )
 
 type UserRepo interface {
+	GetCurrentConfig() (cf.Config, error)
 	AddUser(ctx context.Context, request *user.CreateUserRequest) (string, error)
 	Login(ctx context.Context, request *user.LoginRequest) (string, string, error)
 	SendEmail(body, to, sub string) bool

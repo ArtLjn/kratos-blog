@@ -8,8 +8,7 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
-  Mail mail = 3;
-  Admin admin = 4;
+  Mongo mongo = 3;
 }
 
 message Server {
@@ -44,18 +43,6 @@ message Data {
   Redis redis = 2;
 }
 
-message Mail {
-  string username = 1;
-  string password = 2;
-  int64 port = 3;
-  string host = 4;
-}
-
-message Admin {
-  string username = 1;
-  string password = 2;
-}
-
 
 message Registry {
   message Consul {
@@ -64,3 +51,9 @@ message Registry {
   }
   Consul consul = 1;
 }
+
+message Mongo {
+  string url = 1;
+}
+
+

@@ -6,6 +6,7 @@
           <el-dialog
           title="保存文章"
           v-model="saveDialog"
+          style="border-radius: 20px;"
           width="40%">
             <el-form>
               <el-form-item label="文章标签">
@@ -37,7 +38,7 @@
                     drag
                     style="width:200px"
                     :limit="1"
-                    :on-change="handleMainPhoto"
+                    :http-request="handleMainPhoto"
                     :auto-upload="false"
                 >
                   <div class="el-upload__text">添加文章封面</div>
@@ -99,6 +100,8 @@
   import {useRoute} from "vue-router";
   import {SaveBlog, setCacheBlog, updateBlog, uploadFile} from "@/view/api/blog";
   import {AddTag, GetAllTag} from "@/view/api/tag";
+  import {UploadFile} from "@/view/api/tool";
+  import axios from "axios";
   library.add(fas);
   
   export default {
@@ -193,21 +196,20 @@
       };
 
       const handleUploadImage = (event) => {
-        uploadFile(event.target.files[0]).then((res) => {
-          if (res) {
+        const formData = new FormData();
+        formData.append('file',event.target.files[0]);
+        axios.post('/tool/upload',formData).then(res => {
+          if (res.data.code === 200) {
             ElMessage.success("上传成功");
-            md.data.content += "\n![Description](" + res.data + ")";
+            md.data.content += "\n![Description](" + res.data.data + ")";
           }
         })
      };
 
       const handleMainPhoto = (file) => {
-        console.log(file)
-        uploadFile(file.raw).then((res) => {
-          if (res) {
-            md.data.photo = res.data;
-            ElMessage.success("上传成功");
-          }
+        UploadFile(file).then(res => {
+          md.data.photo = res.data;
+          ElMessage.success("上传成功");
         })
       }
 

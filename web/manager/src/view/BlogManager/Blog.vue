@@ -166,6 +166,7 @@
   import axios from "axios";
   import {confirmFunc} from "@/view/api/util";
   import {SUCCESS_REQUEST} from "@/view/api/status";
+  import {ExportBlog} from "@/view/api/tool";
   const updateOnlyForm = reactive({
     raw: Comment,
     id:0,
@@ -338,29 +339,7 @@
       }
   })
 
-  const ExportBlog = async () => {
-      try {
-        const response = await axios({
-          url: '/tool/export_md?download=true', // 这里是你后端接口的URL
-          method: 'GET',
-          responseType: 'blob', // 确保接收的是二进制流
-        });
 
-        // 创建一个URL链接到二进制数据
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', 'md.zip'); // 设置下载的文件名
-        document.body.appendChild(link);
-        link.click();
-
-        // 释放URL对象
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(link);
-      } catch (error) {
-        console.error('下载文件失败', error);
-      }
-  }
   </script>
 
   <style scoped>

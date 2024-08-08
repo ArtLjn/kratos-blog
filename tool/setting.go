@@ -6,33 +6,12 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"kratos-blog/pkg/conf"
 )
-
-// Config 动态可调整配置写入MongoDB
-type Config struct {
-	Version string // 配置版本号
-	Open    bool   // 启用配置
-	Upload  struct {
-		Path    string //上传路径
-		Domain  string //代理域名
-		MaxSize string //最大内存
-		BingUrl string //每日随机图片获取接口
-	}
-	BackUp struct {
-		Cycle     int  // 备份周期(天)
-		OpenEmail bool // 备份是否开启邮件通知
-	}
-	QQEmail struct {
-		Username string // 邮箱账号
-		Password string // 邮箱密码
-		Host     string
-		Port     int
-	}
-}
 
 func InitBaseConfig() {
 	// defaultConfig 是你要插入或更新的默认配置
-	var defaultConfig = Config{
+	var defaultConfig = conf.Config{
 		// ... 配置初始化
 		Version: "1.0",
 		Open:    true,
@@ -52,10 +31,14 @@ func InitBaseConfig() {
 			Host     string
 			Port     int
 		}{Username: Origin.Mail.Username, Password: Origin.Mail.Password, Host: Origin.Mail.Host, Port: Origin.Mail.Port},
+		Admin: struct {
+			Username string
+			Password string
+		}{Username: Origin.Admin.Username, Password: Origin.Admin.Password},
 	}
 
 	// 检查是否已有记录
-	var existingConfig Config
+	var existingConfig conf.Config
 	err := ConfCollection.FindOne(context.TODO(), bson.D{{}}).Decode(&existingConfig)
 	_, e := GetCurrentConfig()
 	if err != nil {
@@ -81,7 +64,7 @@ func InitBaseConfig() {
 	LoadCurrentConfig()
 }
 
-func CreateConfig(da Config) bool {
+func CreateConfig(da conf.Config) bool {
 	da.Open = false
 	if HasVersion(da.Version) {
 		log.Info("Version already exists")
@@ -96,16 +79,16 @@ func CreateConfig(da Config) bool {
 	return true
 }
 
-func FindAllConfig() []Config {
+func FindAllConfig() []conf.Config {
 	cur, err := ConfCollection.Find(context.TODO(), bson.D{{}})
 	if err != nil {
 		log.Error(err)
 		return nil
 	}
-	var result []Config
+	var result []conf.Config
 	defer cur.Close(context.TODO())
 	for cur.Next(context.TODO()) {
-		var res Config
+		var res conf.Config
 		if err := cur.Decode(&res); err != nil {
 			log.Error(err)
 			return nil
@@ -115,12 +98,12 @@ func FindAllConfig() []Config {
 	return result
 }
 
-func FindConfig(version string) (Config, error) {
-	var result Config
+func FindConfig(version string) (conf.Config, error) {
+	var result conf.Config
 	err := ConfCollection.FindOne(context.TODO(), bson.D{{"version", version}}).Decode(&result)
 	if err != nil {
 		log.Error(err)
-		return Config{}, err
+		return conf.Config{}, err
 	}
 	return result, nil
 }
@@ -143,8 +126,7 @@ func DeleteConfigByVersion(version string) bool {
 	return true
 }
 
-func UpdateConfigByVersion(conf Config) bool {
-	conf.Open = false
+func UpdateConfigByVersion(conf conf.Config) bool {
 	if !HasVersion(conf.Version) {
 		log.Error("Version does not exist")
 		return false
@@ -155,6 +137,7 @@ func UpdateConfigByVersion(conf Config) bool {
 		log.Error(err)
 		return false
 	}
+	log.Info(LoadConfig(conf.Version))
 	return true
 }
 
@@ -183,28 +166,27 @@ func LoadConfig(version string) error {
 	return nil
 }
 
-func GetCurrentConfig() (Config, error) {
-	var result Config
+func GetCurrentConfig() (conf.Config, error) {
+	var result conf.Config
 	err := ConfCollection.FindOne(context.TODO(),
 		bson.D{{"open", true}}).Decode(&result)
 	if err != nil {
 		log.Error(err)
-		return Config{}, err
+		return conf.Config{}, err
 	}
 	return result, nil
 }
 
 func LoadCurrentConfig() {
-	conf, err := GetCurrentConfig()
-
+	c, err := GetCurrentConfig()
 	if err != nil {
 		log.Error(err)
 		panic(err)
 	}
-	Origin.BackUp.BackUpCycle = conf.BackUp.Cycle
-	Origin.BackUp.BackUpSqlSendEmail = conf.BackUp.OpenEmail
-	Origin.U = NewUploadRepo(conf.Upload.Path, conf.Upload.Domain, conf.Upload.MaxSize, conf.Upload.BingUrl)
-	Origin.Mail = NewMail(conf.QQEmail.Username, conf.QQEmail.Host, conf.QQEmail.Port, conf.QQEmail.Password)
+	Origin.BackUp.BackUpCycle = c.BackUp.Cycle
+	Origin.BackUp.BackUpSqlSendEmail = c.BackUp.OpenEmail
+	Origin.U = NewUploadRepo(c.Upload.Path, c.Upload.Domain, c.Upload.MaxSize, c.Upload.BingUrl)
+	Origin.Mail = NewMail(c.QQEmail.Username, c.QQEmail.Host, c.QQEmail.Port, c.QQEmail.Password)
 	InitPath(Origin.Prefix...)
 	UpdatePhoto()
 }

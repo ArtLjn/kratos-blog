@@ -45,7 +45,7 @@ func NewExportData(options ...ExportOption) *ExportData {
 func exportData(data *ExportData) {
 	// 创建上传目录
 	if len(data.ExportPath) == 0 {
-		data.ExportPath = filepath.Join(Origin.U.UploadPath, "md")
+		data.ExportPath = filepath.Join(Origin.U.UploadPath, Origin.Prefix[2])
 	}
 	if !directoryExists(data.ExportPath) {
 		err := os.MkdirAll(data.ExportPath, os.ModePerm)
@@ -61,7 +61,7 @@ func exportData(data *ExportData) {
 
 	if len(blogs) != 0 {
 		for _, blog := range blogs {
-			savePath := filepath.Join(data.ExportPath, fmt.Sprintf("%s.%s", blog.Title, "md"))
+			savePath := filepath.Join(data.ExportPath, fmt.Sprintf("%s.%s", blog.Title, Origin.Prefix[2]))
 			// 创建上传文件
 			f, es := os.Create(savePath)
 			if es != nil {

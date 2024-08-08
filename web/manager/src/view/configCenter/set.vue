@@ -1,6 +1,7 @@
 <script>
 import router from "@/router";
 import {CreateConfig, DeleteConfig, GetAllConfig, LoadConfig, UpdateConfig} from "@/view/api/conf";
+import {BackUpAll, RecoverBackUp} from "@/view/api/tool";
 
 export default {
   data() {
@@ -9,29 +10,36 @@ export default {
       configs: [],
       selectVersion:'',
       showAddConfig: false,
-      addConfigForm:{
-        "version": "",
-        "open": null,
-        "upload": {
-          "path": "",
-          "domain": "",
-          "maxsize": "",
-          "bingurl": ""
+      showBackUpUpload:false,
+      addConfigForm: {
+        version: "",
+        open: true,
+        upload: {
+          path: "",
+          domain: "",
+          maxsize: "",
+          bingurl: ""
         },
-        "backup": {
-          "cycle": null,
-          "openemail": null
+        backup: {
+          cycle: 7,
+          openemail: false
         },
-        "qqemail": {
-          "username": "",
-          "password": "",
-          "host": "",
-          "port": null
+        qqemail: {
+          username: "",
+          password: "",
+          host: "",
+          port: 465
+        },
+        admin: {
+          username: "",
+          password: ""
         }
       }
     };
   },
   methods: {
+    RecoverBackUp,
+    BackUpAll,
     logout() {
       localStorage.clear();
       router.go(0);
@@ -53,6 +61,13 @@ export default {
       })
     },
     saveConfig() {
+      if (
+          this.addConfigForm.admin.username === '' ||
+          this.addConfigForm.admin.password === ''
+      ) {
+        this.$message.warning("请填写所有必填字段");
+        return;
+      }
       this.$prompt("请输入版本号", {
         inputValue: '',
         confirmButtonText: '确定',
@@ -67,7 +82,6 @@ export default {
         CreateConfig(this.addConfigForm).then(() => {
           this.$message.success("添加成功")
           this.getAllConfig();
-          this.addConfigForm = {}
         })
       }).catch(() => {
         this.$message.info("取消")
@@ -171,6 +185,16 @@ export default {
                   </el-descriptions-item>
                   <el-descriptions-item label="端口">
                     <el-input v-model="addConfigForm.qqemail.port"></el-input>
+                  </el-descriptions-item>
+                </el-descriptions>
+              </el-collapse-item>
+              <el-collapse-item title="管理员账户配置">
+                <el-descriptions border column="1">
+                  <el-descriptions-item label="用户名">
+                    <el-input v-model="addConfigForm.admin.username"></el-input>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="密码">
+                    <el-input v-model="addConfigForm.admin.password"></el-input>
                   </el-descriptions-item>
                 </el-descriptions>
               </el-collapse-item>
@@ -282,6 +306,22 @@ export default {
                         </el-descriptions-item>
                       </el-descriptions>
                     </el-collapse-item>
+                    <el-collapse-item title="管理员账户配置">
+                      <el-descriptions border column="1">
+                        <el-descriptions-item label="用户名">
+                          <span v-if="!config.editing" @dblclick="enableEditing(configKey)">
+                            {{ config.Admin.Username }}
+                          </span>
+                          <el-input v-else v-model="config.Admin.Username"></el-input>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="密码">
+                          <span v-if="!config.editing" @dblclick="enableEditing(configKey)">
+                            {{ config.Admin.Password }}
+                          </span>
+                          <el-input v-else v-model="config.Admin.Password"></el-input>
+                        </el-descriptions-item>
+                      </el-descriptions>
+                    </el-collapse-item>
                   </el-collapse>
                   <el-button v-if="config.editing" type="primary" @click="updateConfig(configKey)">保存</el-button>
                   <el-button v-if="config.editing" @click="cancelEditing(configKey)">取消</el-button>
@@ -290,10 +330,31 @@ export default {
             </el-row>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="账户设置" name="second">
+        <el-tab-pane label="备份管理" name="second">
+          <el-button type="info" @click="BackUpAll()">导出备份</el-button>
+          <el-button type="success" @click="showBackUpUpload = true">备份还原</el-button>
+          <el-dialog title="备份还原" style="border-radius: 20px;" v-model="showBackUpUpload" width="40%">
+            <el-upload
+                class="upload-demo"
+                drag
+                :http-request="RecoverBackUp"
+                multiple
+            >
+              <div class="el-upload__text">
+                拖拽文件到此处，或<em>点击上传</em>
+              </div>
+              <template #tip>
+                <div class="el-upload__tip">
+                  仅限 zip 文件
+                </div>
+              </template>
+            </el-upload>
+          </el-dialog>
+        </el-tab-pane>
+        <el-tab-pane label="账户设置" name="third">
           <el-form>
             <el-form-item>
-              <el-button type="danger" @click="logout" plain>退出登录</el-button>
+              <el-button type="danger" @click="logout" >退出登录</el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -327,4 +388,5 @@ export default {
 .delete-button {
   margin-top: 10px;
 }
+@import url('../../assets/css/main.css');
 </style>

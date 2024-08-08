@@ -15,11 +15,5 @@ data:
     write_timeout: 0.2s
     db: 0
     password:
-mail:
-  username: example@qq.com
-  password: xxxxx
-  port: 465
-  host: smtp.qq.com
-admin:
-  username: test
-  password: test
+mongo:
+  url: mongodb://127.0.0.1:27017

@@ -1,4 +1,4 @@
-<template>
+q<template>
     <el-table :data="commentList">
         <el-table-column label="article_id">
             <template #defalut="{row}">

@@ -8,17 +8,6 @@ export const GetAllBlog = () => {return req('get','/api/getAllBlog')}
 export const UpdateIndividual = (data) => {
     return req('put','/api/updateIndividual',data)
 }
-
-//上传文件
-export const uploadFile = (file) => {
-    const formData = new FormData();
-    formData.append("file",file)
-    const header = {
-        'Content-Type': 'multipart/form-data'
-    }
-    return req('post','/tool/upload',formData,true,header)
-}
-
 //删除博客文章api
 
 export const DeleteBlog = (id) => {

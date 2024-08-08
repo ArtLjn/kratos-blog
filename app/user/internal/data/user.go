@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gomail.v2"
 	"kratos-blog/api/v1/user"
 	"kratos-blog/app/user/internal/biz"
+	"kratos-blog/pkg/conf"
 	"kratos-blog/pkg/model"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
@@ -57,6 +59,17 @@ func MD5(str string) string {
 	return md5str
 }
 
+func (u *userRepo) GetCurrentConfig() (conf.Config, error) {
+	var result conf.Config
+	err := u.data.collect.FindOne(context.TODO(),
+		bson.D{{"open", true}}).Decode(&result)
+	if err != nil {
+		log.Error(err)
+		return conf.Config{}, err
+	}
+	return result, nil
+}
+
 // AddUser :dev create user func
 func (u *userRepo) AddUser(ctx context.Context, request *user.CreateUserRequest) (string, error) {
 	//Check the registration conditions
@@ -94,13 +107,17 @@ func (u *userRepo) Login(ctx context.Context, request *user.LoginRequest) (strin
 
 // SendEmail :dev send email func
 func (u *userRepo) SendEmail(body, to, sub string) bool {
-	conf := u.data.c.Mail
+	c, err := u.GetCurrentConfig()
+	if err != nil {
+		u.data.log.Log(log.LevelError, err)
+		return false
+	}
 	m := gomail.NewMessage()
-	m.SetHeader("From", conf.Username)
+	m.SetHeader("From", c.QQEmail.Username)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", sub)
 	m.SetBody("text/plain", body)
-	d := gomail.NewDialer(conf.Host, int(conf.Port), conf.Username, conf.Password)
+	d := gomail.NewDialer(c.QQEmail.Host, c.QQEmail.Port, c.QQEmail.Username, c.QQEmail.Password)
 	if err := d.DialAndSend(m); err != nil {
 		u.data.log.Log(log.LevelError, err)
 		return false
@@ -136,10 +153,15 @@ func (u *userRepo) validateUser(request *user.CreateUserRequest) error {
 	}
 	exs := res("name", request.Name)
 	ems := res("email", request.Email)
+	c, err := u.GetCurrentConfig()
+	if err != nil {
+		u.log.Log(log.LevelError, err)
+		return nil
+	}
 	cacheCode, _ := u.data.rdb.Get(context.Background(), request.Email).Result()
 	if request.Code != cacheCode {
 		return errors.New(vo.KEY_ERROR)
-	} else if exs || request.Name == u.data.c.Admin.Username {
+	} else if exs || request.Name == c.Admin.Username {
 		return errors.New(vo.NAME_EXIST)
 	} else if ems {
 		return errors.New(vo.EMAIL_EXIST)
@@ -199,11 +221,15 @@ func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) 
 	// Create a coroutine to send a message
 	go func() {
 		u.mu.Lock()
-		conf := u.data.c.Mail
+		c, err := u.GetCurrentConfig()
+		if err != nil {
+			u.log.Log(log.LevelError, err)
+			return
+		}
 		blackBody := fmt.Sprintf("亲爱的用户,您好！\n系统检测到您的账号\n %s \n有异常行为,你的账号被暂停使用!"+
-			",如有疑问请联系管理员 %s ,谢谢您的配合!", uS.Email, conf.Username)
+			",如有疑问请联系管理员 %s ,谢谢您的配合!", uS.Email, c.QQEmail.Username)
 		body := fmt.Sprintf("系统检测到该用户有异常操作行为\n %s \n %s \n 现已被封禁如有异常请您进行处理。", uS.Name, uS.Email)
-		u.SendEmail(body, conf.Username, "通知邮件")
+		u.SendEmail(body, c.QQEmail.Username, "通知邮件")
 		u.SendEmail(blackBody, uS.Email, "违规邮件")
 		u.mu.Unlock()
 	}()
@@ -214,9 +240,14 @@ func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 	u.log.Log(log.LevelDebug, request.Name)
 	var data User
 	var list []string
-	if request.Name == u.data.c.Admin.Username {
+	c, err := u.GetCurrentConfig()
+	if err != nil {
+		u.log.Log(log.LevelError, err)
+		return nil
+	}
+	if request.Name == c.Admin.Username {
 		f := make([]string, 3)
-		f = append(f, u.data.c.Admin.Username, server.Admin)
+		f = append(f, c.Admin.Username, server.Admin)
 		list = append([]string{}, f...)
 		return list
 	}
@@ -237,8 +268,13 @@ func (u *userRepo) AdminLogin(ctx context.Context, request *user.AdminLoginReque
 			Data:   list,
 		}
 	}
-	if request.Name == u.data.c.Admin.Username &&
-		request.Password == u.data.c.Admin.Password {
+	c, err := u.GetCurrentConfig()
+	if err != nil {
+		u.log.Log(log.LevelError, err)
+		return nil
+	}
+	if request.Name == c.Admin.Username &&
+		request.Password == c.Admin.Password {
 		// generate token
 		token := u.key.SaveToken(request.Name)
 		return status(&user.CommonReply{Code: 200, Result: vo.LOGIN_SUCCESS}, []string{token})

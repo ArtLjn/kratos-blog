@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/thedevsaddam/gojsonq"
 	"io"
+	"kratos-blog/pkg/conf"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
 	h2 "net/http"
@@ -201,12 +202,12 @@ func ZipToRecover(ctx *gin.Context) {
 }
 
 func CreateConfigZ(ctx *gin.Context) {
-	var conf Config
-	if err := ctx.ShouldBindJSON(&conf); err != nil {
+	var c conf.Config
+	if err := ctx.ShouldBindJSON(&c); err != nil {
 		ctx.JSON(h2.StatusBadRequest, gin.H{"code": 400, "msg": "Invalid request body"})
 		return
 	}
-	if CreateConfig(conf) {
+	if CreateConfig(c) {
 		ctx.JSON(h2.StatusOK, gin.H{"code": 200, "msg": "Config created successfully"})
 	} else {
 		ctx.JSON(h2.StatusInternalServerError, gin.H{"code": 400, "msg": "Failed to create config"})
@@ -227,12 +228,12 @@ func RemoveConfig(ctx *gin.Context) {
 }
 
 func UpdateConfig(ctx *gin.Context) {
-	var conf Config
-	if err := ctx.ShouldBindJSON(&conf); err != nil {
+	var c conf.Config
+	if err := ctx.ShouldBindJSON(&c); err != nil {
 		ctx.JSON(h2.StatusBadRequest, gin.H{"code": 400, "msg": "Invalid request body"})
 		return
 	}
-	if UpdateConfigByVersion(conf) {
+	if UpdateConfigByVersion(c) {
 		ctx.JSON(h2.StatusOK, gin.H{"code": 200, "msg": "Config updated successfully"})
 	} else {
 		ctx.JSON(h2.StatusInternalServerError, gin.H{"code": 400, "msg": "Failed to update config"})

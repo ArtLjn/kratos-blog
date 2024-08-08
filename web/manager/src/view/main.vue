@@ -1,83 +1,257 @@
 <template>
-  <div class="container">
-    <el-container class="el-container">
-      <el-aside style="width: 180px;" class="aside">
-        <ASide />
+  <div class="common-layout">
+    <el-container class="box">
+      <!-- 左侧菜单栏 -->
+      <el-aside :width="isCollapsed ? '64px' : '240px'" class="el-aside">
+        <div class="logoBox" v-if="!isCollapsed"  @click="toggleCollapse">Blog</div>
+        <div class="logoX"> <el-icon v-if="isCollapsed" @click="toggleCollapse"><Grid /></el-icon></div>
+        <el-menu
+            active-text-color="#ffd04b"
+            background-color="#30363c"
+            class="el-menu-vertical-demo"
+            default-active="2"
+            text-color="#fff"
+            :router="true"
+            :collapse="isCollapsed"
+        >
+          <template v-for="item in asideMenu" :key="item.title">
+            <!-- 两级菜单 -->
+            <template v-if="item.subs">
+              <el-sub-menu :index="item.title">
+                <!-- 一级菜单标题 -->
+                <template #title>
+                  <el-icon><component :is="item.icon" /></el-icon>
+                  <span>{{ item.title }}</span>
+                </template>
+                <!-- 二级菜单标题 -->
+                <template v-for="subItem in item.subs" :key="subItem.index">
+                  <el-menu-item
+                      :index="subItem.index"
+                      @click="() => handleMenuItem(subItem)"
+                  >
+                    <el-icon><component :is="subItem.icon" /></el-icon>
+                    <span>{{ subItem.title }}</span>
+                  </el-menu-item>
+                </template>
+              </el-sub-menu>
+            </template>
+
+            <!-- 一级菜单 -->
+            <template v-else>
+              <el-menu-item
+                  :index="item.index"
+                  @click="() => handleMenuItem(item)"
+              >
+                <el-icon><component :is="item.icon" /></el-icon>
+                <span>{{ item.title }}</span>
+              </el-menu-item>
+            </template>
+          </template>
+        </el-menu>
+
       </el-aside>
+
       <el-container>
-        <el-main class="main">
-          <router-view></router-view>
+        <!-- 主体模块：标签页 + 当前路由内容 -->
+        <el-main class="el-main">
+
+            <el-tabs
+              type="border-card"
+              v-model="activeTabName"
+              class="demo-tabs"
+              @tab-remove="handleRemove"
+              @tab-click="handleSwitchRoute"
+          >
+            <el-tab-pane
+                v-for="item in editableTabs"
+                :key="item.index"
+                :label="item.title"
+                :name="item.index"
+                :closable="handleIsClose(item)"
+            >
+              <router-view />
+            </el-tab-pane>
+          </el-tabs>
         </el-main>
       </el-container>
-      <el-backtop :bottom="80" class="backUp">
-        <el-icon>
-          <span style="color: white; font-size: 10px; font-weight: bold;"></span>
-        </el-icon>
-      </el-backtop>
     </el-container>
   </div>
 </template>
 
 <script>
-import {ref} from "vue";
-import ASide from "@/view/components/ASide.vue";
+import {
+  Document,
+  Setting,
+  ArrowLeft,
+  ArrowRight,
+  Edit,List,PriceTag,PictureFilled,
+  Promotion,
+  Grid
+} from "@element-plus/icons-vue";
+import router from "@/router";
 
 export default {
-  components: {
-    ASide,
-  },
-  setup() {
-    const drawer = ref(false);
+  name: "MainLayout",
+  data() {
     return {
-      drawer,
+      //当前选项卡
+      activeTabName: "/main/blog",
+      //需要显示的标签数组
+      editableTabs: [
+        {
+          title: "首页",
+          index: "/main/blog",
+        },
+      ],
+      //左侧菜单选项配置
+      asideMenu: [
+        {
+          title: "文章",
+          icon: "Document",
+          subs: [
+            {
+              title: "文章列表",
+              index: "/main/blog",
+              icon: "List",
+            },
+            {
+              title: "发布文章",
+              index: "/main/edit",
+              icon: "Edit",
+            },
+            {
+              title: "标签管理",
+              index: "/main/tagManager",
+              icon: "PriceTag",
+            },
+            {
+              title: "相册管理",
+              index: "/main/photo",
+              icon: "PictureFilled",
+            },
+            {
+              title: "友链管理",
+              index: "/main/friendManager",
+              icon: "Promotion",
+            }
+          ],
+        },
+        {
+          title: "配置中心",
+          icon: "Setting",
+          subs: [
+            {
+              title: "配置管理",
+              index: "/main/setting",
+              icon: "Setting",
+            }
+          ]
+        },
+      ],
+      isCollapsed: false,
     };
+  },
+  components: {
+    Document,
+    Setting,
+    ArrowLeft,
+    ArrowRight,
+    Edit,
+    List,
+    PriceTag,
+    PictureFilled,
+    Promotion,
+    Grid
+  },
+  methods: {
+    toggleCollapse() {
+      this.isCollapsed = !this.isCollapsed;
+    },
+    handleIsClose(item) {
+      return item.index !== "/main/blog";
+    },
+    handleMenuItem(obj) {
+      this.activeTabName = obj.index;
+      let result = this.editableTabs.findIndex((item) => {
+        return item.index === obj.index;
+      });
+      if (result !== -1) {
+        return;
+      }
+      this.editableTabs.push(obj);
+    },
+    handleSwitchRoute(tabsPaneContext) {
+      let tabPaneName = tabsPaneContext.paneName;
+      if (tabPaneName === 0) {
+        tabPaneName = "";
+      }
+      router.push(tabPaneName);
+    },
+    handleRemove(tabPaneName) {
+      let tempArr = this.editableTabs;
+      let eleIndex = this.editableTabs.findIndex((item) => {
+        return item.index === tabPaneName;
+      });
+      let routeIndex;
+      for (let p in tempArr) {
+        if (tempArr[p].index === tabPaneName) {
+          routeIndex = tempArr[p - 1].index;
+        }
+      }
+      this.activeTabName = routeIndex;
+      router.push(routeIndex);
+      this.editableTabs.splice(eleIndex, 1);
+    },
   },
 };
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  height: 100%;
-  width: 100%;
+.logoBox {
+  position: absolute;
+  top: 18px;
+  left: 30px;
+  font-size: 24px;
+  color: #fff;
   display: flex;
 }
-
-.el-container {
-  height: 100%;
-  width: 100%;
-  flex: 1;
+.logoX{
+  color: white;
+  font-size: 24px;
+  margin-left: 21px;
+}
+.box {
+  width: 100vw;
+  height: 100vh;
 }
 
-.main {
-  background-color: #f5f5f5;
-  height: auto;
-  min-height: 100vh;
-  width: calc(100% - 180px);
-  margin-left: 180px;
-}
-
-.backUp {
-  background: linear-gradient(
-      to top right,
-      rgb(221, 84, 106),
-      rgb(67, 211, 208)
-  );
-  display: flex;
+.collapse-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
   z-index: 10;
 }
 
-.aside {
-  width: 180px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #334157;
-  position: fixed;
+.el-aside {
+  background-color: #30363c;
+  padding-top: 58px;
+  transition: width 0.2s;
+}
+
+.el-main {
+  background-color: #e9eef3;
+  transition: padding-left 0.2s;
+}
+
+.el-menu-vertical-demo .el-menu-item {
+  padding-left: 0;
+}
+
+.el-menu-vertical-demo .el-sub-menu__title {
+  padding-left: 0;
+}
+
+.el-tabs--border-card .el-tabs__content {
+  padding: 0;
 }
 </style>

@@ -76,14 +76,6 @@ func (t *photoRepo) SearchAllPhoto(ctx context.Context, request *pb.ListPhotoReq
 	if e != nil {
 		t.log.Log(log.LevelError, e)
 	}
-	if len(photoData) == 0 {
-		return &pb.ListPhotoReply{
-			Common: &pb.CommonReply{
-				Code:   400,
-				Result: vo.QUERY_EMPTY,
-			},
-		}
-	}
 	return &pb.ListPhotoReply{
 		Common: &pb.CommonReply{
 			Code:   200,

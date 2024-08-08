@@ -79,14 +79,6 @@ func (t *friendRepo) SearchAllFriend(ctx context.Context, request *pb.ListFriend
 	if e != nil {
 		t.log.Log(log.LevelError, e)
 	}
-	if len(friendData) == 0 {
-		return &pb.ListFriendReply{
-			Common: &pb.CommonReply{
-				Code:   400,
-				Result: vo.QUERY_EMPTY,
-			},
-		}
-	}
 	return &pb.ListFriendReply{
 		Common: &pb.CommonReply{
 			Code:   200,

@@ -95,7 +95,19 @@ location @router {
     </tr>
     <tr>
         <td><img src="static/iShot_2024-04-26_22.12.40.png"/></td>
-        <td><img src="static/iShot_2024-04-26_22.13.14.png"/></td>
+        <td><img src="static/b1.png"/></td>
+    </tr>
+    <tr>
+        <td><img src="static/b3.png"/></td>
+        <td><img src="static/b4.png"/></td>
+    </tr>
+     <tr>
+        <td><img src="static/b5.png"/></td>
+        <td><img src="static/b6.png"/></td>
+    </tr>
+   <tr>
+        <td><img src="static/b7.png"/></td>
+        <td><img src="static/b8.png"/></td>
     </tr>
 </table>
 

@@ -38,6 +38,6 @@ func InitBackUp(dns, outPath string, sendEmail bool) {
 }
 
 func BackUpAll() {
-	InitBackUp(Origin.BackUp.Dns, filepath.Join(Origin.U.UploadPath, Origin.Prefix[0]), Origin.BackUp.BackUpSqlSendEmail)
+	InitBackUp(Origin.BackUp.Dns, filepath.Join(Origin.U.UploadPath, Origin.Prefix[1]), Origin.BackUp.BackUpSqlSendEmail)
 	exportData(NewExportData())
 }
