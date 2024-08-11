@@ -9,7 +9,6 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/redis/go-redis/v9"
 	user2 "kratos-blog/api/v1/user"
-	"kratos-blog/app/gateway/internal/conf"
 	"kratos-blog/pkg/jwt"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
@@ -35,7 +34,6 @@ var (
 type FilterInterface interface {
 	DeleteCache() http.FilterFunc
 	FilterPermission(whiteList, blackList []string) http.FilterFunc
-	AllowDomainsMiddleware(cf conf.Domain) http.FilterFunc
 }
 
 type FilterRepo struct {
@@ -66,34 +64,8 @@ func (f *FilterRepo) DeleteCache() http.FilterFunc {
 	}
 }
 
-func (f *FilterRepo) FilterPermission(whiteList, blackList []string) http.FilterFunc {
-	return f.data.role.FilterPermission(whiteList, blackList)
-}
-
-func (f *FilterRepo) AllowDomainsMiddleware(cf *conf.Domain) http.FilterFunc {
-	return func(handler h.Handler) h.Handler {
-		return h.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			origin := req.Referer()
-			if !cf.Open {
-				handler.ServeHTTP(w, req)
-				return
-			} else {
-				var allow bool
-				for _, domain := range cf.Origin {
-					if strings.HasPrefix(origin, domain) {
-						allow = true
-						break
-					}
-				}
-				if allow {
-					handler.ServeHTTP(w, req)
-					return
-				}
-				WritePermissionError(w)
-				return
-			}
-		})
-	}
+func (f *FilterRepo) FilterPermission(whiteList []string) http.FilterFunc {
+	return f.data.role.FilterPermission(whiteList)
 }
 
 func WritePermissionError(w http.ResponseWriter) {

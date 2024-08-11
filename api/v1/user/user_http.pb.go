@@ -24,8 +24,10 @@ const OperationUserCreateUser = "/api.user.User/CreateUser"
 const OperationUserGetUser = "/api.user.User/GetUser"
 const OperationUserLogOut = "/api.user.User/LogOut"
 const OperationUserLoginUser = "/api.user.User/LoginUser"
+const OperationUserQueryAllUser = "/api.user.User/QueryAllUser"
 const OperationUserSendEmail = "/api.user.User/SendEmail"
 const OperationUserSendEmailCommon = "/api.user.User/SendEmailCommon"
+const OperationUserSetAdmin = "/api.user.User/SetAdmin"
 const OperationUserSetBlack = "/api.user.User/SetBlack"
 const OperationUserUpdatePassword = "/api.user.User/UpdatePassword"
 
@@ -35,8 +37,10 @@ type UserHTTPServer interface {
 	GetUser(context.Context, *GetUserRequest) (*GetUserReply, error)
 	LogOut(context.Context, *LogOutRequest) (*LogOutReply, error)
 	LoginUser(context.Context, *LoginRequest) (*LoginReply, error)
+	QueryAllUser(context.Context, *QueryAllUserRequest) (*QueryAllUserResponse, error)
 	SendEmail(context.Context, *SendEmailRequest) (*SendEmailReply, error)
 	SendEmailCommon(context.Context, *SendEmailCommonRequest) (*SendEmailCommonReply, error)
+	SetAdmin(context.Context, *SetAdminRequest) (*SetAdminReply, error)
 	SetBlack(context.Context, *SetBlackRequest) (*SetBlackReply, error)
 	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordReply, error)
 }
@@ -47,11 +51,13 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r.POST("/api/login", _User_LoginUser0_HTTP_Handler(srv))
 	r.GET("/api/sendEmail/{email}", _User_SendEmail0_HTTP_Handler(srv))
 	r.POST("/api/updatePassword/{code}", _User_UpdatePassword0_HTTP_Handler(srv))
-	r.GET("/api/setBlack/{name}", _User_SetBlack0_HTTP_Handler(srv))
+	r.POST("/api/setBlack", _User_SetBlack0_HTTP_Handler(srv))
 	r.GET("/api/getUserMessage/{name}", _User_GetUser0_HTTP_Handler(srv))
 	r.POST("/api/admin", _User_AdminLogin0_HTTP_Handler(srv))
 	r.GET("/api/logOut/{name}", _User_LogOut0_HTTP_Handler(srv))
 	r.POST("/api/sendCommonEmail", _User_SendEmailCommon0_HTTP_Handler(srv))
+	r.GET("/api/queryAllUser", _User_QueryAllUser0_HTTP_Handler(srv))
+	r.POST("/api/setAdmin", _User_SetAdmin0_HTTP_Handler(srv))
 }
 
 func _User_CreateUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -151,10 +157,10 @@ func _User_UpdatePassword0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Contex
 func _User_SetBlack0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in SetBlackRequest
-		if err := ctx.BindQuery(&in); err != nil {
+		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
-		if err := ctx.BindVars(&in); err != nil {
+		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationUserSetBlack)
@@ -258,14 +264,57 @@ func _User_SendEmailCommon0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Conte
 	}
 }
 
+func _User_QueryAllUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in QueryAllUserRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserQueryAllUser)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.QueryAllUser(ctx, req.(*QueryAllUserRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*QueryAllUserResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_SetAdmin0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in SetAdminRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserSetAdmin)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.SetAdmin(ctx, req.(*SetAdminRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*SetAdminReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
 	AdminLogin(ctx context.Context, req *AdminLoginRequest, opts ...http.CallOption) (rsp *AdminLoginReply, err error)
 	CreateUser(ctx context.Context, req *CreateUserRequest, opts ...http.CallOption) (rsp *CreateUserReply, err error)
 	GetUser(ctx context.Context, req *GetUserRequest, opts ...http.CallOption) (rsp *GetUserReply, err error)
 	LogOut(ctx context.Context, req *LogOutRequest, opts ...http.CallOption) (rsp *LogOutReply, err error)
 	LoginUser(ctx context.Context, req *LoginRequest, opts ...http.CallOption) (rsp *LoginReply, err error)
+	QueryAllUser(ctx context.Context, req *QueryAllUserRequest, opts ...http.CallOption) (rsp *QueryAllUserResponse, err error)
 	SendEmail(ctx context.Context, req *SendEmailRequest, opts ...http.CallOption) (rsp *SendEmailReply, err error)
 	SendEmailCommon(ctx context.Context, req *SendEmailCommonRequest, opts ...http.CallOption) (rsp *SendEmailCommonReply, err error)
+	SetAdmin(ctx context.Context, req *SetAdminRequest, opts ...http.CallOption) (rsp *SetAdminReply, err error)
 	SetBlack(ctx context.Context, req *SetBlackRequest, opts ...http.CallOption) (rsp *SetBlackReply, err error)
 	UpdatePassword(ctx context.Context, req *UpdatePasswordRequest, opts ...http.CallOption) (rsp *UpdatePasswordReply, err error)
 }
@@ -343,6 +392,19 @@ func (c *UserHTTPClientImpl) LoginUser(ctx context.Context, in *LoginRequest, op
 	return &out, nil
 }
 
+func (c *UserHTTPClientImpl) QueryAllUser(ctx context.Context, in *QueryAllUserRequest, opts ...http.CallOption) (*QueryAllUserResponse, error) {
+	var out QueryAllUserResponse
+	pattern := "/api/queryAllUser"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationUserQueryAllUser))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *UserHTTPClientImpl) SendEmail(ctx context.Context, in *SendEmailRequest, opts ...http.CallOption) (*SendEmailReply, error) {
 	var out SendEmailReply
 	pattern := "/api/sendEmail/{email}"
@@ -369,13 +431,26 @@ func (c *UserHTTPClientImpl) SendEmailCommon(ctx context.Context, in *SendEmailC
 	return &out, nil
 }
 
+func (c *UserHTTPClientImpl) SetAdmin(ctx context.Context, in *SetAdminRequest, opts ...http.CallOption) (*SetAdminReply, error) {
+	var out SetAdminReply
+	pattern := "/api/setAdmin"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserSetAdmin))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *UserHTTPClientImpl) SetBlack(ctx context.Context, in *SetBlackRequest, opts ...http.CallOption) (*SetBlackReply, error) {
 	var out SetBlackReply
-	pattern := "/api/setBlack/{name}"
-	path := binding.EncodeURL(pattern, in, true)
+	pattern := "/api/setBlack"
+	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserSetBlack))
 	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

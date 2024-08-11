@@ -29,6 +29,8 @@ const (
 	User_VerifyToken_FullMethodName     = "/api.user.User/VerifyToken"
 	User_LogOut_FullMethodName          = "/api.user.User/LogOut"
 	User_SendEmailCommon_FullMethodName = "/api.user.User/SendEmailCommon"
+	User_QueryAllUser_FullMethodName    = "/api.user.User/QueryAllUser"
+	User_SetAdmin_FullMethodName        = "/api.user.User/SetAdmin"
 )
 
 // UserClient is the client API for User service.
@@ -45,6 +47,8 @@ type UserClient interface {
 	VerifyToken(ctx context.Context, in *VerifyTokenRequest, opts ...grpc.CallOption) (*VerifyTokenReply, error)
 	LogOut(ctx context.Context, in *LogOutRequest, opts ...grpc.CallOption) (*LogOutReply, error)
 	SendEmailCommon(ctx context.Context, in *SendEmailCommonRequest, opts ...grpc.CallOption) (*SendEmailCommonReply, error)
+	QueryAllUser(ctx context.Context, in *QueryAllUserRequest, opts ...grpc.CallOption) (*QueryAllUserResponse, error)
+	SetAdmin(ctx context.Context, in *SetAdminRequest, opts ...grpc.CallOption) (*SetAdminReply, error)
 }
 
 type userClient struct {
@@ -145,6 +149,24 @@ func (c *userClient) SendEmailCommon(ctx context.Context, in *SendEmailCommonReq
 	return out, nil
 }
 
+func (c *userClient) QueryAllUser(ctx context.Context, in *QueryAllUserRequest, opts ...grpc.CallOption) (*QueryAllUserResponse, error) {
+	out := new(QueryAllUserResponse)
+	err := c.cc.Invoke(ctx, User_QueryAllUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) SetAdmin(ctx context.Context, in *SetAdminRequest, opts ...grpc.CallOption) (*SetAdminReply, error) {
+	out := new(SetAdminReply)
+	err := c.cc.Invoke(ctx, User_SetAdmin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
@@ -159,6 +181,8 @@ type UserServer interface {
 	VerifyToken(context.Context, *VerifyTokenRequest) (*VerifyTokenReply, error)
 	LogOut(context.Context, *LogOutRequest) (*LogOutReply, error)
 	SendEmailCommon(context.Context, *SendEmailCommonRequest) (*SendEmailCommonReply, error)
+	QueryAllUser(context.Context, *QueryAllUserRequest) (*QueryAllUserResponse, error)
+	SetAdmin(context.Context, *SetAdminRequest) (*SetAdminReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -195,6 +219,12 @@ func (UnimplementedUserServer) LogOut(context.Context, *LogOutRequest) (*LogOutR
 }
 func (UnimplementedUserServer) SendEmailCommon(context.Context, *SendEmailCommonRequest) (*SendEmailCommonReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendEmailCommon not implemented")
+}
+func (UnimplementedUserServer) QueryAllUser(context.Context, *QueryAllUserRequest) (*QueryAllUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryAllUser not implemented")
+}
+func (UnimplementedUserServer) SetAdmin(context.Context, *SetAdminRequest) (*SetAdminReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetAdmin not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -389,6 +419,42 @@ func _User_SendEmailCommon_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_QueryAllUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).QueryAllUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_QueryAllUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).QueryAllUser(ctx, req.(*QueryAllUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_SetAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).SetAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_SetAdmin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).SetAdmin(ctx, req.(*SetAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -435,6 +501,14 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendEmailCommon",
 			Handler:    _User_SendEmailCommon_Handler,
+		},
+		{
+			MethodName: "QueryAllUser",
+			Handler:    _User_QueryAllUser_Handler,
+		},
+		{
+			MethodName: "SetAdmin",
+			Handler:    _User_SetAdmin_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

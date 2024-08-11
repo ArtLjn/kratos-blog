@@ -93,7 +93,8 @@ import {
   Edit,List,PriceTag,PictureFilled,
   Promotion,
   Grid,
-  HomeFilled
+  HomeFilled,
+  User
 } from "@element-plus/icons-vue";
 import router from "@/router";
 
@@ -149,15 +150,14 @@ export default {
           ],
         },
         {
+          title: "用户管理",
+          icon: "User",
+          index: "/main/user",
+        },
+        {
           title: "配置中心",
           icon: "Setting",
-          subs: [
-            {
-              title: "配置管理",
-              index: "/main/setting",
-              icon: "Setting",
-            }
-          ]
+          index: "/main/setting",
         },
       ],
       isCollapsed: false,
@@ -174,7 +174,8 @@ export default {
     PictureFilled,
     Promotion,
     Grid,
-    HomeFilled
+    HomeFilled,
+    User
   },
   methods: {
     toggleCollapse() {

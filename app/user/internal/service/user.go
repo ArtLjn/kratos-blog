@@ -45,3 +45,9 @@ func (s *UserService) LogOut(ctx context.Context, req *pb.LogOutRequest) (*pb.Lo
 func (s *UserService) SendEmailCommon(ctx context.Context, req *pb.SendEmailCommonRequest) (*pb.SendEmailCommonReply, error) {
 	return s.uc.SendEmailCommon(ctx, req), nil
 }
+func (s *UserService) QueryAllUser(ctx context.Context, req *pb.QueryAllUserRequest) (*pb.QueryAllUserResponse, error) {
+	return s.uc.QueryAllUser(ctx, req), nil
+}
+func (s *UserService) SetAdmin(ctx context.Context, req *pb.SetAdminRequest) (*pb.SetAdminReply, error) {
+	return s.uc.SetAdmin(ctx, req), nil
+}

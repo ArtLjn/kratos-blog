@@ -31,7 +31,7 @@ func NewMail(username, host string, port int, password string) MailS {
 func SendBackupMail(filepath string) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", Origin.Mail.Username)
-	m.SetHeader("To", Origin.Mail.Password)
+	m.SetHeader("To", Origin.Mail.Username)
 	m.SetHeader("Subject", "sql备份")
 	m.SetBody("text/plain", "sql备份")
 	// 添加附件

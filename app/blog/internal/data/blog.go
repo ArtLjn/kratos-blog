@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/app/blog/internal/biz"
@@ -108,64 +107,6 @@ func (r *blogRepo) createBlogFromRequest(request *blog.CreateBlogRequest) func()
 		b.Appear = true
 		return b
 	}
-}
-
-// GetByTagName :dev search blog posts based on tags
-func (r *blogRepo) GetByTagName(ctx context.Context, request *blog.GetBlogRequest) (string,
-	[]*blog.BlogData, error) {
-	var (
-		blogs []*blog.BlogData
-		err   error
-	)
-	if request.GetPermission().GetAdmin() {
-		admin := AdminRoleFactory{r: r, req: request}
-		blogs, err = admin.QueryTag()
-	} else {
-		v := UserOrVisitFactory{r: r, req: request}
-		blogs, err = v.QueryTag()
-	}
-	if err != nil {
-		return err.Error(), nil, err
-	}
-	return vo.QUERY_SUCCESS, blogs, nil
-}
-
-// ListBlog :dev query all blog posts based on permissions
-func (r *blogRepo) ListBlog(ctx context.Context, request *blog.ListBlogRequest) (string,
-	[]*blog.BlogData, error) {
-	var (
-		blogs []*blog.BlogData
-		err   error
-	)
-	if request.GetPermission().GetAdmin() {
-		admin := AdminRoleFactory{r: r, reb: request}
-		blogs, err = admin.QueryListBlog()
-	} else {
-		v := UserOrVisitFactory{r: r, reb: request}
-		blogs, err = v.QueryListBlog()
-	}
-	if err != nil {
-		return vo.QUERY_FAIL, blogs, nil
-	}
-	return vo.QUERY_SUCCESS, blogs, nil
-}
-
-// QueryBlogById :dev more blog post ID query blog posts
-func (r *blogRepo) QueryBlogById(ctx context.Context, request *blog.GetBlogIDRequest) (msg string,
-	da *blog.BlogData, e error) {
-	var b Blog
-	if err := r.data.db.Where("id = ?", request.Id).First(&b).Error; err != nil {
-		r.log.Errorf("query error %s", err)
-		return vo.QUERY_FAIL, &blog.BlogData{}, fmt.Errorf(vo.QUERY_FAIL)
-	}
-	if err := r.data.pf.ParseJSONToStruct(b, &da); err != nil {
-		return vo.JSON_ERROR, &blog.BlogData{}, fmt.Errorf(vo.JSON_ERROR)
-	}
-
-	if !b.Appear && !request.GetPermission().GetAdmin() {
-		return vo.FORBIDDEN_ACCESS, &blog.BlogData{}, fmt.Errorf(vo.FORBIDDEN_ACCESS)
-	}
-	return vo.QUERY_SUCCESS, da, nil
 }
 
 func (r *blogRepo) SetBlogVisit(id int) {

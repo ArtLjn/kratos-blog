@@ -217,7 +217,7 @@ message SearchAllReply {
 }
 
 message Permission {
-	bool Admin = 1;
+	int32 Role = 1;
 }
 
 message UpdateBlogVisitRq {}

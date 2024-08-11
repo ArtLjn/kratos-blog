@@ -10,8 +10,7 @@ message Bootstrap {
   Data data = 2;
   Upload upload = 3;
   Path path = 4;
-  Domain domain = 5;
-  Mq mq = 6;
+  Mq mq = 5;
 }
 
 message Server {
@@ -57,14 +56,8 @@ message Upload {
 
 message Path {
   repeated string white = 1;
-  repeated string black = 2;
 }
 
-message Domain {
-  repeated string origin = 1;
-  bool open = 2;
-  string key = 3;
-}
 message Mq {
   string url = 1;
   bool open = 2;

@@ -5,6 +5,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	pb "kratos-blog/api/v1/blog"
 	"kratos-blog/app/gateway/internal/data"
+	"kratos-blog/pkg/server"
 )
 
 type BlogService struct {
@@ -34,7 +35,7 @@ func (s *BlogService) GetBlogByTag(ctx context.Context, req *pb.GetBlogRequest) 
 	req = &pb.GetBlogRequest{
 		Tag: req.Tag,
 		Permission: &pb.Permission{
-			Admin: s.role.QueryUserMsg(ctx).GetRole().CheckPermission(),
+			Role: server.GetRole(s.role.QueryUserMsg(ctx).Role),
 		},
 	}
 	return s.uc.GetBlogByTag(ctx, req)
@@ -42,7 +43,7 @@ func (s *BlogService) GetBlogByTag(ctx context.Context, req *pb.GetBlogRequest) 
 func (s *BlogService) ListBlog(ctx context.Context, req *pb.ListBlogRequest) (*pb.ListBlogReply, error) {
 	req = &pb.ListBlogRequest{
 		Permission: &pb.Permission{
-			Admin: s.role.QueryUserMsg(ctx).GetRole().CheckPermission(),
+			Role: server.GetRole(s.role.QueryUserMsg(ctx).Role),
 		},
 	}
 	return s.uc.ListBlog(ctx, req)
@@ -51,7 +52,7 @@ func (s *BlogService) GetBlogByID(ctx context.Context, req *pb.GetBlogIDRequest)
 	req = &pb.GetBlogIDRequest{
 		Id: req.Id,
 		Permission: &pb.Permission{
-			Admin: s.role.QueryUserMsg(ctx).GetRole().CheckPermission(),
+			Role: server.GetRole(s.role.QueryUserMsg(ctx).Role),
 		},
 	}
 	return s.uc.GetBlogByID(ctx, req)

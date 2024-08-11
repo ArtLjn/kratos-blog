@@ -9,11 +9,12 @@ package main
 
 import (
 	"fmt"
+	"kratos-blog/pkg/conf"
 	"testing"
 )
 
 func TestCreateConfig(t *testing.T) {
-	CreateConfig(Config{
+	CreateConfig(conf.Config{
 		// ... 配置初始化
 		Version: "1.0",
 		Open:    false,
@@ -51,7 +52,7 @@ func TestDeleteConfigByVersion(t *testing.T) {
 }
 
 func TestUpdateConfigByVersion(t *testing.T) {
-	UpdateConfigByVersion(Config{
+	UpdateConfigByVersion(conf.Config{
 		Version: "1.1",
 		Open:    false,
 		Upload: struct {

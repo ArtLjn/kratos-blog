@@ -180,7 +180,7 @@ func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func()
 		if e := json.Unmarshal(body, &us); e != nil {
 			panic(e)
 		}
-		us.UUID = uuid.New().String()
+		us.UUID = uuid.New().String()[:8]
 		us.Black = false
 		us.Password = MD5(us.Password)
 		us.Role = server.User
@@ -208,31 +208,32 @@ func (u *userRepo) validateUpdatePass(request *user.UpdatePasswordRequest) error
 // SetBlack :dev Set a blacklist of users who violate the rules
 func (u *userRepo) SetBlack(ctx context.Context, request *user.SetBlackRequest) (string, error) {
 	if err := u.data.pf.UpdateFunc(User{}, map[string]interface{}{"name": request.Name},
-		map[string]interface{}{"black": true}, false); err != nil {
+		map[string]interface{}{"black": request.GetBlack()}, false); err != nil {
 		return vo.UPDATE_FAIL, errors.New(vo.UPDATE_FAIL)
 	}
-
-	var uS User
-	data, _ := u.data.pf.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
-	if err := u.data.pf.ParseJSONToStruct(data, &uS); err != nil {
-		u.log.Log(log.LevelError, err)
-		return vo.UPDATE_FAIL, errors.New(vo.UPDATE_FAIL)
-	}
-	// Create a coroutine to send a message
-	go func() {
-		u.mu.Lock()
-		c, err := u.GetCurrentConfig()
-		if err != nil {
+	if request.GetBlack() {
+		var uS User
+		data, _ := u.data.pf.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
+		if err := u.data.pf.ParseJSONToStruct(data, &uS); err != nil {
 			u.log.Log(log.LevelError, err)
-			return
+			return vo.UPDATE_FAIL, errors.New(vo.UPDATE_FAIL)
 		}
-		blackBody := fmt.Sprintf("亲爱的用户,您好！\n系统检测到您的账号\n %s \n有异常行为,你的账号被暂停使用!"+
-			",如有疑问请联系管理员 %s ,谢谢您的配合!", uS.Email, c.QQEmail.Username)
-		body := fmt.Sprintf("系统检测到该用户有异常操作行为\n %s \n %s \n 现已被封禁如有异常请您进行处理。", uS.Name, uS.Email)
-		u.SendEmail(body, c.QQEmail.Username, "通知邮件")
-		u.SendEmail(blackBody, uS.Email, "违规邮件")
-		u.mu.Unlock()
-	}()
+		// Create a coroutine to send a message
+		go func() {
+			u.mu.Lock()
+			c, err := u.GetCurrentConfig()
+			if err != nil {
+				u.log.Log(log.LevelError, err)
+				return
+			}
+			blackBody := fmt.Sprintf("亲爱的用户,您好！\n系统检测到您的账号\n %s \n有异常行为,你的账号被暂停使用!"+
+				",如有疑问请联系管理员 %s ,谢谢您的配合!", uS.Email, c.QQEmail.Username)
+			body := fmt.Sprintf("系统检测到该用户有异常操作行为\n %s \n %s \n 现已被封禁如有异常请您进行处理。", uS.Name, uS.Email)
+			u.SendEmail(body, c.QQEmail.Username, "通知邮件")
+			u.SendEmail(blackBody, uS.Email, "违规邮件")
+			u.mu.Unlock()
+		}()
+	}
 	return vo.UPDATE_SUCCESS, nil
 }
 
@@ -240,22 +241,13 @@ func (u *userRepo) GetUserMsg(request *user.GetUserRequest) []string {
 	u.log.Log(log.LevelDebug, request.Name)
 	var data User
 	var list []string
-	c, err := u.GetCurrentConfig()
-	if err != nil {
-		u.log.Log(log.LevelError, err)
-		return nil
-	}
-	if request.Name == c.Admin.Username {
-		f := make([]string, 3)
-		f = append(f, c.Admin.Username, server.Admin)
-		list = append([]string{}, f...)
-		return list
-	}
 	d, err := u.data.pf.QueryFunc(User{}, map[string]interface{}{"name": request.Name}, false)
 	if err != nil {
 		u.log.Log(log.LevelError, err)
 	}
-	u.data.pf.ParseJSONToStruct(d, &data)
+	if err = u.data.pf.ParseJSONToStruct(d, &data); err != nil {
+		return nil
+	}
 	list = append(list, data.Name, data.Email, strconv.Itoa(data.ID), data.UUID, data.Role, strconv.FormatBool(data.Black))
 	return list
 }
@@ -276,7 +268,8 @@ func (u *userRepo) AdminLogin(ctx context.Context, request *user.AdminLoginReque
 	if request.Name == c.Admin.Username &&
 		request.Password == c.Admin.Password {
 		// generate token
-		token := u.key.SaveToken(request.Name)
+		token := fmt.Sprintf("admin-token:%s", uuid.New().String())
+		u.data.rdb.Set(context.Background(), server.AdminToken, token, 7*time.Hour*24)
 		return status(&user.CommonReply{Code: 200, Result: vo.LOGIN_SUCCESS}, []string{token})
 	}
 	return status(&user.CommonReply{Code: 400, Result: vo.LOGIN_FAIL}, nil)
@@ -306,6 +299,44 @@ func (u *userRepo) LogOut(ctx context.Context, request *user.LogOutRequest) *use
 		Common: &user.CommonReply{
 			Code:   vo.SUCCESS_REQUEST,
 			Result: vo.OPERATE_SUCCESS,
+		},
+	}
+}
+
+func (u *userRepo) QueryAllUser(ctx context.Context, request *user.QueryAllUserRequest) *user.QueryAllUserResponse {
+	var data []*user.QueryUser
+	if err := u.data.db.Model(&User{}).Find(&data).Error; err != nil {
+		log.Log(log.LevelError, err)
+	}
+	return &user.QueryAllUserResponse{
+		Common: &user.CommonReply{
+			Code:   vo.SUCCESS_REQUEST,
+			Result: vo.QUERY_SUCCESS,
+		},
+		Data: data,
+	}
+}
+
+func (u *userRepo) SetAdmin(ctx context.Context, request *user.SetAdminRequest) *user.SetAdminReply {
+	cond := u.data.db.Model(&User{}).Where("name = ?", request.GetName())
+	var role string
+	if request.GetSet() {
+		role = server.VIP
+	} else {
+		role = server.User
+	}
+	if err := cond.Update("role", role).Error; err != nil {
+		return &user.SetAdminReply{
+			Common: &user.CommonReply{
+				Code:   vo.SUCCESS_REQUEST,
+				Result: vo.UPDATE_FAIL,
+			},
+		}
+	}
+	return &user.SetAdminReply{
+		Common: &user.CommonReply{
+			Code:   vo.SUCCESS_REQUEST,
+			Result: vo.UPDATE_SUCCESS,
 		},
 	}
 }

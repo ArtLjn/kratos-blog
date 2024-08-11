@@ -97,9 +97,7 @@ func (c *Mq) PushReward(m *comment.CreateRewardRequest) error {
 }
 
 type MailS struct {
-	Email   string
-	Body    string
-	Subject string
+	Email string
 }
 
 func (c *Mq) PushMail(mails MailS) error {
@@ -255,6 +253,67 @@ func (c *Mq) ReceiveReward(fc CommentReq[comment.CreateRewardRequest, comment.Cr
 			}
 			wg.Wait()
 		}
+	}()
+	<-forever
+}
+
+func (c *Mq) ReceiveEmailTask(userClient user.UserClient) {
+	msg, err := c.cn.Channel.Consume(
+		c.cf.GetQueue()[2],
+		"",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		c.l.Error("消费消息失败")
+		return
+	}
+
+	forever := make(chan bool)
+	go func() {
+		var wg sync.WaitGroup
+		for d := range msg {
+			wg.Add(1)
+			c.l.Info("收到消息")
+			workerPool <- struct{}{} // 获取信号量，控制并发数
+			go func(delivery amqp.Delivery) {
+				defer wg.Done()
+				defer func() {
+					<-workerPool // 释放信号量
+				}()
+
+				// 将消息反序列化
+				var email MailS
+				err = json.Unmarshal(delivery.Body, &email)
+				if err != nil {
+					c.l.Error("反序列化消息失败")
+					// 拒绝消息，并将其重新放回队列
+					delivery.Nack(false, true)
+					return
+				}
+
+				// 发送邮件
+				res, _ := userClient.SendEmail(context.Background(), &user.SendEmailRequest{
+					Email: email.Email,
+				})
+				if res.Common.Code != 200 {
+					// 发送邮件失败，拒绝消息并重新放回队列
+					delivery.Nack(false, true)
+					c.l.Error("发送邮件失败")
+					return
+				}
+
+				// 处理成功，确认消息
+				err = delivery.Ack(false)
+				if err != nil {
+					c.l.Error("消息确认失败")
+				}
+			}(d)
+		}
+		wg.Wait()
 	}()
 	<-forever
 }

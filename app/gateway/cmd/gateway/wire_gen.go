@@ -36,10 +36,11 @@ func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logge
 	}
 	q.StartMq(confData.Mq.GetQueue()...)
 	commentService := service.NewCommentService(logger, commentClient, blogClient, role, q)
-	userService := service.NewUserService(logger, userClient)
+	userService := service.NewUserService(logger, userClient,q,role)
 	// 启动评论和回复的消费者
 	go q.ReceiveComment(commentService.UC.AddComment, commentService.HasAllowComment, userService.UC.SendEmailCommon)
 	go q.ReceiveReward(commentService.UC.AddReward, commentService.HasAllowComment, userService.UC.SendEmailCommon)
+	go q.ReceiveEmailTask(userClient)
 	Cron(blogClient)
 	blogService := service.NewBlogService(logger, blogClient, role)
 	tagClient := data.NewTagServiceClient(discovery)

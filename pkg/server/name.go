@@ -17,13 +17,34 @@ const (
 	SuggestBlog    string = "suggestBlog"
 	Token                 = "token"
 	TokenMangerKey        = "token_manager"
+	AdminToken            = "admin_token"
 )
 
 // RoleSwitch
 const (
-	Admin   = "admin"
-	User    = "user"
-	Visitor = "visitor"
+	VIP         = "vip"
+	User        = "user"
+	Visitor     = "visitor"
+	SystemAdmin = "admin"
+)
+
+func GetRole(role string) int32 {
+	switch role {
+	case SystemAdmin:
+		return SystemManager
+	case VIP:
+		return Vip
+	case User:
+	case Visitor:
+		return VisitorOrUser
+	}
+	return VisitorOrUser
+}
+
+const (
+	SystemManager = iota
+	Vip
+	VisitorOrUser
 )
 
 // ConfigPath

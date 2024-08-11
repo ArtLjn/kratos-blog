@@ -25,6 +25,8 @@ type UserRepo interface {
 	AdminLogin(ctx context.Context, request *user.AdminLoginRequest) *user.AdminLoginReply
 	VerifyToken(ctx context.Context, request *user.VerifyTokenRequest) *user.VerifyTokenReply
 	LogOut(ctx context.Context, request *user.LogOutRequest) *user.LogOutReply
+	QueryAllUser(ctx context.Context, request *user.QueryAllUserRequest) *user.QueryAllUserResponse
+	SetAdmin(ctx context.Context, request *user.SetAdminRequest) *user.SetAdminReply
 }
 
 type UserUseCase struct {
@@ -75,7 +77,8 @@ func (u *UserUseCase) SendEmail(ctx context.Context, request *user.SendEmailRequ
 	body := fmt.Sprintf("您好，您的验证码为\n%d\n请妥善保管，本次验证码5分钟内有效", code)
 	u.log.Log(log.LevelInfo, code)
 	res := u.repo.SendEmail(body, request.Email, "注册邮件")
-	if res && u.repo.CacheCode(request.Email, code) {
+	if res {
+		u.repo.CacheCode(request.Email, code)
 		emailList[request.Email] = currentTime + 60
 		return &user.SendEmailReply{Common: &user.CommonReply{Code: 200, Result: vo.EMAIL_SUCCESS}}
 	}
@@ -126,4 +129,12 @@ func (u *UserUseCase) SendEmailCommon(ctx context.Context, request *user.SendEma
 		return &user.SendEmailCommonReply{Common: &user.CommonReply{Code: 200, Result: vo.EMAIL_SUCCESS}}
 	}
 	return &user.SendEmailCommonReply{Common: &user.CommonReply{Code: 400, Result: vo.EMAIL_FAIL}}
+}
+
+func (u *UserUseCase) QueryAllUser(ctx context.Context, request *user.QueryAllUserRequest) *user.QueryAllUserResponse {
+	return u.repo.QueryAllUser(ctx, request)
+}
+
+func (u *UserUseCase) SetAdmin(ctx context.Context, request *user.SetAdminRequest) *user.SetAdminReply {
+	return u.repo.SetAdmin(ctx, request)
 }

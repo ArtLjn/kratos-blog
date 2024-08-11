@@ -1,6 +1,6 @@
 import axios from "axios";
 import {ElMessage} from "element-plus";
-import {SUCCESS_REQUEST} from "@/view/api/status";
+import {FORBIDDEN_ERROR, SUCCESS_REQUEST} from "@/view/api/status";
 
 const baseURL = '/'
 
@@ -45,6 +45,9 @@ instance.interceptors.response.use(response => {
         const code = res.common.code;
         if (code === SUCCESS_REQUEST) {
             return response.data;
+        } else if (code === FORBIDDEN_ERROR) {
+            localStorage.removeItem('token');
+            ElMessage.error('登录已过期，请重新登录');
         }
     } else {
         // 检查其他可能的错误信息字段

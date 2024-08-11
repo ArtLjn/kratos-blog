@@ -164,6 +164,8 @@ export default {
               ElMessage.error(res.result);
           }
           loading.value = false; // 取消加载状态
+        }).catch(err => {
+          ElMessage.error(err.response.data.result);
         });
       }
     };
@@ -197,7 +199,9 @@ export default {
             ElMessage.error(res.result);
           }
           loading.value = false; // 取消加载状态
-        })
+        }).catch(err => {
+          ElMessage.error(err.response.data.result);
+        });
       }
     }
 

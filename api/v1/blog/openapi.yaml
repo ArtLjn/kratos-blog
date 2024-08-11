@@ -156,10 +156,11 @@ paths:
                 - Blog
             operationId: Blog_ListBlog
             parameters:
-                - name: permission.Admin
+                - name: permission.Role
                   in: query
                   schema:
-                    type: boolean
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK
@@ -197,10 +198,11 @@ paths:
                 - Blog
             operationId: Blog_GetCacheBlog
             parameters:
-                - name: permission.Admin
+                - name: permission.Role
                   in: query
                   schema:
-                    type: boolean
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK
@@ -225,10 +227,11 @@ paths:
                   required: true
                   schema:
                     type: string
-                - name: permission.Admin
+                - name: permission.Role
                   in: query
                   schema:
-                    type: boolean
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK
@@ -253,10 +256,11 @@ paths:
                   required: true
                   schema:
                     type: string
-                - name: permission.Admin
+                - name: permission.Role
                   in: query
                   schema:
-                    type: boolean
+                    type: integer
+                    format: int32
             responses:
                 "200":
                     description: OK

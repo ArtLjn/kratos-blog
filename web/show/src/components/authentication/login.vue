@@ -13,7 +13,7 @@
       <button type="button" @click="showResetForm = true,showRegisterForm = false,handleResetForm"
       style="background-color:rgb(239, 239, 248);">忘记密码？</button><br>
     </form>
-    
+
     <form v-if="showRegisterForm" class="form" @submit.prevent="register">
       <h1>注册</h1>
       <div class="input-box">
@@ -22,7 +22,7 @@
           v-model="registerForm.name" required>
 
         <label for="email">Email:</label>
-          <input type="email" id="email" name="email" 
+          <input type="email" id="email" name="email"
           pattern="[a-zA-Z0-9_-]+@qq\.com"
           placeholder="support@qq.com"
           v-model="registerForm.email" required>
@@ -68,8 +68,8 @@
       <button type="button" @click="showResetForm = false">Cancel</button>
     </form>
   </template>
-  
-  <script>  
+
+  <script>
   import { onMounted, ref } from 'vue';
   import { ElMessage } from 'element-plus';
   import {Login, Register, SendEmail, UpdatePassword} from "@/api/auth";
@@ -99,15 +99,15 @@
           login()
         }
       });
-      
+
       const login = () => {
           Login(loginForm.value)
       };
-  
+
       const register = () => {
         Register(registerForm.value,code.value)
       };
-      
+
       const sendEmail = () => {
         if (registerForm.value.email) {
           if (!lockClick.value) return
@@ -158,7 +158,7 @@
         code
       };
     }
-    
+
   }
   </script>
   <style scoped>
@@ -171,7 +171,7 @@
     width: 100%;
     z-index: 998;
   }
-  
+
   .box {
     display: flex;
     flex-direction: column;
@@ -181,7 +181,7 @@
     background-color: rgb(161, 139, 139,0);
     animation: slide-in-blurred 0.5s both;
   }
-  
+
   @keyframes slide-in-blurred {
     0% {
       transform: translateY(-1000px) scaleY(2.5) scaleX(0.2);
@@ -196,7 +196,7 @@
       opacity: 1;
     }
   }
-  
+
   .form {
     display: flex;
     flex-direction: column;
@@ -205,21 +205,21 @@
     width: 100%;
     height: auto;
   }
-  
+
   form h1 {
     margin: 10px;
     font-size: 28px;
     text-align: center;
     color: #283789;
   }
-  
+
   .input-box {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
   }
-  
+
   input {
     margin: 10px;
     padding: 12px 20px;
@@ -245,11 +245,11 @@
     cursor: pointer;
     transition: background-color 0.3s ease-out;
     }
-    
+
     button[type="submit"]:hover {
     background-color: #4c5aa9;
     }
-    
+
     button[type="button"] {
     margin: 10px;
     margin-top: 0px;
@@ -264,11 +264,11 @@
     cursor: pointer;
     transition: background-color 0.3s ease-out;
     }
-    
+
     button[type="button"]:hover {
     background-color: #e4e4e4;
     }
-    
+
     a {
     margin-top: 10px;
     text-align: center;
@@ -276,7 +276,7 @@
     color: #283789;
     text-decoration: none;
     }
-  
+
     .verification-code-input {
     display: flex;
     justify-content: space-between;
@@ -290,4 +290,3 @@
       }
     }
   </style>
-  

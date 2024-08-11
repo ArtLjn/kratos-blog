@@ -15,13 +15,13 @@ import (
 	"strings"
 )
 
-const Token = "token"
+const Token = server.Token
 
 var CTX = context.Background()
 
 // RoleSwitch
 const (
-	Admin   = server.Admin
+	VIP     = server.VIP
 	User    = server.User
 	Visitor = server.Visitor
 )
@@ -35,11 +35,6 @@ type Role struct {
 func NewRole(rdb *redis.Client, uc user.UserClient, logger log.Logger) *Role {
 	l := log.NewHelper(log.With(logger, "module", "data"))
 	return &Role{rdb: rdb, uc: uc, log: l}
-}
-
-type PermissionStrategy interface {
-	CheckPermission() bool
-	GetRole() PermissionStrategy
 }
 
 type Permission struct {
@@ -69,6 +64,21 @@ func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
 		}
 	}
 
+	adminCacheToken, _ := r.rdb.Get(CTX, server.AdminToken).Result()
+	if len(adminCacheToken) != 0 {
+		if adminCacheToken == token {
+			return &Permission{
+				U: &user.GetUserReply{
+					Common: &user.CommonReply{
+						Code:   200,
+						Result: vo.QUERY_SUCCESS,
+					},
+					Data: []string{server.SystemAdmin},
+				},
+				Role: server.SystemAdmin,
+			}
+		}
+	}
 	// The token is empty,granting the visitor permissions
 	if len(token) == 0 {
 		return grantVisitorRole()
@@ -80,7 +90,7 @@ func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
 	res, err := r.uc.GetUser(context.Background(), &user.GetUserRequest{
 		Name: username,
 	})
-	if len(res.Data[4]) == 0 {
+	if res == nil || len(res.Data[4]) == 0 {
 		return grantVisitorRole()
 	}
 	if err != nil {
@@ -89,40 +99,18 @@ func (r *Role) QueryUserMsg(ctx context.Context) *Permission {
 	if res.Common.Code != 200 {
 		panic(errors.New(res.Common.Result))
 	}
-	return &Permission{U: res}
-}
-
-func (r *Permission) CheckPermission() bool {
-	switch r.Role {
-	case Admin:
-		return true
-	case User, Visitor:
-		return false
-	}
-	return false
-}
-
-func (r *Permission) GetRole() PermissionStrategy {
-	r.Role = r.U.Data[4]
-	return r
+	return &Permission{U: res, Role: res.Data[4]}
 }
 
 /**
  * @dev FilterPermission
  */
 
-func (r *Role) FilterPermission(whiteList, blackList []string) http.FilterFunc {
+func (r *Role) FilterPermission(whiteList []string) http.FilterFunc {
 	return func(handler h.Handler) h.Handler {
 		return h.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-
-			if !r.IsPathInList(req.URL.Path, blackList) {
-				if req.Method == h.MethodGet || r.IsPathInList(req.URL.Path, whiteList) {
-					handler.ServeHTTP(w, req)
-					return
-				}
-			}
-
 			handler.ServeHTTP(w, req)
+			return
 		})
 	}
 }
@@ -144,4 +132,12 @@ func (r *Role) WritePermissionError(w http.ResponseWriter) {
 	}
 	byteRep, _ := json.Marshal(&rep)
 	w.Write(byteRep)
+}
+
+func (r *Role) VerifyManagerToken(token string) bool {
+	cacheToken, err := r.rdb.Get(CTX, server.AdminToken).Result()
+	if err != nil {
+		return false
+	}
+	return token == cacheToken
 }

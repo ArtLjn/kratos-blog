@@ -17,8 +17,8 @@ export default {
         upload: {
           path: "",
           domain: "",
-          maxsize: "",
-          bingurl: ""
+          maxsize: "4MB",
+          bingurl: "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1"
         },
         backup: {
           cycle: 7,
@@ -27,7 +27,7 @@ export default {
         qqemail: {
           username: "",
           password: "",
-          host: "",
+          host: "smtp.qq.com",
           port: 465
         },
         admin: {
@@ -172,7 +172,7 @@ export default {
                   </el-descriptions-item>
                 </el-descriptions>
               </el-collapse-item>
-              <el-collapse-item title="QQ邮箱配置">
+              <el-collapse-item title="邮箱配置">
                 <el-descriptions border column="1">
                   <el-descriptions-item label="用户名">
                     <el-input v-model="addConfigForm.qqemail.username"></el-input>
@@ -278,7 +278,7 @@ export default {
                         </el-descriptions-item>
                       </el-descriptions>
                     </el-collapse-item>
-                    <el-collapse-item title="QQ邮箱配置">
+                    <el-collapse-item title="邮箱配置">
                       <el-descriptions border column="1">
                         <el-descriptions-item label="用户名">
                           <span v-if="!config.editing" @dblclick="enableEditing(configKey)">

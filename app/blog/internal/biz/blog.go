@@ -14,7 +14,7 @@ type BlogRepo interface {
 	UpdateIndividualFields(ctx context.Context, request *pb.UpdateIndividualFieldsRequest) (string, error)
 	GetByTagName(ctx context.Context, request *pb.GetBlogRequest) (string, []*pb.BlogData, error)
 	ListBlog(ctx context.Context, request *pb.ListBlogRequest) (string, []*pb.BlogData, error)
-	QueryBlogById(ctx context.Context, request *pb.GetBlogIDRequest) (msg string, da *pb.BlogData, e error)
+	QueryBlogById(ctx context.Context, request *pb.GetBlogIDRequest) (string, *pb.BlogData, error)
 	SetBlogVisit(id int)
 	QueryBlogByTitle(ctx context.Context, request *pb.GetBlogByTitleRequest) (string, []*pb.BlogData, error)
 	UpdateOnly(ctx context.Context, request *pb.UpdateOnlyRequest) *pb.UpdateOnlyReply

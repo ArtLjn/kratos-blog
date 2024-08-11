@@ -102,6 +102,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/queryAllUser:
+        get:
+            tags:
+                - User
+            operationId: User_QueryAllUser
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/QueryAllUserResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/register/{code}:
         post:
             tags:
@@ -180,17 +198,41 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /api/setBlack/{name}:
-        get:
+    /api/setAdmin:
+        post:
+            tags:
+                - User
+            operationId: User_SetAdmin
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SetAdminRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SetAdminReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/setBlack:
+        post:
             tags:
                 - User
             operationId: User_SetBlack
-            parameters:
-                - name: name
-                  in: path
-                  required: true
-                  schema:
-                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SetBlackRequest'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -313,6 +355,29 @@ components:
                     type: string
                 pass:
                     type: string
+        QueryAllUserResponse:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/QueryUser'
+        QueryUser:
+            type: object
+            properties:
+                name:
+                    type: string
+                email:
+                    type: string
+                black:
+                    type: boolean
+                role:
+                    type: string
+                id:
+                    type: integer
+                    format: int32
         SendEmailCommonReply:
             type: object
             properties:
@@ -332,11 +397,30 @@ components:
             properties:
                 common:
                     $ref: '#/components/schemas/CommonReply'
+        SetAdminReply:
+            type: object
+            properties:
+                common:
+                    $ref: '#/components/schemas/CommonReply'
+        SetAdminRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                set:
+                    type: boolean
         SetBlackReply:
             type: object
             properties:
                 common:
                     $ref: '#/components/schemas/CommonReply'
+        SetBlackRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                black:
+                    type: boolean
         Status:
             type: object
             properties:

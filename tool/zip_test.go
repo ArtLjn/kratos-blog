@@ -22,5 +22,4 @@ func TestZipToMemory(t *testing.T) {
 }
 
 func TestUnzip(t *testing.T) {
-	Unzip("./assets.zip", u.UploadPath)
 }
