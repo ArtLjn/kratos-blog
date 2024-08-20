@@ -10,6 +10,7 @@
 - 后端基于 [golang](https://go.dev/) + [go-kratos](https://go-kratos.dev/)
 - 前端基于 [VUE3](https://vuejs.org/) 
 - [在线演示](https://lllcnm.cn)
+
 ## 项目结构 🧐
 
 | 子项目名 | 项目路径                                      |
@@ -37,44 +38,21 @@ Kratos-blog 可以通过容器化的方式部署，支持 Docker，具体的部�
 ### 1. docker部署
 - 使用Dockerfile一键构建镜像
 ``` bash
-cd docker
-docker build -t blog:v1 -f DockerfileStart .
+cd deploy
+docker build -t blog:v1.1 -f DockerfileStart .
 ```
 - 直接拉去镜像
 ``` bash
-docker pull ljnnb/blog:v1
+docker pull ljnnb/blog:v1.1
 ```
 - 部署好镜像之后构建容器
 ``` bash
 # 创建容器卷(可选)
 docker volume create blog
-docker run -it --name=blog -p 8080:8080 -p 8500:8500 -p 15762:15752 -p 23306:3306 -p 26379:6379 -p 8099:8099 -v blog:/root/hongDou -d ljnnb/blog:v1
+docker run -it --name=blog -p 8033:8033 -p 8036:8036 -p 8080:8080 -p 8500:8500 -p 15762:15752 -p 23306:3306 -p 26379:6379 -p 8099:8099 -p 27017:27017 -v blog:/root/hongDou -d blog:v1.1
 ```
 注: 基础配置文件可进入容器之后自行修改
-- 前端在网站nginx配置文件中加上
-``` nginx
-location /api {
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header REMOTE-HOST $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_pass http://127.0.0.1:8080/api;
-}
-location /tool {
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header REMOTE-HOST $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_pass http://127.0.0.1:8099/tool;
-}
-location / {
-    try_files $uri $uri/ @router;
-    index  index.html index.htm;
-}
-location @router {
-    rewrite ^.*$ /index.html last;
-}
-```
+
 ## 软件截图
 <table>
     <tr>
@@ -110,10 +88,6 @@ location @router {
         <td><img src="static/b8.png"/></td>
     </tr>
 </table>
-
-### 代办
-- [ ] consul 多集群部署
-- [ ] k8s容器编排管理
 
 
 ### 联系作者

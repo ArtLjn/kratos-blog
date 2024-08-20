@@ -108,7 +108,7 @@ export default {
       editableTabs: [
         {
           title: "首页",
-          index: "/main/home",
+          index: "/main/blog",
         },
       ],
       //左侧菜单选项配置
@@ -116,7 +116,7 @@ export default {
         {
           title: "首页",
           icon: "HomeFilled",
-          index: "/main/home",
+          index: "/main/blog",
         },
         {
           title: "文章",

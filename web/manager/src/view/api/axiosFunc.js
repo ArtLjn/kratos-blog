@@ -48,6 +48,8 @@ instance.interceptors.response.use(response => {
         } else if (code === FORBIDDEN_ERROR) {
             localStorage.removeItem('token');
             ElMessage.error('登录已过期，请重新登录');
+        } else {
+            ElMessage.error(res.common.result);
         }
     } else {
         // 检查其他可能的错误信息字段

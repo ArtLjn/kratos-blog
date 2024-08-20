@@ -3,9 +3,6 @@ services:
   web:
     image: blog:v1
     container_name: hongDou_blog
-    volumes:
-      - "./hongDou:/usr/local/hongDou"
-      - "/www/wwwroot/qiniu.lllcnm.cn/img:/usr/local/img"
     ports:
       - "8080:8080"
       - "8099:8099"
@@ -41,3 +38,10 @@ services:
     ports:
       - "8500:8500"
     command: "consul agent -dev -client=0.0.0.0"
+  mongo:
+    image: mongo:latest
+    restart: always
+    container_name: hongDou_mongo
+    ports: "27017:27017"
+  rabbitmq:
+    

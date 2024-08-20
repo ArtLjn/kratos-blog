@@ -2,7 +2,7 @@ FROM ubuntu:20.04
 WORKDIR /root/
 COPY script ./script
 COPY hongDou ./hongDou
-RUN chmod +x ./hongDou/* ./script/*
+RUN chmod +x ./hongDou/blog/* ./hongDou/comment/* ./hongDou/user/* ./hongDou/gateway/* ./hongDou/tool/* ./script/* ./hongDou/*
 WORKDIR /root/script/
 RUN ./install.sh
 WORKDIR /root/hongDou/
@@ -12,4 +12,8 @@ EXPOSE 6379
 EXPOSE 8099
 EXPOSE 8500
 EXPOSE 15672
+EXPOSE 27017
+EXPOSE 8036
+EXPOSE 8033
+RUN cp -f ./nginx.conf /etc/nginx/nginx.conf
 CMD ./start_all.sh

@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "=============== start build rabbitmq ========================="
+
 set -e
 
 # 更新包列表并安装 Erlang

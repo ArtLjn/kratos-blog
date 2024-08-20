@@ -1,5 +1,5 @@
 #!/bin/bash
-
+echo "=============== start build consul ========================="
 # 设置 Consul 版本
 CONSUL_VERSION="1.13.1"
 

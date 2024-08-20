@@ -44,6 +44,6 @@ docker-own
 .gitignore
 web/show/node_modules
 web/manager/node_modules
-web/manager/dist
-web/show/dist
+deploy/hongDou/front/manager
+deploy/hongDou/front/show
 tool/assets

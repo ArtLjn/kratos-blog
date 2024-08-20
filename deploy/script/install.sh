@@ -7,5 +7,5 @@ source ./install_consul.sh
 source ./install_mysql.sh
 source ./install_rabbitmq.sh
 source ./install_redis.sh
-
-
+source ./install_mongo.sh
+apt install -y nginx

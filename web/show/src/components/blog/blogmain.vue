@@ -173,12 +173,13 @@
   
   <style scoped>
   .mains {
-    height: 850px;
+    height: 100vh; /* 使用视口高度单位确保高度占满整个窗口 */
     width: 100%;
     text-align: center;
-    background-size: cover;
+    background-size: cover; /* 保持图片宽高比，覆盖整个元素 */
     background-repeat: no-repeat;
-    animation: slide-in2 1.8s
+    background-position: center; /* 确保图片在背景区域居中显示 */
+    animation: slide-in2 1.8s;
   }
   .content {
     border-bottom-left-radius: 10px;

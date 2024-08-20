@@ -1,5 +1,10 @@
 package server
 
+import (
+	"github.com/joho/godotenv"
+	"os"
+)
+
 const (
 	BlogService    = "blog.service"
 	CommentService = "comment.service"
@@ -49,16 +54,23 @@ const (
 
 // ConfigPath
 
-const (
-	BlogConfPath    = "app/blog/configs"
-	CommentConfPath = "app/comment/configs"
-	UserConfPath    = "app/user/configs"
-	GateWayConfPath = "app/gateway/configs"
-	TooPath         = "/Users/ljn/Documents/HongDou-Go-Blog/kratos-blog/tool/config.ini"
+var (
+	BlogConfPath     string
+	CommentConfPath  string
+	UserConfPath     string
+	GateWayConfPath  string
+	TooPath          string
+	LogOutStreamPath string
 )
 
-// logPath
-
-const (
-	LogOutStreamPath = "log"
-)
+func init() {
+	if err := godotenv.Load(".env"); err != nil {
+		panic(err)
+	}
+	BlogConfPath = os.Getenv("BLOG_CONF_PATH")
+	CommentConfPath = os.Getenv("COMMENT_CONF_PATH")
+	UserConfPath = os.Getenv("USER_CONF_PATH")
+	GateWayConfPath = os.Getenv("GATEWAY_CONF_PATH")
+	TooPath = os.Getenv("TOOL_CONF_PATH")
+	LogOutStreamPath = os.Getenv("LOG_OUT_STREAM_PATH")
+}

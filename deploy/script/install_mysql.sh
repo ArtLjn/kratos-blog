@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "=============== start build mysql ========================="
 
 # 更新包列表
 apt-get update

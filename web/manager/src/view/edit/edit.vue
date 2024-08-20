@@ -10,7 +10,7 @@
           width="40%">
             <el-descriptions border column="1">
               <el-descriptions-item label="文章标签">
-                <el-select v-model="md.data.tag" clearable placeholder="选择标签" style="margin-right:10px;">
+                <el-select v-model="md.data.tag" filterable clearable placeholder="选择标签" style="margin-right:10px;">
                   <el-option
                       v-for="item in getTagList"
                       :key="item.id"
@@ -101,10 +101,10 @@
   import {AddTag, GetAllTag} from "@/view/api/tag";
   import {UploadFile} from "@/view/api/tool";
   import axios from "axios";
+  import {addTagMath} from "@/view/api/util";
   library.add(fas);
   
   export default {
-    methods: {AddTag},
     components: {
       FontAwesomeIcon,
     },
@@ -228,8 +228,13 @@
       });
 
       const addTag = () => {
-        AddTag().then(() => {
-          getTag();
+        addTagMath().then(name => {
+          AddTag(name).then(() => {
+            ElMessage.success("添加成功");
+            getTag();
+          })
+        }).catch(() => {
+          ElMessage.error("标签名不能为空");
         })
       }
       return {

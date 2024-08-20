@@ -21,17 +21,6 @@ path:
     - "/api/admin"
     - "/api/updatePassword"
     - "/api/upload"
-  # 配置黑名单 Get请求但需要传递token接口
-  black:
-    - "/api/searchBlog"
-# 设置允许访问路由
-domain:
-  # 允许访问源
-  origin:
-    - "http://localhost:8033"
-    - "http://localhost:8036"
-  # 是否开启过滤器
-  open: false
 mq:
   url: "amqp://root:123456@localhost:5672/hongDou"
   # 是否开启处理评论信息
@@ -41,3 +30,4 @@ mq:
   queue:
     - "comment_queue" # 评论队列
     - "reward_queue" # 回复队列
+    - "email_queue" #邮件队列

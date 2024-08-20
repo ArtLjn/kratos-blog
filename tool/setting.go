@@ -127,9 +127,12 @@ func DeleteConfigByVersion(version string) bool {
 }
 
 func UpdateConfigByVersion(conf conf.Config) bool {
-	if !HasVersion(conf.Version) {
-		log.Error("Version does not exist")
+	data, e := FindConfig(conf.Version)
+	if e != nil {
 		return false
+	}
+	if data.Upload.Domain != conf.Upload.Domain {
+		UpdatePhoto()
 	}
 	_, err := ConfCollection.UpdateOne(context.TODO(),
 		bson.D{{"version", conf.Version}}, bson.D{{"$set", conf}})

@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/websocket v1.5.1
 	github.com/hashicorp/consul/api v1.27.0
 	github.com/jarvanstack/mysqldump v0.7.0
+	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/streadway/amqp v1.1.0

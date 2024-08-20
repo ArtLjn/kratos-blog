@@ -2,15 +2,16 @@ package m_logs
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/middleware/tracing"
-	"github.com/robfig/cron/v3"
 	"io"
 	"kratos-blog/pkg/server"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/robfig/cron/v3"
 )
 
 func InitLog(logger *log.Logger, id, name, version, prefix string, cleanOld bool) {
@@ -68,7 +69,7 @@ func CleanOldFile(retainDays int, path string) {
 	// 读取日志目录中的所有文件
 	files, err := os.ReadDir(path)
 	if err != nil {
-		log.Error("Error reading log directory: %v", err)
+		log.Errorf("Error reading log directory: %s", err)
 		return
 	}
 
@@ -83,7 +84,7 @@ func CleanOldFile(retainDays int, path string) {
 				filePath := filepath.Join(path, file.Name())
 				err = os.Remove(filePath)
 				if err != nil {
-					log.Error("Error removing old log file %s: %v", filePath, err)
+					log.Errorf("Error removing old log file %s: %v", filePath, err)
 				} else {
 					fmt.Printf("Removed old log file: %s\n", filePath)
 				}

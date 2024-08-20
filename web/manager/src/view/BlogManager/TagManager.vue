@@ -23,8 +23,7 @@
 import { onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { AddTag, DeleteTag, GetAllTag } from "@/view/api/tag";
-import { confirmFunc } from "@/view/api/util";
-import {DeletePhoto} from "@/view/api/photo";
+import {addTagMath, confirmFunc} from "@/view/api/util";
 
 export default {
   name: "tagManager",
@@ -38,8 +37,13 @@ export default {
     };
 
     const addTag = () => {
-      AddTag().finally(() => {
-        getTag();
+      addTagMath().then(name => {
+        AddTag(name).then(() => {
+          ElMessage.success("添加成功");
+          getTag();
+        })
+      }).catch(() => {
+        ElMessage.error("标签名不能为空");
       })
     };
 
@@ -61,7 +65,6 @@ export default {
       } else {
         selectedRows.value.push(id);
       }
-      console.log(selectedRows.value);
     };
 
     const deleteSomeTag = () => {

@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "=============== start build redis ========================="
 
 # 安装 Redis
 apt-get update

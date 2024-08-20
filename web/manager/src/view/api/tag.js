@@ -12,20 +12,11 @@ export const GetAllTag = () => {
     return instance.get('/api/getAllTag')
 }
 
-export const AddTag = () => {
-    return new Promise((resolve, reject) => {
-        addTagMath().then((tagName) => {
-            const tagForm = {
-                "data": {
-                    "tagName": tagName
-                }
-            };
-            instance.post('/api/addTag', tagForm).then(() => {
-                ElMessage.success("添加成功");
-            }).catch((err) => {
-                ElMessage.error("添加失败");
-                reject(err);
-            });
-        });
-    });
+export const AddTag = (tagName) => {
+    const tagForm = {
+        "data": {
+            "tagName": tagName
+        }
+    };
+    return instance.post('/api/addTag', tagForm);
 }

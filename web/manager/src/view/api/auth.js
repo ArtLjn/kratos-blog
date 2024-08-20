@@ -9,7 +9,7 @@ export const login = (param) => {
             localStorage.setItem('token', token);
             const authData = { isLoggedIn: true, userData: {} };
             localStorage.setItem('authData', JSON.stringify(authData));
-            router.push("/main/home").then(() => {
+            router.push("/main").then(() => {
                 ElMessage.success('登录成功');
             })
         } else {

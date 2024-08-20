@@ -48,7 +48,8 @@ function Run() {
     rabbitmqctl set_permissions -p hongDou root ".*" ".*" ".*"
 
     echo "RabbitMQ 安装和配置完成。"
-
+    # 启动 MongoDB
+    nohup mongod --dbpath /data/db > /dev/null 2>&1 &
     # 安装 lsof
     apt install -y lsof
     # 启动其他服务
@@ -56,6 +57,7 @@ function Run() {
     nohup blog/blog >/dev/null 2>&1 &
     nohup comment/comment >/dev/null 2>&1 &
     nohup user/user >/dev/null 2>&1 &
+    nginx
 }
 
 function CheckPortRunningStatus() {

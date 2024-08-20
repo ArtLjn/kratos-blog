@@ -113,8 +113,10 @@ export default{
     position: relative;
   }
 .div-card{
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
     width: calc(68%);
-    margin: auto;
+    margin: 20px auto;
     height: auto;
 }
 .blog{

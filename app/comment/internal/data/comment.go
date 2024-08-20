@@ -4,18 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/log"
-	"gorm.io/gorm"
 	"kratos-blog/api/v1/comment"
 	"kratos-blog/app/comment/internal/biz"
 	"kratos-blog/app/comment/internal/data/bean"
 	"kratos-blog/pkg/util"
 	"kratos-blog/pkg/vo"
+	"net"
 	"net/http"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"gorm.io/gorm"
 )
 
 const sensitiveWords = "sensitive_words"
@@ -47,6 +49,9 @@ func QueryWords(db *gorm.DB) []string {
 }
 
 func (c *commRepo) CheckWords(word string) []string {
+	if len(c.sensitiveList) == 0 {
+		return nil
+	}
 	// 构建正则表达式模式
 	pattern := strings.Join(c.sensitiveList, "|")
 	regex := regexp.MustCompile(pattern)
@@ -55,12 +60,16 @@ func (c *commRepo) CheckWords(word string) []string {
 	return matches
 }
 
-func (c *commRepo) GetIp(ip string) string {
+func (c *commRepo) GetIp(ip string) (string, error) {
+	checkIp := net.ParseIP(ip)
+	if checkIp == nil {
+		return "", fmt.Errorf("不合法的IP地址")
+	}
 	uri := fmt.Sprintf("%s%s", c.data.c.Api.GetIp(), ip)
 	body, err := util.Request(http.MethodGet, uri, nil)
 	if err != nil {
 		c.log.Log(log.LevelError, err)
-		return ""
+		return "", fmt.Errorf("请求超时")
 	}
 
 	jsonStr := util.GetJsonVal(body, "result")
@@ -68,18 +77,21 @@ func (c *commRepo) GetIp(ip string) string {
 	m := strings.ReplaceAll(string(data), "\"", "")
 	if e != nil {
 		c.log.Log(log.LevelError, err)
-		return ""
+		return "", fmt.Errorf("解析失败")
 	} else if len(m) == 0 {
-		return ""
+		return "", fmt.Errorf("解析失败")
 	}
 	addrList := util.GetJsonVal(string(data), "addr")
+	if addrList == nil {
+		return "", fmt.Errorf("未知地址")
+	}
 	strList, _ := json.Marshal(addrList)
 	var list []interface{}
 	eee, res := c.data.pf.ParseJSONStrToStruct(string(strList), &list)
 	if !res {
 		c.log.Log(log.LevelError, eee)
 	}
-	return list[0].(string)
+	return list[0].(string), nil
 }
 
 func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentRequest) *comment.CreateCommentReply {
@@ -90,9 +102,9 @@ func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentReq
 			Result: vo.TALK_ERROR,
 		}
 	}
-	ipAddr := c.GetIp(req.CommentAddr)
-	if len(ipAddr) == 0 {
-		return &comment.CreateCommentReply{Code: vo.BAD_REQUEST, Result: vo.IPADDR_ERROR}
+	ipAddr, err := c.GetIp(req.CommentAddr)
+	if err != nil {
+		return &comment.CreateCommentReply{Code: vo.BAD_REQUEST, Result: err.Error()}
 	}
 
 	var commentParent bean.CommentParent
@@ -106,7 +118,7 @@ func (c *commRepo) AddComment(ctx context.Context, req *comment.CreateCommentReq
 	}
 	commentParent.CommentAddr = ipAddr
 	commentParent.CommentTime = time.Now().Format("2006-01-02 15:04")
-	err := c.data.pf.CreateFunc(commentParent, &bean.CommentParent{})
+	err = c.data.pf.CreateFunc(commentParent, &bean.CommentParent{})
 	if err != nil {
 		c.log.Log(log.LevelError, err)
 		return &comment.CreateCommentReply{
@@ -121,9 +133,9 @@ func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardReque
 	if words := c.CheckWords(req.Comment); len(words) != 0 {
 		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.TALK_ERROR}
 	}
-	ipAddr := c.GetIp(req.CommentAddr)
-	if len(ipAddr) == 0 {
-		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: vo.IPADDR_ERROR}
+	ipAddr, err := c.GetIp(req.CommentAddr)
+	if err != nil {
+		return &comment.CreateRewardReply{Code: vo.BAD_REQUEST, Result: err.Error()}
 	}
 	var commentSubTwo bean.CommentSubTwo
 	e := c.data.pf.ParseJSONToStruct(req, &commentSubTwo)
@@ -136,7 +148,7 @@ func (c *commRepo) AddReward(ctx context.Context, req *comment.CreateRewardReque
 	}
 	commentSubTwo.CommentTime = time.Now().Format("2006-01-02 15:04")
 	commentSubTwo.CommentAddr = ipAddr
-	err := c.data.pf.CreateFunc(commentSubTwo, &bean.CommentSubTwo{})
+	err = c.data.pf.CreateFunc(commentSubTwo, &bean.CommentSubTwo{})
 	if err != nil {
 		c.log.Log(log.LevelError, err)
 		return &comment.CreateRewardReply{
@@ -167,12 +179,12 @@ func (c *commRepo) ExtractParentComments(ctx context.Context, req *comment.Extra
 		mapList []*comment.ExtractResult
 	)
 
-	if err := c.data.pf.ParseJSONToStruct(commentParent, &parents); err != nil {
+	if err = c.data.pf.ParseJSONToStruct(commentParent, &parents); err != nil {
 		c.log.Log(log.LevelError, err)
 		return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
 	}
 
-	if err := c.data.pf.ParseJSONToStruct(commentSub, &subs); err != nil {
+	if err = c.data.pf.ParseJSONToStruct(commentSub, &subs); err != nil {
 		c.log.Log(log.LevelError, err)
 		return &comment.ExtractParentCommentsReply{Code: vo.BAD_REQUEST, Result: vo.QUERY_FAIL}
 	}

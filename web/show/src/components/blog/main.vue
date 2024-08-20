@@ -117,8 +117,6 @@
     <el-main>
       <router-view></router-view>
     </el-main>
-    <el-footer class="footer">
-    </el-footer>
     <el-backtop :bottom="150" style="background-color:rgb(83, 75, 75,0);">
       <a href="https://support.qq.com/products/599947" target="_blank">
         <font-awesome-icon :icon="['fas', 'comments']" style="color: #e26a94;" />
@@ -144,10 +142,12 @@ import { useRouter } from 'vue-router';
 import { getAllBlog } from '@/api/blogFunc';
 import {LogOut} from "@/api/auth";
 import {SUCCESS_REQUEST} from "@/api/status";
+import newFooter from "@/components/blog/util/newFooter.vue";
 library.add(faHome, fas);
 
 export default {
   components: {
+    newFooter,
     FontAwesomeIcon,
     music,
     login

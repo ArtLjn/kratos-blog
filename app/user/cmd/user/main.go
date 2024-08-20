@@ -2,11 +2,12 @@ package main
 
 import (
 	"flag"
-	"github.com/go-kratos/kratos/v2/registry"
 	"kratos-blog/app/user/internal/conf"
 	"kratos-blog/pkg/m_logs"
 	"kratos-blog/pkg/server"
 	"os"
+
+	"github.com/go-kratos/kratos/v2/registry"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
@@ -44,7 +45,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Regi
 		kratos.Server(
 			gs,
 			//开启HTTP
-			hs,
+			// hs,
 		),
 		kratos.Registrar(r),
 	)
