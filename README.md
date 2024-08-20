@@ -44,7 +44,10 @@ docker build -t blog:v1.1 -f DockerfileStart .
 - 直接拉去镜像
 ``` bash
 docker pull ljnnb/blog:v1.1
+# 若因网络原因请使用:
+docker pull registry.cn-hangzhou.aliyuncs.com/ljn_docker_hub/blog:v1.1
 ```
+
 - 部署好镜像之后构建容器
 ``` bash
 # 创建容器卷(可选)
