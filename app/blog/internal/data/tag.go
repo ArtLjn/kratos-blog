@@ -73,14 +73,6 @@ func (t *tagRepo) SearchAllTag(ctx context.Context, request *pb.ListTagRequest) 
 	if e != nil {
 		t.log.Log(log.LevelError, e)
 	}
-	if len(tagData) == 0 {
-		return &pb.ListTagReply{
-			Common: &pb.CommonReply{
-				Code:   400,
-				Result: vo.QUERY_EMPTY,
-			},
-		}
-	}
 	return &pb.ListTagReply{
 		Common: &pb.CommonReply{
 			Code:   200,

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	pb "kratos-blog/api/v1/blog"
-	"kratos-blog/pkg/vo"
 )
 
 type BlogRepo interface {
@@ -131,8 +130,6 @@ func (uc *BlogUseCase) ListBlog(ctx context.Context, request *pb.ListBlogRequest
 	if err != nil {
 		uc.log.Log(log.LevelError, err)
 		return status(400, u, nil)
-	} else if len(d) == 0 {
-		return status(300, vo.QUERY_EMPTY, nil)
 	}
 	return status(200, u, d)
 }

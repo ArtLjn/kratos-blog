@@ -67,7 +67,7 @@ instance.interceptors.response.use(response => {
     return Promise.reject(response.data);
 }, error => {
     // 特殊情况
-    ElMessage.error(error.response?.data?.info || '服务异常');
+    ElMessage.error(error.response?.data?.info || error.response?.data?.msg || '服务异常');
     return new Promise(() => {}); // 返回一个包含错误信息的Promise对象
 });
 

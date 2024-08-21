@@ -45,6 +45,7 @@ export const ExportBlog = async () => {
         document.body.removeChild(link);
     } catch (error) {
         console.error('下载文件失败', error);
+        ElMessage.error('下载文件失败');
     }
 }
 

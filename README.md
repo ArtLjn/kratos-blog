@@ -40,6 +40,8 @@ Kratos-blog 可以通过容器化的方式部署，支持 Docker，具体的部�
 ``` bash
 cd deploy
 docker build -t blog:v1.1 -f DockerfileStart .
+# 基于基础Blog镜像构建
+docker build -t blog:v1.1 -f DockerfileBase .
 ```
 - 直接拉去镜像
 ``` bash

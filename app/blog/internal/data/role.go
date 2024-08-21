@@ -77,9 +77,6 @@ func (r *blogRepo) queryByCondition(condition map[string]interface{}) ([]*blog.B
 	if err = r.data.pf.ParseJSONToStruct(res, &blogs); err != nil {
 		return nil, fmt.Errorf(vo.QUERY_FAIL)
 	}
-	if len(blogs) == 0 {
-		return nil, errors.New(vo.LIST_EMPTY)
-	}
 	return blogs, nil
 }
 
@@ -90,10 +87,6 @@ func (r *blogRepo) queryListByCondition(condition map[string]interface{}) ([]*bl
 	r.data.db.Model(Blog{}).Order("createTime desc").Where(condition).Find(&b)
 	if err := r.data.pf.ParseJSONToStruct(b, &blogs); err != nil {
 		return nil, fmt.Errorf(vo.QUERY_FAIL)
-	}
-	if len(blogs) == 0 {
-		r.log.Info(vo.QUERY_EMPTY)
-		return nil, errors.New(vo.QUERY_EMPTY)
 	}
 	return blogs, nil
 }

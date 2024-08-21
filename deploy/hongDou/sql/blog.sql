@@ -128,19 +128,6 @@ CREATE TABLE `sensitive_words` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
 
 
-
-# 转储表 setting_table
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `setting_table`;
-
-CREATE TABLE `setting_table` (
-  `key` varchar(255) DEFAULT NULL,
-  `value` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
-
 # 转储表 tag
 # ------------------------------------------------------------
 

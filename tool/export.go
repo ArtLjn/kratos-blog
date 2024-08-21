@@ -9,6 +9,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"io"
@@ -42,7 +43,7 @@ func NewExportData(options ...ExportOption) *ExportData {
 	return export
 }
 
-func exportData(data *ExportData) {
+func exportData(data *ExportData) error {
 	// 创建上传目录
 	if len(data.ExportPath) == 0 {
 		data.ExportPath = filepath.Join(Origin.U.UploadPath, Origin.Prefix[2])
@@ -50,13 +51,13 @@ func exportData(data *ExportData) {
 	if !directoryExists(data.ExportPath) {
 		err := os.MkdirAll(data.ExportPath, os.ModePerm)
 		if err != nil {
-			return
+			return errors.New("目录不存在")
 		}
 	}
 	var blogs []BlogMD
 	if err := GormDB.Model(BlogMD{}).Table("person_table").Find(&blogs).Error; err != nil {
 		log.Errorf("query error %s", err)
-		return
+		return errors.New("查询失败")
 	}
 
 	if len(blogs) != 0 {
@@ -66,14 +67,16 @@ func exportData(data *ExportData) {
 			f, es := os.Create(savePath)
 			if es != nil {
 				log.Errorf("create file error %s", es)
-				return
+				return errors.New("创建文件失败")
 			}
 			saveContent := fmt.Sprintf("%s\n%s", fmt.Sprintf("%s %s", "###", blog.Preface), blog.Content)
 			_, err := io.Copy(f, bytes.NewBuffer([]byte(saveContent)))
 			if err != nil {
 				log.Errorf("save content error: %s", err)
-				return
+				return errors.New("保存文件失败")
 			}
 		}
+		return nil
 	}
+	return errors.New("文章为空")
 }

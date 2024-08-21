@@ -44,7 +44,7 @@ for index in "${!build_paths[@]}"; do
     APP_NAME=$(basename "${build_paths[$index]}")
 
     # 执行go build命令并输出到对应目录
-    CGO_ENABLED=0 GOOS=$GOOS_INPUT GOARCH=arm64 go build -o "$out_path/$APP_NAME" "$full_path"
+    CGO_ENABLED=0 GOOS=$GOOS_INPUT GOARCH=amd64 go build -o "$out_path/$APP_NAME" "$full_path"
 
     # 输出构建结果
     if [ $? -eq 0 ]; then

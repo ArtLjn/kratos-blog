@@ -110,7 +110,10 @@ func BackUpSql(ctx *gin.Context) {
 }
 
 func ExportMD(ctx *gin.Context) {
-	exportData(NewExportData())
+	if err := exportData(NewExportData()); err != nil {
+		ctx.JSON(400, gin.H{"code": 400, "msg": err.Error()})
+		return
+	}
 	if GetNeedDownload(ctx) {
 		HttpDownload(ctx, filepath.Join(Origin.U.UploadPath, "md"), "md")
 	} else {
@@ -220,6 +223,11 @@ func GetAllConfig(ctx *gin.Context) {
 
 func RemoveConfig(ctx *gin.Context) {
 	version := ctx.Query("version")
+	if len(FindAllConfig()) == 1 {
+		log.Error("Cannot delete the only remaining config")
+		ctx.JSON(400, gin.H{"code": 400, "msg": "Cannot delete the only remaining config"})
+		return
+	}
 	if DeleteConfigByVersion(version) {
 		ctx.JSON(h2.StatusOK, gin.H{"code": 200, "msg": "Config deleted successfully"})
 	} else {
