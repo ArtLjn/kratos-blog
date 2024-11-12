@@ -14,15 +14,16 @@ import (
 	"kratos-blog/app/blog/internal/data"
 	"kratos-blog/app/blog/internal/server"
 	"kratos-blog/app/blog/internal/service"
+	db2 "kratos-blog/pkg/db"
 )
 
 // Injectors from wire.go:
 
 // wireApp init kratos application.
 func wireApp(conf *conf.Bootstrap, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
-	r := data.NewRegistrar(registry)
-	db := data.NewDB(conf.Data)
-	rdb := data.NewRDB(conf.Data)
+	r := db2.NewRegistrar(registry.Consul.Address, registry.Consul.Scheme)
+	db := db2.NewDB(conf.Data.Database.Source)
+	rdb := db2.NewRDB(conf.Data.Redis.Addr, conf.Data.Redis.Password, conf.Data.Redis.Db)
 	dataData, err := data.NewData(conf, logger, db, rdb)
 	if err != nil {
 		return nil, nil, err

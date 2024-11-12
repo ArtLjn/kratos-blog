@@ -8,8 +8,8 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/redis/go-redis/v9"
-	user2 "kratos-blog/api/v1/user"
-	"kratos-blog/pkg/jwt"
+	user2 "kratos-blog/api/user"
+	"kratos-blog/pkg/auth"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
 	h "net/http"
@@ -93,7 +93,7 @@ func (f *FilterRepo) CommentLimiter() http.FilterFunc {
 						return
 					}
 
-					username := jwt.GetLoginName(token)
+					username := auth.GetLoginName(token)
 					if len(username) == 0 {
 						WritePermissionError(w)
 						return

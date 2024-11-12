@@ -3,9 +3,9 @@ package server
 import (
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	v1 "kratos-blog/api/v1/blog"
-	v3 "kratos-blog/api/v1/friend"
-	v2 "kratos-blog/api/v1/tag"
+	v1 "kratos-blog/api/blog"
+	v3 "kratos-blog/api/friend"
+	v2 "kratos-blog/api/tag"
 	"kratos-blog/app/blog/internal/conf"
 	"kratos-blog/app/blog/internal/service"
 )

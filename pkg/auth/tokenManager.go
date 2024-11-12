@@ -1,11 +1,10 @@
-package data
+package auth
 
 import (
 	"context"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
-	"kratos-blog/pkg/jwt"
 	"kratos-blog/pkg/server"
 )
 
@@ -32,7 +31,7 @@ func NewToken(rdb *redis.Client, l *log.Helper) TokenManager {
 }
 
 func (t *Token) SaveToken(username string) string {
-	token, err := jwt.Sign(username)
+	token, err := Sign(username)
 	if err != nil {
 		t.l.Error("❌ 生成token失败")
 		return ""
@@ -53,7 +52,7 @@ func (t *Token) LogOutToken(username string) {
 }
 
 func (t *Token) VerifyToken(token string) error {
-	username := jwt.GetLoginName(token)
+	username := GetLoginName(token)
 	if username == "" {
 		t.l.Error("❌ token无效")
 		return fmt.Errorf("❌ token无效")

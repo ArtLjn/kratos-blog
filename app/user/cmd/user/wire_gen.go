@@ -7,7 +7,6 @@
 package main
 
 import (
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"kratos-blog/app/user/internal/biz"
@@ -15,25 +14,26 @@ import (
 	"kratos-blog/app/user/internal/data"
 	"kratos-blog/app/user/internal/server"
 	"kratos-blog/app/user/internal/service"
+	db2 "kratos-blog/pkg/db"
 )
 
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Bootstrap,registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
-	r := data.NewRegistrar(registry)
-	db := data.NewDB(confData.Data)
-	rdb := data.NewRDB(confData.Data)
-	dataData, err := data.NewData(confData, logger,db,rdb)
+func wireApp(confServer *conf.Server, confData *conf.Bootstrap, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
+	r := db2.NewRegistrar(registry.Consul.Address, registry.Consul.Scheme)
+	db := db2.NewDB(confData.Data.Database.Source)
+	rdb := db2.NewRDB(confData.Data.Redis.Addr, confData.Data.Redis.Password, confData.Data.Redis.Db)
+	dataData, err := data.NewData(confData, logger, db, rdb)
 	if err != nil {
 		return nil, nil, err
 	}
 	userRepo := data.NewUserRepo(dataData, logger)
-	userUsecase := biz.NewUserUseCase(userRepo,confData,logger)
+	userUsecase := biz.NewUserUseCase(userRepo, confData, logger)
 	userService := service.NewUserService(userUsecase)
 	grpcServer := server.NewGRPCServer(confServer, userService, logger)
 	httpServer := server.NewHTTPServer(confServer, userService, logger)
-	app := newApp(logger, grpcServer, httpServer,r)
+	app := newApp(logger, grpcServer, httpServer, r)
 	return app, func() {
 	}, nil
 }

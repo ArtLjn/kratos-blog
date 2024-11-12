@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
-	"kratos-blog/api/v1/user"
+	"kratos-blog/api/user"
 	"kratos-blog/app/user/internal/conf"
 	cf "kratos-blog/pkg/conf"
 	"kratos-blog/pkg/util"

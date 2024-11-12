@@ -1,4 +1,4 @@
-package jwt
+package auth
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ type LoginClaims struct {
 
 var (
 	signKey = "blog_key"
-	letters = []rune("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	letters = []rune("@(@&LJQLFQNLUEKssldjfoweasfdss0")
 )
 
 func randStr(strLen int) string {

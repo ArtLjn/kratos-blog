@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"kratos-blog/api/v1/blog"
+	"kratos-blog/api/blog"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
 )

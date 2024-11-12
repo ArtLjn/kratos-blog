@@ -10,8 +10,9 @@ import (
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/gomail.v2"
-	"kratos-blog/api/v1/user"
+	"kratos-blog/api/user"
 	"kratos-blog/app/user/internal/biz"
+	"kratos-blog/pkg/auth"
 	"kratos-blog/pkg/conf"
 	"kratos-blog/pkg/model"
 	"kratos-blog/pkg/server"
@@ -26,7 +27,7 @@ type userRepo struct {
 	log  *log.Helper
 	mu   sync.Mutex
 	model.PublicFunc
-	key TokenManager
+	key auth.TokenManager
 }
 
 type User struct {
@@ -48,7 +49,7 @@ func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
 	return &userRepo{
 		data: data,
 		log:  l,
-		key:  NewToken(data.rdb, l),
+		key:  auth.NewToken(data.rdb, l),
 	}
 }
 
@@ -118,7 +119,7 @@ func (u *userRepo) SendEmail(body, to, sub string) bool {
 	m.SetHeader("Subject", sub)
 	m.SetBody("text/plain", body)
 	d := gomail.NewDialer(c.QQEmail.Host, c.QQEmail.Port, c.QQEmail.Username, c.QQEmail.Password)
-	if err := d.DialAndSend(m); err != nil {
+	if err = d.DialAndSend(m); err != nil {
 		u.data.log.Log(log.LevelError, err)
 		return false
 	}
@@ -192,7 +193,10 @@ func (u *userRepo) createUserFromRequest(request *user.CreateUserRequest) func()
 func (u *userRepo) validateUpdatePass(request *user.UpdatePasswordRequest) error {
 	var uS User
 	data, _ := u.data.pf.QueryFunc(User{}, map[string]interface{}{"email": request.Email}, false)
-	u.data.pf.ParseJSONToStruct(data, &uS)
+	err := u.data.pf.ParseJSONToStruct(data, &uS)
+	if err != nil {
+		return err
+	}
 	if uS.Email != request.Email {
 		return errors.New(vo.EMAIL_NOT_MATCH)
 	} else if cacheCode, _ := u.data.rdb.Get(context.Background(), request.Email).Result(); cacheCode != request.Code {

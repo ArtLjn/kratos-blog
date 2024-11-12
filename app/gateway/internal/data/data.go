@@ -3,22 +3,20 @@ package data
 import (
 	"context"
 	"fmt"
-	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/selector/wrr"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	consulAPI "github.com/hashicorp/consul/api"
 	"github.com/redis/go-redis/v9"
 	grpcx "google.golang.org/grpc"
-	"kratos-blog/api/v1/blog"
-	"kratos-blog/api/v1/comment"
-	"kratos-blog/api/v1/friend"
-	"kratos-blog/api/v1/photo"
-	"kratos-blog/api/v1/tag"
-	"kratos-blog/api/v1/user"
+	"kratos-blog/api/blog"
+	"kratos-blog/api/comment"
+	"kratos-blog/api/friend"
+	"kratos-blog/api/photo"
+	"kratos-blog/api/tag"
+	"kratos-blog/api/user"
 	"kratos-blog/app/gateway/internal/conf"
 	"kratos-blog/pkg/server"
 	"time"
@@ -28,7 +26,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewRegistrar, NewDiscovery)
+var ProviderSet = wire.NewSet(NewData)
 
 // Data .
 type Data struct {
@@ -53,32 +51,6 @@ func NewRDB(conf *conf.Data) *redis.Client {
 			Password: conf.Redis.Password,
 		},
 	)
-}
-
-// NewRegistrar add consul
-func NewRegistrar(conf *conf.Registry) registry.Registrar {
-	c := consulAPI.DefaultConfig()
-	c.Address = conf.Consul.Address
-	c.Scheme = conf.Consul.Scheme
-	c.Namespace = ""
-	cli, err := consulAPI.NewClient(c)
-	if err != nil {
-		panic(err)
-	}
-	r := consul.New(cli, consul.WithHealthCheck(false))
-	return r
-}
-
-func NewDiscovery(conf *conf.Registry) registry.Discovery {
-	c := consulAPI.DefaultConfig()
-	c.Address = conf.Consul.Address
-	c.Scheme = conf.Consul.Scheme
-	cli, err := consulAPI.NewClient(c)
-	if err != nil {
-		panic(err)
-	}
-	r := consul.New(cli, consul.WithHealthCheck(false))
-	return r
 }
 
 func NewGrpcServiceClient(serviceName string, rr registry.Discovery) *grpcx.ClientConn {

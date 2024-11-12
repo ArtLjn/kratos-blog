@@ -4,7 +4,7 @@ import (
 	"context"
 	"kratos-blog/app/blog/internal/biz"
 
-	pb "kratos-blog/api/v1/tag"
+	pb "kratos-blog/api/tag"
 )
 
 type TagService struct {

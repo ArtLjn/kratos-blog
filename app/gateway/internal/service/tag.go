@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
-	pb "kratos-blog/api/v1/tag"
+	pb "kratos-blog/api/tag"
 )
 
 type TagService struct {

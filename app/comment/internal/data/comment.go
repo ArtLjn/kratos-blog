@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"kratos-blog/api/v1/comment"
+	"kratos-blog/api/comment"
 	"kratos-blog/app/comment/internal/biz"
 	"kratos-blog/app/comment/internal/data/bean"
 	"kratos-blog/pkg/util"

@@ -3,7 +3,7 @@ package service
 import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
-	pb "kratos-blog/api/v1/comment"
+	pb "kratos-blog/api/comment"
 	"log"
 )
 

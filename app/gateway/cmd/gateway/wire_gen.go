@@ -11,8 +11,9 @@ import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/robfig/cron/v3"
+	db2 "kratos-blog/pkg/db"
 
-	"kratos-blog/api/v1/blog"
+	"kratos-blog/api/blog"
 	"kratos-blog/app/gateway/internal/conf"
 	"kratos-blog/app/gateway/internal/data"
 	"kratos-blog/app/gateway/internal/server"
@@ -23,9 +24,9 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logger) (*kratos.App, func(), error) {
-	r := data.NewRegistrar(registry)
+	r := db2.NewRegistrar(registry.Consul.Address, registry.Consul.Scheme)
 	rdb := data.NewRDB(confData.Data)
-	discovery := data.NewDiscovery(registry)
+	discovery := db2.NewDiscovery(registry.Consul.Address, registry.Consul.Scheme)
 	userClient := data.NewUserServiceClient(discovery)
 	role := data.NewRole(rdb, userClient, logger)
 	commentClient := data.NewCommentServiceClient(discovery)
@@ -36,7 +37,7 @@ func wireApp(confData *conf.Bootstrap, registry *conf.Registry, logger log.Logge
 	}
 	q.StartMq(confData.Mq.GetQueue()...)
 	commentService := service.NewCommentService(logger, commentClient, blogClient, role, q)
-	userService := service.NewUserService(logger, userClient,q,role)
+	userService := service.NewUserService(logger, userClient, q, role)
 	// 启动评论和回复的消费者
 	go q.ReceiveComment(commentService.UC.AddComment, commentService.HasAllowComment, userService.UC.SendEmailCommon)
 	go q.ReceiveReward(commentService.UC.AddReward, commentService.HasAllowComment, userService.UC.SendEmailCommon)

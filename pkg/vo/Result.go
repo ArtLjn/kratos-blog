@@ -15,7 +15,6 @@ type CodeBuilder interface {
 	GetCodeInfo() CodeInfo
 }
 
-// Director
 type Director struct {
 	builder CodeBuilder
 }

@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	pb "kratos-blog/api/v1/blog"
+	pb "kratos-blog/api/blog"
 	"kratos-blog/app/blog/internal/biz"
 )
 

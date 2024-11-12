@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
-	pb "kratos-blog/api/v1/friend"
+	pb "kratos-blog/api/friend"
 )
 
 type FriendRepo interface {

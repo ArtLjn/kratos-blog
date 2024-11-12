@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package gateway;
+
+option go_package = "/gateway;gateway";
+option java_multiple_files = true;
+option java_package = "gateway";
+import "google/api/annotations.proto";
+
+service Gateway {
+	rpc GetBingPhoto(GetBingPhotoRequest) returns(GetBingPhotoReply) {
+		option (google.api.http) = {
+			get:'/api/getBingPhoto'
+		};
+	}
+	rpc UploadReq(UploadRequest) returns(UploadReply) {
+		option (google.api.http) = {
+			post:"/api/upload",
+		};
+	}
+}
+
+message GetBingPhotoRequest  {}
+message GetBingPhotoReply {
+	int64 code = 1;
+	string result = 2;
+	string data = 3;
+}
+
+message UploadRequest {}
+message UploadReply {
+	int64 code = 1;
+	string result = 2;
+	string data = 3;
+}

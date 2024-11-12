@@ -5,7 +5,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	user2 "kratos-blog/api/v1/user"
+	user2 "kratos-blog/api/user"
 	"kratos-blog/app/user/internal/conf"
 	"kratos-blog/app/user/internal/service"
 )

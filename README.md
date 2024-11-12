@@ -39,12 +39,14 @@ Kratos-blog 可以通过容器化的方式部署，支持 Docker，具体的部�
 - 使用Dockerfile一键构建镜像
 ``` bash
 cd deploy
+# 使用ubuntu20镜像构建
 docker build -t blog:v1.1 -f DockerfileStart .
-# 基于基础Blog镜像构建
+# 使用本系统提供的基础镜像
 docker build -t blog:v1.1 -f DockerfileBase .
 ```
 - 直接拉去镜像
 ``` bash
+# 从dockerhub拉去镜像
 docker pull ljnnb/blog:v1.1
 # 若因网络原因请使用:
 docker pull registry.cn-hangzhou.aliyuncs.com/ljn_docker_hub/blog:v1.1
@@ -54,9 +56,12 @@ docker pull registry.cn-hangzhou.aliyuncs.com/ljn_docker_hub/blog:v1.1
 ``` bash
 # 创建容器卷(可选)
 docker volume create blog
-docker run -it --name=blog -p 8033:8033 -p 8036:8036 -p 8080:8080 -p 8500:8500 -p 15762:15752 -p 23306:3306 -p 26379:6379 -p 8099:8099 -p 27017:27017 -v blog:/root/hongDou -d blog:v1.1
+# 创建容器
+docker run -it --name=blog -p 8033:8033 -p 8036:8036 -p 8080:8080 -p 8500:8500 -p 15762:15752 -p 23306:3306 -p 26379:6379 -p 8099:8099 -p 27017:27017  -d blog:v1.1
 ```
-注: 基础配置文件可进入容器之后自行修改
+注: 基础配置文件可以通过管理平台配置中心进行修改
+
+<img src="static/config.png" style="width:400px;height:auto;">
 
 ## 软件截图
 <table>

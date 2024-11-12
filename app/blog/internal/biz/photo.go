@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
-	pb "kratos-blog/api/v1/photo"
+	pb "kratos-blog/api/photo"
 )
 
 type PhotoRepo interface {

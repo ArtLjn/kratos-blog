@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-kratos/kratos/v2/log"
-	"kratos-blog/api/v1/blog"
+	"kratos-blog/api/blog"
 	"kratos-blog/app/blog/internal/biz"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
@@ -160,7 +160,10 @@ func (r *blogRepo) QueryBlogByTitle(ctx context.Context, request *blog.GetBlogBy
 		r.log.Log(log.LevelError, err)
 		return vo.QUERY_FAIL, nil, errors.New(vo.QUERY_FAIL)
 	}
-	r.data.pf.ParseJSONToStruct(blogs, &data)
+	err := r.data.pf.ParseJSONToStruct(blogs, &data)
+	if err != nil {
+		return "", nil, err
+	}
 	return vo.QUERY_SUCCESS, data, nil
 }
 

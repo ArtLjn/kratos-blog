@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
-	"kratos-blog/api/v1/comment"
+	"kratos-blog/api/comment"
 )
 
 type CommRepo interface {

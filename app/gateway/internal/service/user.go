@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	pb "kratos-blog/api/v1/user"
+	pb "kratos-blog/api/user"
 	"kratos-blog/app/gateway/internal/data"
 	"kratos-blog/pkg/server"
 	"kratos-blog/pkg/vo"
