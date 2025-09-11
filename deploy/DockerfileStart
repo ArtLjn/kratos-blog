@@ -6,14 +6,6 @@ RUN chmod +x ./hongDou/blog/* ./hongDou/comment/* ./hongDou/user/* ./hongDou/gat
 WORKDIR /root/script/
 RUN ./install.sh
 WORKDIR /root/hongDou/
-EXPOSE 8080
-EXPOSE 3306
-EXPOSE 6379
-EXPOSE 8099
-EXPOSE 8500
-EXPOSE 15672
-EXPOSE 27017
-EXPOSE 8036
-EXPOSE 8033
+EXPOSE 8080 3306 6379 8099 8500 15672 27017 8036 8033
 RUN cp -f ./nginx.conf /etc/nginx/nginx.conf
 CMD ./start_all.sh

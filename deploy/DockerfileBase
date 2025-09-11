@@ -4,15 +4,7 @@ WORKDIR /root/
 COPY hongDou ./hongDou
 RUN chmod +x ./hongDou/blog/* ./hongDou/comment/* ./hongDou/user/* ./hongDou/gateway/* ./hongDou/tool/* ./hongDou/*
 WORKDIR /root/hongDou/
-EXPOSE 8080
-EXPOSE 3306
-EXPOSE 6379
-EXPOSE 8099
-EXPOSE 8500
-EXPOSE 15672
-EXPOSE 27017
-EXPOSE 8036
-EXPOSE 8033
+EXPOSE 8080 3306 6379 8099 8500 15672 27017 8036 8033
 RUN cp -f ./nginx.conf /etc/nginx/nginx.conf && \
     service mysql start &&  \
     mysql -u root -p123456 hongDou < ./sql/blog.sql

@@ -172,7 +172,7 @@ func (o *OFunc) ParseJSONStrToStruct(jsonStr string, list *[]interface{}) (error
 	}
 	var memoryList []interface{}
 	if err := json.Unmarshal([]byte(jsonStr), &memoryList); err != nil {
-		fmt.Errorf("error parsing JSON: %s", err)
+		log.Errorf("error parsing JSON: %s", err)
 		return errors.New(vo.JSON_ERROR), false
 	}
 	*list = memoryList

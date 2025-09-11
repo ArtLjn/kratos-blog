@@ -42,6 +42,12 @@ services:
     image: mongo:latest
     restart: always
     container_name: hongDou_mongo
-    ports: "27017:27017"
+    ports:
+      - "27017:27017"
   rabbitmq:
-    
+    image: rabbitmq:3.8.9-management
+    restart: always
+    container_name: hongDou_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"

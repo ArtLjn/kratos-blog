@@ -34,6 +34,7 @@ VMdEditor.use(vuepressTheme, {
 })
 VueMarkdownEditor.use(createEmojiPlugin,createLineNumbertPlugin,createHighlightLinesPlugin,
     createCopyCodePlugin,createTodoListPlugin,createTipPlugin)
+    
 router.beforeEach((to,from,next) => {
   const authData = JSON.parse(localStorage.getItem('authData'));
   const isLoggedIn = authData && authData.isLoggedIn;

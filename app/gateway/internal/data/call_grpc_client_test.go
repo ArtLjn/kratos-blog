@@ -2,13 +2,14 @@ package data
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
-	"github.com/hashicorp/consul/api"
-	grpcmd "google.golang.org/grpc/metadata"
 	"kratos-blog/api/v1/blog"
 	"kratos-blog/api/v1/comment"
 	"kratos-blog/api/v1/user"
 	"testing"
+
+	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
+	"github.com/hashicorp/consul/api"
+	grpcmd "google.golang.org/grpc/metadata"
 )
 
 func TestUserClient(t *testing.T) {

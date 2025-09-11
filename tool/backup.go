@@ -39,5 +39,7 @@ func InitBackUp(dns, outPath string, sendEmail bool) {
 
 func BackUpAll() {
 	InitBackUp(Origin.BackUp.Dns, filepath.Join(Origin.U.UploadPath, Origin.Prefix[1]), Origin.BackUp.BackUpSqlSendEmail)
-	exportData(NewExportData())
+	if err := exportData(NewExportData()); err != nil {
+		log.Errorf("export data error: %v", err)
+	}
 }

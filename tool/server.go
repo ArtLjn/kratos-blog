@@ -48,7 +48,7 @@ func GinUploadImg(ctx *gin.Context) {
 	filePath := filepath.Join(Origin.U.UploadPath, Origin.Prefix[0])
 	savePath := filepath.Join(filePath, newFileName)
 	getLastIndex(&Origin.U.Domain)
-	if err := ctx.SaveUploadedFile(file, savePath); err != nil {
+	if err = ctx.SaveUploadedFile(file, savePath); err != nil {
 		ctx.JSON(vo.BAD_REQUEST, res.SetCode(vo.BAD_REQUEST).SetInfo("上传文件失败").GetCodeInfo())
 		return
 	}
