@@ -94,7 +94,7 @@ Kratos-blog 支持多种部署方式，推荐使用 **Docker 容器化部署**�
 #### 方案一：构建镜像
 ```bash
 # 克隆项目
-git clone https://github.com/your-repo/kratos-blog.git
+git clone https://github.com/ArtLjn/kratos-blog.git
 cd kratos-blog/deploy
 
 # 构建镜像（二选一）
@@ -183,12 +183,12 @@ docker run -d --name kratos-blog \
 ### 👨‍💻 开发者信息
 
 <p align="center">
-  <img src="static/img.png" width="300" alt="联系作者" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+  <img src="static/image.png" width="300" alt="联系作者" style="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
 </p>
 
 #### 📬 联系方式
 - 💬 **微信**: 扫码上方二维码
-- 🐙 **GitHub**: [项目地址](https://github.com/your-repo/kratos-blog)
+- 🐙 **GitHub**: [项目地址](https://github.com/ArtLjn/kratos-blog)
 
 #### ⭐ 支持项目
 如果这个项目对你有帮助，请给个 ⭐ **Star** 支持一下！
